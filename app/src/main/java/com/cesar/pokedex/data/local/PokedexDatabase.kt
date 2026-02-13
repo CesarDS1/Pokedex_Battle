@@ -10,7 +10,7 @@ import com.cesar.pokedex.data.local.entity.PokemonEvolutionEntity
 
 @Database(
     entities = [PokemonEntity::class, PokemonDetailEntity::class, PokemonEvolutionEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

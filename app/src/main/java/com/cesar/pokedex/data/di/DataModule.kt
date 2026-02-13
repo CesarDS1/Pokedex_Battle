@@ -53,7 +53,9 @@ object DataModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): PokedexDatabase =
-        Room.databaseBuilder(context, PokedexDatabase::class.java, "pokedex.db").build()
+        Room.databaseBuilder(context, PokedexDatabase::class.java, "pokedex.db")
+            .fallbackToDestructiveMigration(dropAllTables = true)
+            .build()
 
     @Provides
     @Singleton

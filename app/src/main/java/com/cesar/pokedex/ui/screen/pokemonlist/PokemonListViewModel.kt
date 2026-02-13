@@ -51,8 +51,8 @@ class PokemonListViewModel @Inject constructor(
                     }
                 }
                 val grouped = filtered
+                    .sortedBy { it.id }
                     .groupBy { generationOf(it.id) }
-                    .toSortedMap()
                 PokemonListUiState.Success(grouped)
             }
         }

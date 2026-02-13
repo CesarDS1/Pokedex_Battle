@@ -69,14 +69,14 @@ class PokemonRepositoryImpl @Inject constructor(
             async { api.getType(dto.name) }
         }.awaitAll()
 
-        val typeMap = mutableMapOf<Int, MutableList<String>>()
+        val typeMap = mutableMapOf<Int, MutableList<Pair<Int, String>>>()
         for (typeResponse in typeResponses) {
             for (slot in typeResponse.pokemon) {
                 val pokemonId = slot.pokemon.url.trimEnd('/').substringAfterLast('/').toIntOrNull() ?: continue
-                typeMap.getOrPut(pokemonId) { mutableListOf() }.add(typeResponse.name)
+                typeMap.getOrPut(pokemonId) { mutableListOf() }.add(slot.slot to typeResponse.name)
             }
         }
-        typeMap
+        typeMap.mapValues { (_, slots) -> slots.sortedBy { it.first }.map { it.second } }
     }
 
     override suspend fun getPokemonDetail(id: Int): PokemonDetail {

@@ -15,7 +15,8 @@
       "Bash(cmd /c:*)",
       "Bash(.\\\\gradlew.bat assembleDebug:*)",
       "Bash(cmd.exe:*)",
-      "Bash(powershell -c:*)"
+      "Bash(powershell -c:*)",
+      "WebFetch(domain:pokeapi.co)"
     ]
   }
 }
