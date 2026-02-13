@@ -1,0 +1,43 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- White circle (ball body) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,24 A30,30 0 1,1 53.99,24z" />
+
+    <!-- Red top half -->
+    <path
+        android:fillColor="#EE1515"
+        android:pathData="M24,54 A30,30 0 0,1 84,54 L24,54z" />
+
+    <!-- Dark band across middle -->
+    <path
+        android:fillColor="#222222"
+        android:pathData="M24,52 L84,52 L84,56 L24,56z" />
+
+    <!-- Outer ring of center button -->
+    <path
+        android:fillColor="#222222"
+        android:pathData="M54,44 A10,10 0 1,1 53.99,44z" />
+
+    <!-- Inner white button -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,47 A7,7 0 1,1 53.99,47z" />
+
+    <!-- Button highlight -->
+    <path
+        android:fillColor="#F0F0F0"
+        android:pathData="M51,51 A4,4 0 1,1 50.99,51z" />
+
+    <!-- Pokeball outline -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M54,24 A30,30 0 1,1 53.99,24z"
+        android:strokeWidth="2"
+        android:strokeColor="#222222" />
+</vector>

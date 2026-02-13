@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell.exe:*)",
+      "WebSearch",
+      "WebFetch(domain:blog.jetbrains.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(powershell -Command:*)",
+      "Bash(dir:*)",
+      "Bash(C:/Users/ingce/AndroidStudioProjects/Pokedex/gradlew.bat assembleDebug)",
+      "Bash(cmd /c \"gradlew.bat assembleDebug 2>&1\")",
+      "Bash(cmd.exe /c \"gradlew.bat assembleDebug\")",
+      "Bash(C:/Users/ingce/AndroidStudioProjects/Pokedex/gradlew.bat testDebugUnitTest)",
+      "Bash(gradlew.bat assembleDebug:*)",
+      "Bash(cmd /c:*)",
+      "Bash(.\\\\gradlew.bat assembleDebug:*)"
+    ]
+  }
+}

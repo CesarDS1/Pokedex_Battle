@@ -1,0 +1,39 @@
+<resources>
+    <string name="app_name">Pokedex</string>
+    <string name="search_pokemon">Search Pokemon…</string>
+    <string name="search">Search</string>
+    <string name="clear">Clear</string>
+    <string name="retry">Retry</string>
+    <string name="no_pokemon_found">No Pokemon found</string>
+    <string name="collapse">Collapse</string>
+    <string name="expand">Expand</string>
+
+    <!-- Detail screen -->
+    <string name="pokemon_detail">Pokemon Detail</string>
+    <string name="back">Back</string>
+    <string name="play_cry">Play cry</string>
+    <string name="region_format">Region: %1$s</string>
+    <string name="tab_about">About</string>
+    <string name="tab_stats">Stats</string>
+    <string name="tab_matchups">Matchups</string>
+    <string name="evolutions_and_forms">Evolutions &amp; Forms</string>
+    <string name="moves_by_level">Moves by Level</string>
+    <string name="description">Description</string>
+    <string name="base_stats">Base Stats</string>
+    <string name="total">Total</string>
+    <string name="type_matchups_format">%1$s Matchups</string>
+    <string name="weak_to">Weak to</string>
+    <string name="resistant_to">Resistant to</string>
+    <string name="strong_against">Strong against</string>
+    <string name="not_effective_against">Not effective against</string>
+
+    <!-- Evolution screen -->
+    <string name="evolution_chain">Evolution Chain</string>
+    <string name="does_not_evolve">This Pokemon does not evolve.</string>
+    <string name="alternate_forms">Alternate Forms</string>
+
+    <!-- Moves screen -->
+    <string name="no_level_up_moves">This Pokemon doesn\'t learn any moves by leveling up.</string>
+    <string name="level_format">Level %1$d</string>
+    <string name="learned_by_default">Learned by default</string>
+</resources>
