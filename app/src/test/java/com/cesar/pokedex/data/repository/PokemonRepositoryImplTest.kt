@@ -25,8 +25,13 @@ import com.cesar.pokedex.data.remote.dto.Sprites
 import com.cesar.pokedex.data.remote.dto.TypePokemonSlot
 import com.cesar.pokedex.data.remote.dto.TypeResponse
 import com.cesar.pokedex.data.local.dao.PokemonDao
+import com.cesar.pokedex.data.local.entity.PokemonDetailEntity
+import com.cesar.pokedex.data.local.entity.PokemonEntity
+import com.cesar.pokedex.data.local.entity.PokemonEvolutionEntity
+import com.cesar.pokedex.data.remote.dto.StatSlot
 import io.mockk.coEvery
 import io.mockk.coJustRun
+import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -53,6 +58,7 @@ class PokemonRepositoryImplTest {
         coEvery { dao.getAllPokemon() } returns emptyList()
         coEvery { dao.getPokemonDetail(any()) } returns null
         coEvery { dao.getEvolutionInfo(any()) } returns null
+        coJustRun { dao.deleteAllPokemon() }
         coJustRun { dao.insertAllPokemon(any()) }
         coJustRun { dao.insertPokemonDetail(any()) }
         coJustRun { dao.insertEvolutionInfo(any()) }
@@ -574,6 +580,88 @@ class PokemonRepositoryImplTest {
         assertEquals("Level up", result.evolutions[1].trigger)
     }
 
+    @Test
+    fun `getPokemonDetail maps stats correctly`() = runTest {
+        stubDetailAndSpecies(
+            stats = listOf(
+                StatSlot(baseStat = 35, stat = NamedApiResource("hp", "")),
+                StatSlot(baseStat = 55, stat = NamedApiResource("attack", "")),
+                StatSlot(baseStat = 90, stat = NamedApiResource("special-attack", ""))
+            )
+        )
+
+        val result = repository.getPokemonDetail(25)
+
+        assertEquals(3, result.stats.size)
+        assertEquals("Hp", result.stats[0].name)
+        assertEquals(35, result.stats[0].baseStat)
+        assertEquals("Attack", result.stats[1].name)
+        assertEquals(55, result.stats[1].baseStat)
+        assertEquals("Special Attack", result.stats[2].name)
+        assertEquals(90, result.stats[2].baseStat)
+    }
+
+    @Test
+    fun `getPokemonDetail returns cached data when available`() = runTest {
+        val cachedJson = """{"id":25,"name":"Pikachu","imageUrl":"https://example.com/25.png","description":"Cached.","region":"Kanto","types":[],"abilities":[]}"""
+        coEvery { dao.getPokemonDetail(25) } returns PokemonDetailEntity(id = 25, json = cachedJson)
+
+        val result = repository.getPokemonDetail(25)
+
+        assertEquals(25, result.id)
+        assertEquals("Pikachu", result.name)
+        assertEquals("Cached.", result.description)
+        coVerify(exactly = 0) { api.getPokemonDetail(any()) }
+    }
+
+    @Test
+    fun `getPokemonList returns cached data when available`() = runTest {
+        coEvery { dao.getAllPokemon() } returns listOf(
+            PokemonEntity(id = 1, name = "Bulbasaur", imageUrl = "https://example.com/1.png", types = listOf("Grass"))
+        )
+
+        val result = repository.getPokemonList()
+
+        assertEquals(1, result.size)
+        assertEquals("Bulbasaur", result[0].name)
+        assertEquals(listOf("Grass"), result[0].types)
+        coVerify(exactly = 0) { api.getPokemonList(any()) }
+    }
+
+    @Test
+    fun `getPokemonList with forceRefresh skips cache`() = runTest {
+        coEvery { dao.getAllPokemon() } returns listOf(
+            PokemonEntity(id = 1, name = "Bulbasaur", imageUrl = "https://example.com/1.png", types = listOf("Grass"))
+        )
+        coEvery { api.getPokemonList(limit = 1) } returns PokemonListResponse(
+            count = 1,
+            results = listOf(PokemonDto("bulbasaur", "https://pokeapi.co/api/v2/pokemon-species/1/"))
+        )
+        coEvery { api.getPokemonList(limit = 1, offset = 0) } returns PokemonListResponse(
+            count = 1,
+            results = listOf(PokemonDto("bulbasaur", "https://pokeapi.co/api/v2/pokemon-species/1/"))
+        )
+        stubTypeListEmpty()
+
+        val result = repository.getPokemonList(forceRefresh = true)
+
+        assertEquals(1, result.size)
+        coVerify { dao.deleteAllPokemon() }
+        coVerify { api.getPokemonList(limit = 1) }
+    }
+
+    @Test
+    fun `getEvolutionInfo returns cached data when available`() = runTest {
+        val cachedJson = """{"evolutions":[],"varieties":[{"id":1,"name":"Bulbasaur","imageUrl":"https://example.com/1.png","isDefault":true}]}"""
+        coEvery { dao.getEvolutionInfo(1) } returns PokemonEvolutionEntity(id = 1, json = cachedJson)
+
+        val result = repository.getEvolutionInfo(1)
+
+        assertEquals(1, result.varieties.size)
+        assertEquals("Bulbasaur", result.varieties[0].name)
+        coVerify(exactly = 0) { api.getPokemonSpecies(any()) }
+    }
+
     // endregion
 
     // region Helpers
@@ -595,7 +683,8 @@ class PokemonRepositoryImplTest {
         generation: String = "generation-i",
         flavorTextEntries: List<FlavorTextEntry> = listOf(
             FlavorTextEntry("An electric mouse.", NamedApiResource("en", ""))
-        )
+        ),
+        stats: List<StatSlot> = emptyList()
     ) {
         coEvery { api.getPokemonDetail(25) } returns PokemonDetailResponse(
             id = 25,
@@ -609,7 +698,8 @@ class PokemonRepositoryImplTest {
             ),
             moves = moves,
             sprites = sprites,
-            cries = cries
+            cries = cries,
+            stats = stats
         )
         coEvery { api.getPokemonSpecies(25) } returns PokemonSpeciesResponse(
             flavorTextEntries = flavorTextEntries,

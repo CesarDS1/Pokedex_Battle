@@ -13,7 +13,9 @@
       "Bash(C:/Users/ingce/AndroidStudioProjects/Pokedex/gradlew.bat testDebugUnitTest)",
       "Bash(gradlew.bat assembleDebug:*)",
       "Bash(cmd /c:*)",
-      "Bash(.\\\\gradlew.bat assembleDebug:*)"
+      "Bash(.\\\\gradlew.bat assembleDebug:*)",
+      "Bash(cmd.exe:*)",
+      "Bash(powershell -c:*)"
     ]
   }
 }
