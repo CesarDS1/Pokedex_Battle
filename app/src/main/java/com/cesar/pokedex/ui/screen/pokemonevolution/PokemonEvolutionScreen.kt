@@ -1,6 +1,7 @@
 package com.cesar.pokedex.ui.screen.pokemonevolution
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,6 +49,7 @@ import com.cesar.pokedex.domain.model.PokemonVariety
 @Composable
 fun PokemonEvolutionScreen(
     onBackClick: () -> Unit,
+    onPokemonClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: PokemonEvolutionViewModel = hiltViewModel()
 ) {
@@ -108,6 +110,7 @@ fun PokemonEvolutionScreen(
                 EvolutionContent(
                     info = state.info,
                     currentPokemonId = state.currentPokemonId,
+                    onPokemonClick = onPokemonClick,
                     modifier = Modifier.padding(innerPadding)
                 )
             }
@@ -119,6 +122,7 @@ fun PokemonEvolutionScreen(
 private fun EvolutionContent(
     info: PokemonEvolutionInfo,
     currentPokemonId: Int,
+    onPokemonClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -142,7 +146,8 @@ private fun EvolutionContent(
         } else {
             EvolutionChainRow(
                 evolutions = info.evolutions,
-                currentPokemonId = currentPokemonId
+                currentPokemonId = currentPokemonId,
+                onPokemonClick = onPokemonClick
             )
         }
 
@@ -155,7 +160,10 @@ private fun EvolutionContent(
                 modifier = Modifier.padding(vertical = 12.dp)
             )
             altForms.forEach { variety ->
-                VarietyCard(variety = variety)
+                VarietyCard(
+                    variety = variety,
+                    onClick = { onPokemonClick(variety.id) }
+                )
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
@@ -168,6 +176,7 @@ private fun EvolutionContent(
 private fun EvolutionChainRow(
     evolutions: List<EvolutionStage>,
     currentPokemonId: Int,
+    onPokemonClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -199,7 +208,8 @@ private fun EvolutionChainRow(
             }
             EvolutionStageCard(
                 stage = stage,
-                isCurrent = stage.id == currentPokemonId
+                isCurrent = stage.id == currentPokemonId,
+                onClick = { onPokemonClick(stage.id) }
             )
         }
     }
@@ -209,6 +219,7 @@ private fun EvolutionChainRow(
 private fun EvolutionStageCard(
     stage: EvolutionStage,
     isCurrent: Boolean,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val borderModifier = if (isCurrent) {
@@ -225,6 +236,7 @@ private fun EvolutionStageCard(
         modifier = modifier
             .fillMaxWidth()
             .then(borderModifier)
+            .clickable(enabled = !isCurrent, onClick = onClick)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -253,8 +265,16 @@ private fun EvolutionStageCard(
 }
 
 @Composable
-private fun VarietyCard(variety: PokemonVariety, modifier: Modifier = Modifier) {
-    ElevatedCard(modifier = modifier.fillMaxWidth()) {
+private fun VarietyCard(
+    variety: PokemonVariety,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    ElevatedCard(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(12.dp)

@@ -48,7 +48,12 @@ fun PokedexNavHost(
             arguments = listOf(navArgument("pokemonId") { type = NavType.IntType })
         ) {
             PokemonEvolutionScreen(
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                onPokemonClick = { pokemonId ->
+                    navController.navigate("pokemon_detail/$pokemonId") {
+                        popUpTo("pokemon_detail/{pokemonId}") { inclusive = true }
+                    }
+                }
             )
         }
         composable(

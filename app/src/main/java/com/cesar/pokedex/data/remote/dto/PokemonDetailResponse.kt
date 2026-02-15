@@ -7,6 +7,9 @@ import kotlinx.serialization.Serializable
 data class PokemonDetailResponse(
     val id: Int,
     val name: String,
+    val species: NamedApiResource,
+    val height: Int,
+    val weight: Int,
     val types: List<PokemonTypeSlot>,
     val abilities: List<PokemonAbilitySlot>,
     val moves: List<MoveSlot> = emptyList(),

@@ -16,12 +16,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,6 +37,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -39,6 +46,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -47,6 +55,7 @@ import com.cesar.pokedex.R
 import coil.compose.AsyncImage
 import com.cesar.pokedex.domain.model.Pokemon
 import com.cesar.pokedex.ui.screen.pokemondetail.TypeBadge
+import com.cesar.pokedex.ui.screen.pokemondetail.typeColor
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -59,6 +68,9 @@ fun PokemonListScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val collapsedGenerations by viewModel.collapsedGenerations.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val selectedTypes by viewModel.selectedTypes.collectAsState()
+    val favoriteIds by viewModel.favoriteIds.collectAsState()
+    val showFavoritesOnly by viewModel.showFavoritesOnly.collectAsState()
 
     Scaffold(
         topBar = {
@@ -74,6 +86,15 @@ fun PokemonListScreen(
                             modifier = Modifier.size(24.dp)
                         )
                         Text(stringResource(R.string.app_name))
+                    }
+                },
+                actions = {
+                    IconButton(onClick = viewModel::toggleShowFavoritesOnly) {
+                        Icon(
+                            imageVector = if (showFavoritesOnly) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = stringResource(R.string.favorites),
+                            tint = if (showFavoritesOnly) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
             )
@@ -109,6 +130,12 @@ fun PokemonListScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+
+            TypeFilterRow(
+                selectedTypes = selectedTypes,
+                onToggleType = viewModel::toggleTypeFilter,
+                onClearTypes = viewModel::clearTypeFilters
             )
 
             when (val state = uiState) {
@@ -178,7 +205,9 @@ fun PokemonListScreen(
                                         items(pokemonList, key = { it.id }) { pokemon ->
                                             PokemonListItem(
                                                 pokemon = pokemon,
-                                                onClick = { onPokemonClick(pokemon.id) }
+                                                isFavorite = pokemon.id in favoriteIds,
+                                                onClick = { onPokemonClick(pokemon.id) },
+                                                onFavoriteClick = { viewModel.toggleFavorite(pokemon.id) }
                                             )
                                         }
                                         item { Spacer(modifier = Modifier.height(8.dp)) }
@@ -234,7 +263,9 @@ private fun GenerationHeader(
 @Composable
 private fun PokemonListItem(
     pokemon: Pokemon,
+    isFavorite: Boolean,
     onClick: () -> Unit,
+    onFavoriteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -250,7 +281,10 @@ private fun PokemonListItem(
             contentDescription = pokemon.name,
             modifier = Modifier.size(96.dp)
         )
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier.weight(1f)
+        ) {
             Text(
                 text = "#${pokemon.id.toString().padStart(3, '0')}",
                 style = MaterialTheme.typography.labelMedium,
@@ -266,6 +300,53 @@ private fun PokemonListItem(
                         TypeBadge(typeName = typeName)
                     }
                 }
+            }
+        }
+        IconButton(onClick = onFavoriteClick) {
+            Icon(
+                imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                contentDescription = stringResource(R.string.favorites),
+                tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun TypeFilterRow(
+    selectedTypes: Set<String>,
+    onToggleType: (String) -> Unit,
+    onClearTypes: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyRow(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        if (selectedTypes.isNotEmpty()) {
+            item {
+                TextButton(onClick = onClearTypes) {
+                    Text(stringResource(R.string.clear_filters))
+                }
+            }
+        }
+        items(ALL_POKEMON_TYPES) { type ->
+            val isSelected = type in selectedTypes
+            val color = typeColor(type)
+            val alpha = if (isSelected) 1f else 0.4f
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(color.copy(alpha = alpha))
+                    .clickable { onToggleType(type) }
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    text = type,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.White
+                )
             }
         }
     }

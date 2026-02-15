@@ -6,7 +6,9 @@ import com.cesar.pokedex.domain.repository.PokemonRepository
 import com.cesar.pokedex.util.MainDispatcherRule
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -18,7 +20,9 @@ class PokemonListViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val repository: PokemonRepository = mockk()
+    private val repository: PokemonRepository = mockk {
+        every { getFavoriteIds() } returns flowOf(emptySet())
+    }
 
     private fun createViewModel(): PokemonListViewModel {
         return PokemonListViewModel(repository)

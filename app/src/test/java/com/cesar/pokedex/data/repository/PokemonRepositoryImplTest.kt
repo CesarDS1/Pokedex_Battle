@@ -689,6 +689,9 @@ class PokemonRepositoryImplTest {
         coEvery { api.getPokemonDetail(25) } returns PokemonDetailResponse(
             id = 25,
             name = "pikachu",
+            species = NamedApiResource("pikachu", "https://pokeapi.co/api/v2/pokemon-species/25/"),
+            height = 4,
+            weight = 60,
             types = listOf(
                 PokemonTypeSlot(1, NamedApiResource("electric", ""))
             ),

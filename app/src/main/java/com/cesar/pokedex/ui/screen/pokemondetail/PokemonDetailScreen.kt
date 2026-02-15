@@ -1,5 +1,6 @@
 package com.cesar.pokedex.ui.screen.pokemondetail
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,11 +12,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,15 +39,16 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
@@ -62,6 +68,7 @@ fun PokemonDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val isPlayingCry by viewModel.isPlayingCry.collectAsState()
+    val isFavorite by viewModel.isFavorite.collectAsState()
 
     Scaffold(
         topBar = {
@@ -78,6 +85,15 @@ fun PokemonDetailScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = viewModel::toggleFavorite) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = stringResource(R.string.favorites),
+                            tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -143,12 +159,13 @@ private fun PokemonDetailContent(
     onPlayCry: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     val tabs = listOf(
         stringResource(R.string.tab_about),
         stringResource(R.string.tab_stats),
         stringResource(R.string.tab_matchups)
     )
+    val pagerState = rememberPagerState { tabs.size }
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -201,24 +218,29 @@ private fun PokemonDetailContent(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        TabRow(selectedTabIndex = selectedTab) {
+        TabRow(selectedTabIndex = pagerState.currentPage) {
             tabs.forEachIndexed { index, title ->
                 Tab(
-                    selected = selectedTab == index,
-                    onClick = { selectedTab = index },
+                    selected = pagerState.currentPage == index,
+                    onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
                     text = { Text(title) }
                 )
             }
         }
 
-        when (selectedTab) {
-            0 -> AboutTab(
-                pokemon = pokemon,
-                onEvolutionClick = onEvolutionClick,
-                onMovesClick = onMovesClick
-            )
-            1 -> StatsTab(stats = pokemon.stats)
-            2 -> MatchupsTab(types = pokemon.types)
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize()
+        ) { page ->
+            when (page) {
+                0 -> AboutTab(
+                    pokemon = pokemon,
+                    onEvolutionClick = onEvolutionClick,
+                    onMovesClick = onMovesClick
+                )
+                1 -> StatsTab(stats = pokemon.stats)
+                2 -> MatchupsTab(types = pokemon.types)
+            }
         }
     }
 }
@@ -247,6 +269,9 @@ private fun AboutTab(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        PokemonInfoCard(pokemon = pokemon)
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         if (pokemon.description.isNotBlank()) {
             ElevatedCard(
@@ -278,6 +303,74 @@ private fun AboutTab(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun PokemonInfoCard(pokemon: PokemonDetail, modifier: Modifier = Modifier) {
+    val heightM = pokemon.heightDecimeters / 10f
+    val weightKg = pokemon.weightHectograms / 10f
+
+    ElevatedCard(modifier = modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.height),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = stringResource(R.string.height_format, heightM),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.weight),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = stringResource(R.string.weight_format, weightKg),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+
+            Text(
+                text = stringResource(R.string.abilities),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                pokemon.abilities.forEach { ability ->
+                    val label = if (ability.isHidden) "${ability.name} (${stringResource(R.string.hidden)})" else ability.name
+                    Text(text = label, style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+
+            Text(
+                text = stringResource(R.string.gender),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = formatGender(pokemon.genderRate),
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
+}
+
+private fun formatGender(genderRate: Int): String = when (genderRate) {
+    -1 -> "Genderless"
+    0 -> "100% Male"
+    8 -> "100% Female"
+    else -> {
+        val femalePercent = genderRate * 12.5f
+        val malePercent = 100f - femalePercent
+        "%.1f%% Male, %.1f%% Female".format(malePercent, femalePercent)
     }
 }
 
@@ -408,11 +501,48 @@ private fun MatchupSection(label: String, types: List<String>) {
         style = MaterialTheme.typography.labelMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    WrappingRow(
+        horizontalSpacing = 4.dp,
+        verticalSpacing = 4.dp,
         modifier = Modifier.padding(vertical = 4.dp)
     ) {
         types.forEach { TypeBadge(typeName = it) }
+    }
+}
+
+@Composable
+private fun WrappingRow(
+    modifier: Modifier = Modifier,
+    horizontalSpacing: Dp = 0.dp,
+    verticalSpacing: Dp = 0.dp,
+    content: @Composable () -> Unit
+) {
+    Layout(content = content, modifier = modifier) { measurables, constraints ->
+        val hSpacingPx = horizontalSpacing.roundToPx()
+        val vSpacingPx = verticalSpacing.roundToPx()
+        val placeables = measurables.map { it.measure(constraints.copy(minWidth = 0)) }
+
+        var x = 0
+        var y = 0
+        var rowHeight = 0
+        val positions = placeables.map { placeable ->
+            if (x > 0 && x + placeable.width > constraints.maxWidth) {
+                x = 0
+                y += rowHeight + vSpacingPx
+                rowHeight = 0
+            }
+            val pos = Pair(x, y)
+            x += placeable.width + hSpacingPx
+            rowHeight = maxOf(rowHeight, placeable.height)
+            pos
+        }
+
+        val totalHeight = if (placeables.isEmpty()) 0 else y + rowHeight
+        layout(constraints.maxWidth, totalHeight) {
+            placeables.forEachIndexed { i, placeable ->
+                placeable.placeRelative(positions[i].first, positions[i].second)
+            }
+        }
     }
 }
 

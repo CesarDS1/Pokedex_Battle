@@ -8,7 +8,8 @@ data class PokemonSpeciesResponse(
     @SerialName("flavor_text_entries") val flavorTextEntries: List<FlavorTextEntry>,
     val generation: NamedApiResource,
     @SerialName("evolution_chain") val evolutionChain: ApiResource?,
-    val varieties: List<PokemonVarietyEntry>
+    val varieties: List<PokemonVarietyEntry>,
+    @SerialName("gender_rate") val genderRate: Int = -1
 )
 
 @Serializable

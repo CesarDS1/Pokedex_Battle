@@ -1,6 +1,7 @@
 package com.cesar.pokedex.data.repository
 
 import com.cesar.pokedex.data.local.dao.PokemonDao
+import com.cesar.pokedex.data.local.entity.FavoritePokemonEntity
 import com.cesar.pokedex.data.local.entity.PokemonDetailEntity
 import com.cesar.pokedex.data.local.entity.PokemonEntity
 import com.cesar.pokedex.data.local.entity.PokemonEvolutionEntity
@@ -19,6 +20,8 @@ import com.cesar.pokedex.domain.repository.PokemonRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
@@ -88,11 +91,9 @@ class PokemonRepositoryImpl @Inject constructor(
     }
 
     private suspend fun fetchAndCachePokemonDetail(id: Int): PokemonDetail = coroutineScope {
-        val detailDeferred = async { api.getPokemonDetail(id) }
-        val speciesDeferred = async { api.getPokemonSpecies(id) }
-
-        val detail = detailDeferred.await()
-        val species = speciesDeferred.await()
+        val detail = api.getPokemonDetail(id)
+        val speciesId = detail.species.url.trimEnd('/').substringAfterLast('/').toInt()
+        val species = api.getPokemonSpecies(speciesId)
 
         val typeResponses = detail.types.map { slot ->
             async { api.getType(slot.type.name) }
@@ -181,11 +182,14 @@ class PokemonRepositoryImpl @Inject constructor(
         }
 
         val pokemonDetail = PokemonDetail(
-            id = detail.id,
+            id = speciesId,
             name = detail.name.replaceFirstChar { it.uppercase() },
             imageUrl = imageUrl,
             description = description,
             region = region,
+            heightDecimeters = detail.height,
+            weightHectograms = detail.weight,
+            genderRate = species.genderRate,
             types = types,
             abilities = abilities,
             moves = moves,
@@ -277,6 +281,17 @@ class PokemonRepositoryImpl @Inject constructor(
     private fun formatVarietyName(raw: String): String {
         return raw.replace("-", " ").split(" ").joinToString(" ") {
             it.replaceFirstChar { c -> c.uppercase() }
+        }
+    }
+
+    override fun getFavoriteIds(): Flow<Set<Int>> =
+        dao.getFavoriteIds().map { it.toSet() }
+
+    override suspend fun toggleFavorite(pokemonId: Int) {
+        if (dao.isFavorite(pokemonId)) {
+            dao.deleteFavorite(pokemonId)
+        } else {
+            dao.insertFavorite(FavoritePokemonEntity(pokemonId))
         }
     }
 

@@ -16,7 +16,12 @@
       "Bash(.\\\\gradlew.bat assembleDebug:*)",
       "Bash(cmd.exe:*)",
       "Bash(powershell -c:*)",
-      "WebFetch(domain:pokeapi.co)"
+      "WebFetch(domain:pokeapi.co)",
+      "Bash(chmod:*)",
+      "Bash(/Users/cesarnr/AndroidStudioProjects/Pokedex_Battle/gradlew:*)",
+      "Bash(./gradlew test:*)",
+      "Bash(./gradlew assembleDebug:*)",
+      "Bash(./gradlew compileDebugUnitTestKotlin:*)"
     ]
   }
 }

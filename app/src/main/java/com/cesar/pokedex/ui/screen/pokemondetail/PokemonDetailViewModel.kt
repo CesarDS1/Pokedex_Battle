@@ -9,7 +9,10 @@ import com.cesar.pokedex.domain.model.PokemonDetail
 import com.cesar.pokedex.domain.repository.PokemonRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,6 +26,10 @@ class PokemonDetailViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow<PokemonDetailUiState>(PokemonDetailUiState.Loading)
     val uiState: StateFlow<PokemonDetailUiState> = _uiState
+
+    val isFavorite: StateFlow<Boolean> = repository.getFavoriteIds()
+        .map { pokemonId in it }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     private var mediaPlayer: MediaPlayer? = null
     private val _isPlayingCry = MutableStateFlow(false)
@@ -41,6 +48,12 @@ class PokemonDetailViewModel @Inject constructor(
             } catch (e: Exception) {
                 _uiState.value = PokemonDetailUiState.Error(e.message ?: "Unknown error")
             }
+        }
+    }
+
+    fun toggleFavorite() {
+        viewModelScope.launch {
+            repository.toggleFavorite(pokemonId)
         }
     }
 
