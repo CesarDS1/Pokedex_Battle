@@ -1,7 +1,9 @@
 package com.cesar.pokedex.data.remote
 
+import com.cesar.pokedex.data.remote.dto.AbilityResponse
 import com.cesar.pokedex.data.remote.dto.MoveResponse
 import com.cesar.pokedex.data.remote.dto.EvolutionChainResponse
+import com.cesar.pokedex.data.remote.dto.StatResponse
 import com.cesar.pokedex.data.remote.dto.PokemonDetailResponse
 import com.cesar.pokedex.data.remote.dto.PokemonListResponse
 import com.cesar.pokedex.data.remote.dto.PokemonSpeciesResponse
@@ -40,6 +42,14 @@ interface PokeApiService {
     // Fetches a single move's data: name and type (used to display level-up moves)
     @GET("move/{name}")
     suspend fun getMove(@Path("name") name: String): MoveResponse
+
+    // Fetches a single ability's data: name and localized names
+    @GET("ability/{name}")
+    suspend fun getAbility(@Path("name") name: String): AbilityResponse
+
+    // Fetches a single stat's data: name and localized names
+    @GET("stat/{name}")
+    suspend fun getStat(@Path("name") name: String): StatResponse
 
     // Fetches an evolution chain: the full tree of species and their evolution triggers
     @GET("evolution-chain/{id}")

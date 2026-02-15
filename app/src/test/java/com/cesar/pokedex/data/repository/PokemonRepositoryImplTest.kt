@@ -1,6 +1,8 @@
 package com.cesar.pokedex.data.repository
 
+import com.cesar.pokedex.data.locale.DeviceLocaleProvider
 import com.cesar.pokedex.data.remote.PokeApiService
+import com.cesar.pokedex.data.remote.dto.AbilityResponse
 import com.cesar.pokedex.data.remote.dto.ApiResource
 import com.cesar.pokedex.data.remote.dto.ChainLink
 import com.cesar.pokedex.data.remote.dto.Cries
@@ -8,6 +10,7 @@ import com.cesar.pokedex.data.remote.dto.DamageRelations
 import com.cesar.pokedex.data.remote.dto.EvolutionChainResponse
 import com.cesar.pokedex.data.remote.dto.EvolutionDetail
 import com.cesar.pokedex.data.remote.dto.FlavorTextEntry
+import com.cesar.pokedex.data.remote.dto.LocalizedName
 import com.cesar.pokedex.data.remote.dto.MoveResponse
 import com.cesar.pokedex.data.remote.dto.MoveSlot
 import com.cesar.pokedex.data.remote.dto.MoveVersionGroupDetail
@@ -22,6 +25,7 @@ import com.cesar.pokedex.data.remote.dto.PokemonSpeciesResponse
 import com.cesar.pokedex.data.remote.dto.PokemonTypeSlot
 import com.cesar.pokedex.data.remote.dto.PokemonVarietyEntry
 import com.cesar.pokedex.data.remote.dto.Sprites
+import com.cesar.pokedex.data.remote.dto.StatResponse
 import com.cesar.pokedex.data.remote.dto.TypePokemonSlot
 import com.cesar.pokedex.data.remote.dto.TypeResponse
 import com.cesar.pokedex.data.local.dao.PokemonDao
@@ -32,6 +36,7 @@ import com.cesar.pokedex.data.remote.dto.StatSlot
 import io.mockk.coEvery
 import io.mockk.coJustRun
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -43,6 +48,7 @@ class PokemonRepositoryImplTest {
 
     private val api: PokeApiService = mockk()
     private val dao: PokemonDao = mockk()
+    private val localeProvider: DeviceLocaleProvider = mockk()
     private lateinit var repository: PokemonRepositoryImpl
 
     // Reusable empty damage relations
@@ -55,6 +61,7 @@ class PokemonRepositoryImplTest {
 
     @Before
     fun setUp() {
+        every { localeProvider.getLanguageCode() } returns "en"
         coEvery { dao.getAllPokemon() } returns emptyList()
         coEvery { dao.getPokemonDetail(any()) } returns null
         coEvery { dao.getEvolutionInfo(any()) } returns null
@@ -62,7 +69,7 @@ class PokemonRepositoryImplTest {
         coJustRun { dao.insertAllPokemon(any()) }
         coJustRun { dao.insertPokemonDetail(any()) }
         coJustRun { dao.insertEvolutionInfo(any()) }
-        repository = PokemonRepositoryImpl(api, dao)
+        repository = PokemonRepositoryImpl(api, dao, localeProvider)
     }
 
     // region getPokemonList
@@ -138,6 +145,9 @@ class PokemonRepositoryImplTest {
                     pokemon = NamedApiResource("bulbasaur", "https://pokeapi.co/api/v2/pokemon/1/"),
                     slot = 1
                 )
+            ),
+            names = listOf(
+                LocalizedName("Grass", NamedApiResource("en", ""))
             )
         )
         coEvery { api.getType("poison") } returns TypeResponse(
@@ -148,6 +158,9 @@ class PokemonRepositoryImplTest {
                     pokemon = NamedApiResource("bulbasaur", "https://pokeapi.co/api/v2/pokemon/1/"),
                     slot = 2
                 )
+            ),
+            names = listOf(
+                LocalizedName("Poison", NamedApiResource("en", ""))
             )
         )
 
@@ -214,7 +227,7 @@ class PokemonRepositoryImplTest {
         assertEquals(2, result.abilities.size)
         assertEquals("Static", result.abilities[0].name)
         assertEquals(false, result.abilities[0].isHidden)
-        assertEquals("Lightning rod", result.abilities[1].name)
+        assertEquals("Lightning Rod", result.abilities[1].name)
         assertEquals(true, result.abilities[1].isHidden)
     }
 
@@ -273,8 +286,16 @@ class PokemonRepositoryImplTest {
                 )
             )
         )
-        coEvery { api.getMove("growl") } returns MoveResponse("growl", NamedApiResource("normal", ""))
-        coEvery { api.getMove("thunderbolt") } returns MoveResponse("thunderbolt", NamedApiResource("electric", ""))
+        coEvery { api.getMove("growl") } returns MoveResponse(
+            "growl",
+            NamedApiResource("normal", ""),
+            names = listOf(LocalizedName("Growl", NamedApiResource("en", "")))
+        )
+        coEvery { api.getMove("thunderbolt") } returns MoveResponse(
+            "thunderbolt",
+            NamedApiResource("electric", ""),
+            names = listOf(LocalizedName("Thunderbolt", NamedApiResource("en", "")))
+        )
 
         val result = repository.getPokemonDetail(25)
 
@@ -372,6 +393,11 @@ class PokemonRepositoryImplTest {
 
     @Test
     fun `getEvolutionInfo returns evolution chain`() = runTest {
+        // flattenChain fetches species for each stage, so we stub all of them.
+        // The root species (id=1) is fetched first in fetchAndCacheEvolutionInfo,
+        // so it needs evolutionChain and varieties too.
+        stubEvolutionSpecies(2, "Ivysaur")
+        stubEvolutionSpecies(3, "Venusaur")
         coEvery { api.getPokemonSpecies(1) } returns PokemonSpeciesResponse(
             flavorTextEntries = emptyList(),
             generation = NamedApiResource("generation-i", ""),
@@ -381,7 +407,8 @@ class PokemonRepositoryImplTest {
                     isDefault = true,
                     pokemon = NamedApiResource("bulbasaur", "https://pokeapi.co/api/v2/pokemon/1/")
                 )
-            )
+            ),
+            names = listOf(LocalizedName("Bulbasaur", NamedApiResource("en", "")))
         )
         coEvery { api.getEvolutionChain(1) } returns EvolutionChainResponse(
             chain = ChainLink(
@@ -472,13 +499,16 @@ class PokemonRepositoryImplTest {
 
     @Test
     fun `getEvolutionInfo formats trade trigger`() = runTest {
+        stubEvolutionSpecies(67, "Machoke")
+        stubEvolutionSpecies(68, "Machamp")
         coEvery { api.getPokemonSpecies(66) } returns PokemonSpeciesResponse(
             flavorTextEntries = emptyList(),
             generation = NamedApiResource("generation-i", ""),
             evolutionChain = ApiResource("https://pokeapi.co/api/v2/evolution-chain/33/"),
             varieties = listOf(
                 PokemonVarietyEntry(true, NamedApiResource("machop", "https://pokeapi.co/api/v2/pokemon/66/"))
-            )
+            ),
+            names = listOf(LocalizedName("Machop", NamedApiResource("en", "")))
         )
         coEvery { api.getEvolutionChain(33) } returns EvolutionChainResponse(
             chain = ChainLink(
@@ -514,13 +544,15 @@ class PokemonRepositoryImplTest {
 
     @Test
     fun `getEvolutionInfo formats use-item trigger`() = runTest {
+        stubEvolutionSpecies(134, "Vaporeon")
         coEvery { api.getPokemonSpecies(133) } returns PokemonSpeciesResponse(
             flavorTextEntries = emptyList(),
             generation = NamedApiResource("generation-i", ""),
             evolutionChain = ApiResource("https://pokeapi.co/api/v2/evolution-chain/67/"),
             varieties = listOf(
                 PokemonVarietyEntry(true, NamedApiResource("eevee", "https://pokeapi.co/api/v2/pokemon/133/"))
-            )
+            ),
+            names = listOf(LocalizedName("Eevee", NamedApiResource("en", "")))
         )
         coEvery { api.getEvolutionChain(67) } returns EvolutionChainResponse(
             chain = ChainLink(
@@ -548,13 +580,15 @@ class PokemonRepositoryImplTest {
 
     @Test
     fun `getEvolutionInfo formats level-up without min level`() = runTest {
+        stubEvolutionSpecies(196, "Espeon")
         coEvery { api.getPokemonSpecies(133) } returns PokemonSpeciesResponse(
             flavorTextEntries = emptyList(),
             generation = NamedApiResource("generation-i", ""),
             evolutionChain = ApiResource("https://pokeapi.co/api/v2/evolution-chain/67/"),
             varieties = listOf(
                 PokemonVarietyEntry(true, NamedApiResource("eevee", "https://pokeapi.co/api/v2/pokemon/133/"))
-            )
+            ),
+            names = listOf(LocalizedName("Eevee", NamedApiResource("en", "")))
         )
         coEvery { api.getEvolutionChain(67) } returns EvolutionChainResponse(
             chain = ChainLink(
@@ -589,11 +623,23 @@ class PokemonRepositoryImplTest {
                 StatSlot(baseStat = 90, stat = NamedApiResource("special-attack", ""))
             )
         )
+        coEvery { api.getStat("hp") } returns StatResponse(
+            "hp",
+            names = listOf(LocalizedName("HP", NamedApiResource("en", "")))
+        )
+        coEvery { api.getStat("attack") } returns StatResponse(
+            "attack",
+            names = listOf(LocalizedName("Attack", NamedApiResource("en", "")))
+        )
+        coEvery { api.getStat("special-attack") } returns StatResponse(
+            "special-attack",
+            names = listOf(LocalizedName("Special Attack", NamedApiResource("en", "")))
+        )
 
         val result = repository.getPokemonDetail(25)
 
         assertEquals(3, result.stats.size)
-        assertEquals("Hp", result.stats[0].name)
+        assertEquals("HP", result.stats[0].name)
         assertEquals(35, result.stats[0].baseStat)
         assertEquals("Attack", result.stats[1].name)
         assertEquals(55, result.stats[1].baseStat)
@@ -673,6 +719,16 @@ class PokemonRepositoryImplTest {
         )
     }
 
+    private fun stubEvolutionSpecies(id: Int, englishName: String) {
+        coEvery { api.getPokemonSpecies(id) } returns PokemonSpeciesResponse(
+            flavorTextEntries = emptyList(),
+            generation = NamedApiResource("generation-i", ""),
+            evolutionChain = null,
+            varieties = emptyList(),
+            names = listOf(LocalizedName(englishName, NamedApiResource("en", "")))
+        )
+    }
+
     private fun stubDetailAndSpecies(
         cries: Cries? = Cries(latest = "https://example.com/cries/25.ogg"),
         moves: List<MoveSlot> = emptyList(),
@@ -708,7 +764,8 @@ class PokemonRepositoryImplTest {
             flavorTextEntries = flavorTextEntries,
             generation = NamedApiResource(generation, ""),
             evolutionChain = null,
-            varieties = emptyList()
+            varieties = emptyList(),
+            names = listOf(LocalizedName("Pikachu", NamedApiResource("en", "")))
         )
         coEvery { api.getType("electric") } returns TypeResponse(
             name = "electric",
@@ -717,8 +774,32 @@ class PokemonRepositoryImplTest {
                 doubleDamageTo = listOf(NamedApiResource("water", "")),
                 halfDamageFrom = listOf(NamedApiResource("steel", "")),
                 halfDamageTo = listOf(NamedApiResource("grass", ""))
-            )
+            ),
+            names = listOf(LocalizedName("Electric", NamedApiResource("en", "")))
         )
+        coEvery { api.getAbility("static") } returns AbilityResponse(
+            "static",
+            names = listOf(LocalizedName("Static", NamedApiResource("en", "")))
+        )
+        coEvery { api.getAbility("lightning-rod") } returns AbilityResponse(
+            "lightning-rod",
+            names = listOf(LocalizedName("Lightning Rod", NamedApiResource("en", "")))
+        )
+        // Default empty stats stubs
+        if (stats.isEmpty()) return
+        for (stat in stats) {
+            coEvery { api.getStat(stat.stat.name) } returns StatResponse(
+                stat.stat.name,
+                names = listOf(
+                    LocalizedName(
+                        stat.stat.name.replace("-", " ").split(" ").joinToString(" ") {
+                            it.replaceFirstChar { c -> c.uppercase() }
+                        },
+                        NamedApiResource("en", "")
+                    )
+                )
+            )
+        }
     }
 
     // endregion

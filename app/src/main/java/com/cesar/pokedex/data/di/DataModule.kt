@@ -2,6 +2,7 @@ package com.cesar.pokedex.data.di
 
 import android.content.Context
 import androidx.room.Room
+import com.cesar.pokedex.data.locale.DeviceLocaleProvider
 import com.cesar.pokedex.data.local.PokedexDatabase
 import com.cesar.pokedex.data.local.dao.PokemonDao
 import com.cesar.pokedex.data.remote.PokeApiService
@@ -63,6 +64,10 @@ object DataModule {
 
     @Provides
     @Singleton
-    fun providePokemonRepository(api: PokeApiService, dao: PokemonDao): PokemonRepository =
-        PokemonRepositoryImpl(api, dao)
+    fun providePokemonRepository(
+        api: PokeApiService,
+        dao: PokemonDao,
+        localeProvider: DeviceLocaleProvider
+    ): PokemonRepository =
+        PokemonRepositoryImpl(api, dao, localeProvider)
 }

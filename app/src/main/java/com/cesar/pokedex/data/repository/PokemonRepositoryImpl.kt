@@ -1,5 +1,6 @@
 package com.cesar.pokedex.data.repository
 
+import com.cesar.pokedex.data.locale.DeviceLocaleProvider
 import com.cesar.pokedex.data.local.dao.PokemonDao
 import com.cesar.pokedex.data.local.entity.FavoritePokemonEntity
 import com.cesar.pokedex.data.local.entity.PokemonDetailEntity
@@ -7,6 +8,7 @@ import com.cesar.pokedex.data.local.entity.PokemonEntity
 import com.cesar.pokedex.data.local.entity.PokemonEvolutionEntity
 import com.cesar.pokedex.data.remote.PokeApiService
 import com.cesar.pokedex.data.remote.dto.ChainLink
+import com.cesar.pokedex.data.remote.dto.LocalizedName
 import com.cesar.pokedex.domain.model.Ability
 import com.cesar.pokedex.domain.model.Move
 import com.cesar.pokedex.domain.model.PokemonStat
@@ -28,7 +30,8 @@ import javax.inject.Inject
 
 class PokemonRepositoryImpl @Inject constructor(
     private val api: PokeApiService,
-    private val dao: PokemonDao
+    private val dao: PokemonDao,
+    private val localeProvider: DeviceLocaleProvider
 ) : PokemonRepository {
 
     private val json = Json { ignoreUnknownKeys = true }
@@ -45,9 +48,10 @@ class PokemonRepositoryImpl @Inject constructor(
     }
 
     private suspend fun fetchAndCachePokemonList(): List<Pokemon> = coroutineScope {
+        val lang = localeProvider.getLanguageCode()
         val countResponse = api.getPokemonList(limit = 1)
         val responseDeferred = async { api.getPokemonList(limit = countResponse.count) }
-        val typeMapDeferred = async { buildTypeMap() }
+        val typeMapDeferred = async { buildTypeMap(lang) }
 
         val response = responseDeferred.await()
         val typeMap = typeMapDeferred.await()
@@ -66,7 +70,7 @@ class PokemonRepositoryImpl @Inject constructor(
         pokemonList
     }
 
-    private suspend fun buildTypeMap(): Map<Int, List<String>> = coroutineScope {
+    private suspend fun buildTypeMap(lang: String): Map<Int, List<String>> = coroutineScope {
         val typeList = api.getTypeList()
         val typeResponses = typeList.results.map { dto ->
             async { api.getType(dto.name) }
@@ -74,9 +78,10 @@ class PokemonRepositoryImpl @Inject constructor(
 
         val typeMap = mutableMapOf<Int, MutableList<Pair<Int, String>>>()
         for (typeResponse in typeResponses) {
+            val localizedTypeName = typeResponse.names.localized(lang) ?: typeResponse.name
             for (slot in typeResponse.pokemon) {
                 val pokemonId = slot.pokemon.url.trimEnd('/').substringAfterLast('/').toIntOrNull() ?: continue
-                typeMap.getOrPut(pokemonId) { mutableListOf() }.add(slot.slot to typeResponse.name)
+                typeMap.getOrPut(pokemonId) { mutableListOf() }.add(slot.slot to localizedTypeName)
             }
         }
         typeMap.mapValues { (_, slots) -> slots.sortedBy { it.first }.map { it.second } }
@@ -91,6 +96,7 @@ class PokemonRepositoryImpl @Inject constructor(
     }
 
     private suspend fun fetchAndCachePokemonDetail(id: Int): PokemonDetail = coroutineScope {
+        val lang = localeProvider.getLanguageCode()
         val detail = api.getPokemonDetail(id)
         val speciesId = detail.species.url.trimEnd('/').substringAfterLast('/').toInt()
         val species = api.getPokemonSpecies(speciesId)
@@ -100,13 +106,17 @@ class PokemonRepositoryImpl @Inject constructor(
         }.awaitAll()
 
         val description = species.flavorTextEntries
-            .firstOrNull { it.language.name == "en" }
+            .firstOrNull { it.language.name == lang }
             ?.flavorText
-            ?.replace("\n", " ")
-            ?.replace("\u000c", " ")
-            ?.replace("  ", " ")
-            ?.trim()
-            ?: ""
+            ?: species.flavorTextEntries
+                .firstOrNull { it.language.name == "en" }
+                ?.flavorText
+                ?: ""
+        val cleanDescription = description
+            .replace("\n", " ")
+            .replace("\u000c", " ")
+            .replace("  ", " ")
+            .trim()
 
         val region = when (species.generation.name) {
             "generation-i" -> "Kanto"
@@ -126,8 +136,10 @@ class PokemonRepositoryImpl @Inject constructor(
             ?: ""
 
         val types = typeResponses.map { typeResponse ->
+            val localizedTypeName = typeResponse.names.localized(lang)
+                ?: typeResponse.name.replaceFirstChar { it.uppercase() }
             PokemonType(
-                name = typeResponse.name.replaceFirstChar { it.uppercase() },
+                name = localizedTypeName.replaceFirstChar { it.uppercase() },
                 weaknesses = typeResponse.damageRelations.doubleDamageFrom.map {
                     it.name.replaceFirstChar { c -> c.uppercase() }
                 },
@@ -143,9 +155,15 @@ class PokemonRepositoryImpl @Inject constructor(
             )
         }
 
-        val abilities = detail.abilities.map { slot ->
+        val abilityResponses = detail.abilities.map { slot ->
+            async { api.getAbility(slot.ability.name) }
+        }.awaitAll()
+
+        val abilities = detail.abilities.zip(abilityResponses) { slot, abilityResponse ->
+            val localizedName = abilityResponse.names.localized(lang)
+                ?: slot.ability.name.replaceFirstChar { it.uppercase() }.replace("-", " ")
             Ability(
-                name = slot.ability.name.replaceFirstChar { it.uppercase() }.replace("-", " "),
+                name = localizedName,
                 isHidden = slot.isHidden
             )
         }
@@ -162,30 +180,41 @@ class PokemonRepositoryImpl @Inject constructor(
             async { api.getMove(moveName) }
         }.awaitAll()
 
-        val moves = levelUpSlots.zip(moveResponses) { (moveName, level), moveResponse ->
-            Move(
-                name = moveName.replace("-", " ").split(" ").joinToString(" ") {
+        val moves = levelUpSlots.zip(moveResponses) { (_, level), moveResponse ->
+            val localizedMoveName = moveResponse.names.localized(lang)
+                ?: moveResponse.name.replace("-", " ").split(" ").joinToString(" ") {
                     it.replaceFirstChar { c -> c.uppercase() }
-                },
+                }
+            Move(
+                name = localizedMoveName,
                 level = level,
                 type = moveResponse.type.name.replaceFirstChar { it.uppercase() }
             )
         }.sortedWith(compareBy<Move> { it.level }.thenBy { it.name })
 
-        val stats = detail.stats.map { slot ->
-            PokemonStat(
-                name = slot.stat.name.replace("-", " ").split(" ").joinToString(" ") {
+        val statResponses = detail.stats.map { slot ->
+            async { api.getStat(slot.stat.name) }
+        }.awaitAll()
+
+        val stats = detail.stats.zip(statResponses) { slot, statResponse ->
+            val localizedStatName = statResponse.names.localized(lang)
+                ?: slot.stat.name.replace("-", " ").split(" ").joinToString(" ") {
                     it.replaceFirstChar { c -> c.uppercase() }
-                },
+                }
+            PokemonStat(
+                name = localizedStatName,
                 baseStat = slot.baseStat
             )
         }
 
+        val localizedPokemonName = species.names.localized(lang)
+            ?: detail.name.replaceFirstChar { it.uppercase() }
+
         val pokemonDetail = PokemonDetail(
             id = speciesId,
-            name = detail.name.replaceFirstChar { it.uppercase() },
+            name = localizedPokemonName,
             imageUrl = imageUrl,
-            description = description,
+            description = cleanDescription,
             region = region,
             heightDecimeters = detail.height,
             weightHectograms = detail.weight,
@@ -209,7 +238,8 @@ class PokemonRepositoryImpl @Inject constructor(
         return fetchAndCacheEvolutionInfo(id)
     }
 
-    private suspend fun fetchAndCacheEvolutionInfo(id: Int): PokemonEvolutionInfo {
+    private suspend fun fetchAndCacheEvolutionInfo(id: Int): PokemonEvolutionInfo = coroutineScope {
+        val lang = localeProvider.getLanguageCode()
         val species = api.getPokemonSpecies(id)
 
         val evolutions = mutableListOf<EvolutionStage>()
@@ -217,7 +247,7 @@ class PokemonRepositoryImpl @Inject constructor(
         if (chainUrl != null) {
             val chainId = chainUrl.trimEnd('/').substringAfterLast('/').toInt()
             val chain = api.getEvolutionChain(chainId)
-            flattenChain(chain.chain, evolutions)
+            flattenChain(chain.chain, evolutions, lang)
         }
 
         val varieties = species.varieties
@@ -237,26 +267,35 @@ class PokemonRepositoryImpl @Inject constructor(
         )
 
         dao.insertEvolutionInfo(PokemonEvolutionEntity(id = id, json = json.encodeToString(info)))
-        return info
+        info
     }
 
-    private fun flattenChain(link: ChainLink, result: MutableList<EvolutionStage>) {
+    private suspend fun flattenChain(
+        link: ChainLink,
+        result: MutableList<EvolutionStage>,
+        lang: String
+    ) {
         val speciesId = link.species.url.trimEnd('/').substringAfterLast('/').toInt()
         val trigger = if (link.evolutionDetails.isEmpty()) {
             "Base"
         } else {
             formatTrigger(link.evolutionDetails.first())
         }
+
+        val speciesResponse = api.getPokemonSpecies(speciesId)
+        val localizedName = speciesResponse.names.localized(lang)
+            ?: link.species.name.replaceFirstChar { it.uppercase() }
+
         result.add(
             EvolutionStage(
                 id = speciesId,
-                name = link.species.name.replaceFirstChar { it.uppercase() },
+                name = localizedName,
                 imageUrl = spriteUrl(speciesId),
                 trigger = trigger
             )
         )
         for (next in link.evolvesTo) {
-            flattenChain(next, result)
+            flattenChain(next, result, lang)
         }
     }
 
@@ -298,6 +337,10 @@ class PokemonRepositoryImpl @Inject constructor(
     private fun spriteUrl(id: Int): String {
         return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/$id.png"
     }
+
+    private fun List<LocalizedName>.localized(lang: String): String? =
+        firstOrNull { it.language.name == lang }?.name
+            ?: firstOrNull { it.language.name == "en" }?.name
 
     private fun PokemonEntity.toDomain() = Pokemon(
         id = id,

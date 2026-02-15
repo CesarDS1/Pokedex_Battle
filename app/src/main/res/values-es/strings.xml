@@ -1,0 +1,48 @@
+<resources>
+    <string name="app_name">Pokedex</string>
+    <string name="search_pokemon">Buscar Pokemon…</string>
+    <string name="search">Buscar</string>
+    <string name="clear">Limpiar</string>
+    <string name="retry">Reintentar</string>
+    <string name="no_pokemon_found">No se encontraron Pokemon</string>
+    <string name="collapse">Contraer</string>
+    <string name="expand">Expandir</string>
+    <string name="clear_filters">Limpiar</string>
+    <string name="favorites">Favoritos</string>
+
+    <!-- Detail screen -->
+    <string name="pokemon_detail">Detalle del Pokemon</string>
+    <string name="back">Volver</string>
+    <string name="play_cry">Reproducir grito</string>
+    <string name="region_format">Región: %1$s</string>
+    <string name="tab_about">Info</string>
+    <string name="tab_stats">Estadísticas</string>
+    <string name="tab_matchups">Ventajas</string>
+    <string name="evolutions_and_forms">Evoluciones y Formas</string>
+    <string name="moves_by_level">Movimientos por Nivel</string>
+    <string name="height">Altura</string>
+    <string name="weight">Peso</string>
+    <string name="height_format">%.1f m</string>
+    <string name="weight_format">%.1f kg</string>
+    <string name="abilities">Habilidades</string>
+    <string name="hidden">Oculta</string>
+    <string name="gender">Género</string>
+    <string name="description">Descripción</string>
+    <string name="base_stats">Estadísticas Base</string>
+    <string name="total">Total</string>
+    <string name="type_matchups_format">Ventajas de %1$s</string>
+    <string name="weak_to">Débil contra</string>
+    <string name="resistant_to">Resistente a</string>
+    <string name="strong_against">Fuerte contra</string>
+    <string name="not_effective_against">Poco efectivo contra</string>
+
+    <!-- Evolution screen -->
+    <string name="evolution_chain">Cadena de Evolución</string>
+    <string name="does_not_evolve">Este Pokemon no evoluciona.</string>
+    <string name="alternate_forms">Formas Alternativas</string>
+
+    <!-- Moves screen -->
+    <string name="no_level_up_moves">Este Pokemon no aprende movimientos al subir de nivel.</string>
+    <string name="level_format">Nivel %1$d</string>
+    <string name="learned_by_default">Aprendido por defecto</string>
+</resources>

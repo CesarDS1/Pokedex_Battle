@@ -7,7 +7,8 @@ import kotlinx.serialization.Serializable
 data class TypeResponse(
     val name: String,
     @SerialName("damage_relations") val damageRelations: DamageRelations,
-    val pokemon: List<TypePokemonSlot> = emptyList()
+    val pokemon: List<TypePokemonSlot> = emptyList(),
+    val names: List<LocalizedName> = emptyList()
 )
 
 @Serializable
