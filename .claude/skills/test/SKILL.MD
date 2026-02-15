@@ -1,5 +1,9 @@
-# Skill: Android Unit Test Enforcer
+---
+name: Unit test enforcer
+description: Ensure that every time a feature is added or modified in an Android application, corresponding unit tests are created or updated to maintain test coverage, reliability, and regression safety. 
+---
 
+# Skill: Android Unit Test Enforcer
 ## Purpose
 
 Ensure that every time a feature is added or modified in an Android application, corresponding unit tests are created or updated to maintain test coverage, reliability, and regression safety.
