@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -19,14 +20,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -67,8 +70,8 @@ fun PokemonDetailScreen(
     viewModel: PokemonDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val isPlayingCry by viewModel.isPlayingCry.collectAsState()
-    val isFavorite by viewModel.isFavorite.collectAsState()
+
+    val isFavorite = (uiState as? PokemonDetailUiState.Success)?.isFavorite ?: false
 
     Scaffold(
         topBar = {
@@ -89,7 +92,7 @@ fun PokemonDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = viewModel::toggleFavorite) {
+                    IconButton(onClick = { viewModel.onEvent(PokemonDetailEvent.ToggleFavorite) }) {
                         Icon(
                             imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = stringResource(R.string.favorites),
@@ -127,7 +130,7 @@ fun PokemonDetailScreen(
                             color = MaterialTheme.colorScheme.error
                         )
                         Button(
-                            onClick = { viewModel.loadPokemonDetail() },
+                            onClick = { viewModel.onEvent(PokemonDetailEvent.LoadDetail) },
                             modifier = Modifier.padding(top = 16.dp)
                         ) {
                             Text(stringResource(R.string.retry))
@@ -141,8 +144,8 @@ fun PokemonDetailScreen(
                     pokemon = state.pokemon,
                     onEvolutionClick = onEvolutionClick,
                     onMovesClick = onMovesClick,
-                    isPlayingCry = isPlayingCry,
-                    onPlayCry = { url -> viewModel.playCry(url) },
+                    isPlayingCry = state.isPlayingCry,
+                    onPlayCry = { url -> viewModel.onEvent(PokemonDetailEvent.PlayCry(url)) },
                     modifier = Modifier.padding(innerPadding)
                 )
             }
@@ -291,13 +294,32 @@ private fun AboutTab(
             }
         }
         Spacer(modifier = Modifier.height(12.dp))
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            OutlinedButton(onClick = { onEvolutionClick(pokemon.id) }) {
+            FilledTonalButton(
+                onClick = { onEvolutionClick(pokemon.id) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(R.string.evolutions_and_forms))
             }
-            OutlinedButton(onClick = { onMovesClick(pokemon.id) }) {
+            FilledTonalButton(
+                onClick = { onMovesClick(pokemon.id) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.List,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(R.string.moves_by_level))
             }
         }

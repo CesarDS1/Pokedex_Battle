@@ -91,7 +91,7 @@ fun PokemonMovesScreen(
                             color = MaterialTheme.colorScheme.error
                         )
                         Button(
-                            onClick = { viewModel.loadMoves() },
+                            onClick = { viewModel.onEvent(PokemonMovesEvent.LoadMoves) },
                             modifier = Modifier.padding(top = 16.dp)
                         ) {
                             Text(stringResource(R.string.retry))

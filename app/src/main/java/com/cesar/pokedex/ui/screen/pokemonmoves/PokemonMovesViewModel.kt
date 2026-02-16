@@ -26,7 +26,13 @@ class PokemonMovesViewModel @Inject constructor(
         loadMoves()
     }
 
-    fun loadMoves() {
+    fun onEvent(event: PokemonMovesEvent) {
+        when (event) {
+            PokemonMovesEvent.LoadMoves -> loadMoves()
+        }
+    }
+
+    private fun loadMoves() {
         viewModelScope.launch {
             _uiState.value = PokemonMovesUiState.Loading
             try {
@@ -37,6 +43,10 @@ class PokemonMovesViewModel @Inject constructor(
             }
         }
     }
+}
+
+sealed interface PokemonMovesEvent {
+    data object LoadMoves : PokemonMovesEvent
 }
 
 sealed interface PokemonMovesUiState {

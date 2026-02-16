@@ -11,6 +11,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -40,10 +41,9 @@ class PokemonListViewModelTest {
 
         viewModel.uiState.test {
             val state = awaitItem()
-            assertTrue(state is PokemonListUiState.Success)
-            val grouped = (state as PokemonListUiState.Success).pokemonByGeneration
-            assertEquals(listOf("Generation I — Kanto"), grouped.keys.toList())
-            assertEquals(pokemonList, grouped.values.flatten())
+            assertNull(state.errorMessage)
+            assertEquals(listOf("Generation I — Kanto"), state.pokemonByGeneration.keys.toList())
+            assertEquals(pokemonList, state.pokemonByGeneration.values.flatten())
         }
     }
 
@@ -55,8 +55,7 @@ class PokemonListViewModelTest {
 
         viewModel.uiState.test {
             val state = awaitItem()
-            assertTrue(state is PokemonListUiState.Error)
-            assertEquals("Network error", (state as PokemonListUiState.Error).message)
+            assertEquals("Network error", state.errorMessage)
         }
     }
 
@@ -67,19 +66,18 @@ class PokemonListViewModelTest {
         val viewModel = createViewModel()
 
         viewModel.uiState.test {
-            assertTrue(awaitItem() is PokemonListUiState.Error)
+            assertTrue(awaitItem().errorMessage != null)
 
             val pokemonList = listOf(
                 Pokemon(id = 1, name = "Bulbasaur", imageUrl = "https://example.com/1.png", types = listOf("Grass", "Poison"))
             )
             coEvery { repository.getPokemonList() } returns pokemonList
 
-            viewModel.loadPokemon()
+            viewModel.onEvent(PokemonListEvent.LoadPokemon)
 
             val success = awaitItem()
-            assertTrue(success is PokemonListUiState.Success)
-            val grouped = (success as PokemonListUiState.Success).pokemonByGeneration
-            assertEquals(pokemonList, grouped.values.flatten())
+            assertNull(success.errorMessage)
+            assertEquals(pokemonList, success.pokemonByGeneration.values.flatten())
         }
     }
 
@@ -93,12 +91,11 @@ class PokemonListViewModelTest {
 
         val viewModel = createViewModel()
 
-        viewModel.onSearchQueryChanged("char")
+        viewModel.onEvent(PokemonListEvent.Search("char"))
 
         viewModel.uiState.test {
             val state = awaitItem()
-            assertTrue(state is PokemonListUiState.Success)
-            val results = (state as PokemonListUiState.Success).pokemonByGeneration.values.flatten()
+            val results = state.pokemonByGeneration.values.flatten()
             assertEquals(1, results.size)
             assertEquals("Charmander", results.first().name)
         }
@@ -115,8 +112,7 @@ class PokemonListViewModelTest {
 
         viewModel.uiState.test {
             val state = awaitItem()
-            assertTrue(state is PokemonListUiState.Success)
-            val pokemon = (state as PokemonListUiState.Success).pokemonByGeneration.values.flatten().first()
+            val pokemon = state.pokemonByGeneration.values.flatten().first()
             assertEquals(listOf("Grass", "Poison"), pokemon.types)
         }
     }
@@ -131,12 +127,11 @@ class PokemonListViewModelTest {
 
         val viewModel = createViewModel()
 
-        viewModel.onSearchQueryChanged("25")
+        viewModel.onEvent(PokemonListEvent.Search("25"))
 
         viewModel.uiState.test {
             val state = awaitItem()
-            assertTrue(state is PokemonListUiState.Success)
-            val results = (state as PokemonListUiState.Success).pokemonByGeneration.values.flatten()
+            val results = state.pokemonByGeneration.values.flatten()
             assertEquals(1, results.size)
             assertEquals("Pikachu", results.first().name)
         }
@@ -155,7 +150,7 @@ class PokemonListViewModelTest {
         viewModel.uiState.test {
             awaitItem() // initial success
 
-            viewModel.refreshPokemon()
+            viewModel.onEvent(PokemonListEvent.RefreshPokemon)
 
             cancelAndIgnoreRemainingEvents()
         }
@@ -173,10 +168,10 @@ class PokemonListViewModelTest {
 
         val viewModel = createViewModel()
 
-        viewModel.refreshPokemon()
+        viewModel.onEvent(PokemonListEvent.RefreshPokemon)
 
-        viewModel.isRefreshing.test {
-            assertEquals(false, awaitItem())
+        viewModel.uiState.test {
+            assertEquals(false, awaitItem().isRefreshing)
         }
     }
 
@@ -189,14 +184,14 @@ class PokemonListViewModelTest {
 
         val viewModel = createViewModel()
 
-        viewModel.collapsedGenerations.test {
-            assertEquals(emptySet<String>(), awaitItem())
+        viewModel.uiState.test {
+            assertEquals(emptySet<String>(), awaitItem().collapsedGenerations)
 
-            viewModel.toggleGeneration("Generation I — Kanto")
-            assertEquals(setOf("Generation I — Kanto"), awaitItem())
+            viewModel.onEvent(PokemonListEvent.ToggleGeneration("Generation I — Kanto"))
+            assertEquals(setOf("Generation I — Kanto"), awaitItem().collapsedGenerations)
 
-            viewModel.toggleGeneration("Generation I — Kanto")
-            assertEquals(emptySet<String>(), awaitItem())
+            viewModel.onEvent(PokemonListEvent.ToggleGeneration("Generation I — Kanto"))
+            assertEquals(emptySet<String>(), awaitItem().collapsedGenerations)
         }
     }
 
@@ -213,8 +208,7 @@ class PokemonListViewModelTest {
 
         viewModel.uiState.test {
             val state = awaitItem()
-            assertTrue(state is PokemonListUiState.Success)
-            val grouped = (state as PokemonListUiState.Success).pokemonByGeneration
+            val grouped = state.pokemonByGeneration
             assertEquals(3, grouped.size)
             assertTrue(grouped.containsKey("Generation I — Kanto"))
             assertTrue(grouped.containsKey("Generation II — Johto"))
