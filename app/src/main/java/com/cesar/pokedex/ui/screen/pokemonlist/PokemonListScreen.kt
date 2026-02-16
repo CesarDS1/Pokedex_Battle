@@ -128,9 +128,23 @@ fun PokemonListScreen(
 
             TypeFilterRow(
                 selectedTypes = uiState.selectedTypes,
-                onToggleType = { viewModel.onEvent(PokemonListEvent.ToggleTypeFilter(it)) },
-                onClearTypes = { viewModel.onEvent(PokemonListEvent.ClearTypeFilters) }
+                onToggleType = { viewModel.onEvent(PokemonListEvent.ToggleTypeFilter(it)) }
             )
+
+            if (uiState.selectedTypes.isNotEmpty()) {
+                TextButton(
+                    onClick = { viewModel.onEvent(PokemonListEvent.ClearTypeFilters) },
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(stringResource(R.string.clear_filters))
+                }
+            }
 
             when {
                 uiState.isLoading -> {
@@ -310,7 +324,6 @@ private fun PokemonListItem(
 private fun TypeFilterRow(
     selectedTypes: Set<String>,
     onToggleType: (String) -> Unit,
-    onClearTypes: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyRow(
@@ -318,13 +331,6 @@ private fun TypeFilterRow(
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        if (selectedTypes.isNotEmpty()) {
-            item {
-                TextButton(onClick = onClearTypes) {
-                    Text(stringResource(R.string.clear_filters))
-                }
-            }
-        }
         items(ALL_POKEMON_TYPES) { type ->
             val isSelected = type in selectedTypes
             val color = typeColor(type)

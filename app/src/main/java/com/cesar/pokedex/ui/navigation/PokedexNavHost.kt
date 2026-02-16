@@ -1,5 +1,7 @@
 package com.cesar.pokedex.ui.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -12,6 +14,8 @@ import com.cesar.pokedex.ui.screen.pokemonevolution.PokemonEvolutionScreen
 import com.cesar.pokedex.ui.screen.pokemonlist.PokemonListScreen
 import com.cesar.pokedex.ui.screen.pokemonmoves.PokemonMovesScreen
 
+private const val TRANSITION_DURATION = 300
+
 @Composable
 fun PokedexNavHost(
     navController: NavHostController,
@@ -20,7 +24,31 @@ fun PokedexNavHost(
     NavHost(
         navController = navController,
         startDestination = "pokemon_list",
-        modifier = modifier
+        modifier = modifier,
+        enterTransition = {
+            slideIntoContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                animationSpec = tween(TRANSITION_DURATION)
+            )
+        },
+        exitTransition = {
+            slideOutOfContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                animationSpec = tween(TRANSITION_DURATION)
+            )
+        },
+        popEnterTransition = {
+            slideIntoContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.End,
+                animationSpec = tween(TRANSITION_DURATION)
+            )
+        },
+        popExitTransition = {
+            slideOutOfContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.End,
+                animationSpec = tween(TRANSITION_DURATION)
+            )
+        }
     ) {
         composable("pokemon_list") {
             PokemonListScreen(
