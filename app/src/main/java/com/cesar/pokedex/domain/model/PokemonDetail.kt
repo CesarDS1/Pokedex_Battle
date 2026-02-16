@@ -44,5 +44,6 @@ data class PokemonStat(
 data class Move(
     val name: String,
     val level: Int,
-    val type: String
+    val type: String,
+    val description: String = ""
 )

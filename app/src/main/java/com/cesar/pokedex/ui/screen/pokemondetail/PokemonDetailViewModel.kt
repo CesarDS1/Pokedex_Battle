@@ -11,6 +11,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -24,40 +25,58 @@ class PokemonDetailViewModel @Inject constructor(
 
     private val pokemonId: Int = checkNotNull(savedStateHandle["pokemonId"])
 
-    private val _uiState = MutableStateFlow<PokemonDetailUiState>(PokemonDetailUiState.Loading)
-    val uiState: StateFlow<PokemonDetailUiState> = _uiState
+    private val _loadState = MutableStateFlow<LoadState>(LoadState.Loading)
+    private val _isPlayingCry = MutableStateFlow(false)
 
-    val isFavorite: StateFlow<Boolean> = repository.getFavoriteIds()
+    private val _isFavorite: StateFlow<Boolean> = repository.getFavoriteIds()
         .map { pokemonId in it }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    val uiState: StateFlow<PokemonDetailUiState> = combine(
+        _loadState,
+        _isFavorite,
+        _isPlayingCry
+    ) { loadState, isFavorite, isPlayingCry ->
+        when (loadState) {
+            is LoadState.Loading -> PokemonDetailUiState.Loading
+            is LoadState.Error -> PokemonDetailUiState.Error(loadState.message)
+            is LoadState.Success -> PokemonDetailUiState.Success(
+                pokemon = loadState.pokemon,
+                isFavorite = isFavorite,
+                isPlayingCry = isPlayingCry
+            )
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PokemonDetailUiState.Loading)
+
     private var mediaPlayer: MediaPlayer? = null
-    private val _isPlayingCry = MutableStateFlow(false)
-    val isPlayingCry: StateFlow<Boolean> = _isPlayingCry
 
     init {
         loadPokemonDetail()
     }
 
-    fun loadPokemonDetail() {
+    fun onEvent(event: PokemonDetailEvent) {
+        when (event) {
+            PokemonDetailEvent.LoadDetail -> loadPokemonDetail()
+            PokemonDetailEvent.ToggleFavorite -> {
+                viewModelScope.launch { repository.toggleFavorite(pokemonId) }
+            }
+            is PokemonDetailEvent.PlayCry -> playCry(event.url)
+        }
+    }
+
+    private fun loadPokemonDetail() {
         viewModelScope.launch {
-            _uiState.value = PokemonDetailUiState.Loading
+            _loadState.value = LoadState.Loading
             try {
                 val detail = repository.getPokemonDetail(pokemonId)
-                _uiState.value = PokemonDetailUiState.Success(detail)
+                _loadState.value = LoadState.Success(detail)
             } catch (e: Exception) {
-                _uiState.value = PokemonDetailUiState.Error(e.message ?: "Unknown error")
+                _loadState.value = LoadState.Error(e.message ?: "Unknown error")
             }
         }
     }
 
-    fun toggleFavorite() {
-        viewModelScope.launch {
-            repository.toggleFavorite(pokemonId)
-        }
-    }
-
-    fun playCry(url: String) {
+    private fun playCry(url: String) {
         mediaPlayer?.release()
         mediaPlayer = MediaPlayer().apply {
             setAudioAttributes(
@@ -86,10 +105,26 @@ class PokemonDetailViewModel @Inject constructor(
         mediaPlayer?.release()
         mediaPlayer = null
     }
+
+    private sealed interface LoadState {
+        data object Loading : LoadState
+        data class Success(val pokemon: PokemonDetail) : LoadState
+        data class Error(val message: String) : LoadState
+    }
+}
+
+sealed interface PokemonDetailEvent {
+    data object LoadDetail : PokemonDetailEvent
+    data object ToggleFavorite : PokemonDetailEvent
+    data class PlayCry(val url: String) : PokemonDetailEvent
 }
 
 sealed interface PokemonDetailUiState {
     data object Loading : PokemonDetailUiState
-    data class Success(val pokemon: PokemonDetail) : PokemonDetailUiState
+    data class Success(
+        val pokemon: PokemonDetail,
+        val isFavorite: Boolean = false,
+        val isPlayingCry: Boolean = false
+    ) : PokemonDetailUiState
     data class Error(val message: String) : PokemonDetailUiState
 }

@@ -91,7 +91,7 @@ class PokemonEvolutionViewModelTest {
 
             coEvery { repository.getEvolutionInfo(1) } returns testEvolutionInfo
 
-            viewModel.loadEvolutionInfo()
+            viewModel.onEvent(PokemonEvolutionEvent.LoadEvolution)
 
             val success = awaitItem()
             assertTrue(success is PokemonEvolutionUiState.Success)

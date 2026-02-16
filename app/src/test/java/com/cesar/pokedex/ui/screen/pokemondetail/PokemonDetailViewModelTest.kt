@@ -104,7 +104,7 @@ class PokemonDetailViewModelTest {
 
             coEvery { repository.getPokemonDetail(25) } returns testDetail
 
-            viewModel.loadPokemonDetail()
+            viewModel.onEvent(PokemonDetailEvent.LoadDetail)
 
             val success = awaitItem()
             assertTrue(success is PokemonDetailUiState.Success)
@@ -118,8 +118,10 @@ class PokemonDetailViewModelTest {
 
         val viewModel = createViewModel()
 
-        viewModel.isPlayingCry.test {
-            assertEquals(false, awaitItem())
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertTrue(state is PokemonDetailUiState.Success)
+            assertEquals(false, (state as PokemonDetailUiState.Success).isPlayingCry)
         }
     }
 

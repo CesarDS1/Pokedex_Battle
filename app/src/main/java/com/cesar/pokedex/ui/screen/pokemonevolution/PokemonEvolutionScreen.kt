@@ -97,7 +97,7 @@ fun PokemonEvolutionScreen(
                             color = MaterialTheme.colorScheme.error
                         )
                         Button(
-                            onClick = { viewModel.loadEvolutionInfo() },
+                            onClick = { viewModel.onEvent(PokemonEvolutionEvent.LoadEvolution) },
                             modifier = Modifier.padding(top = 16.dp)
                         ) {
                             Text(stringResource(R.string.retry))

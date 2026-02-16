@@ -26,7 +26,13 @@ class PokemonEvolutionViewModel @Inject constructor(
         loadEvolutionInfo()
     }
 
-    fun loadEvolutionInfo() {
+    fun onEvent(event: PokemonEvolutionEvent) {
+        when (event) {
+            PokemonEvolutionEvent.LoadEvolution -> loadEvolutionInfo()
+        }
+    }
+
+    private fun loadEvolutionInfo() {
         viewModelScope.launch {
             _uiState.value = PokemonEvolutionUiState.Loading
             try {
@@ -37,6 +43,10 @@ class PokemonEvolutionViewModel @Inject constructor(
             }
         }
     }
+}
+
+sealed interface PokemonEvolutionEvent {
+    data object LoadEvolution : PokemonEvolutionEvent
 }
 
 sealed interface PokemonEvolutionUiState {

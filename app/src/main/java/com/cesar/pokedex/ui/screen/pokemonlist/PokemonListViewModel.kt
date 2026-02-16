@@ -20,49 +20,24 @@ class PokemonListViewModel @Inject constructor(
 
     private val _allPokemon = MutableStateFlow<LoadState>(LoadState.Loading)
     private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery
-
     private val _isRefreshing = MutableStateFlow(false)
-    val isRefreshing: StateFlow<Boolean> = _isRefreshing
-
     private val _collapsedGenerations = MutableStateFlow<Set<String>>(emptySet())
-    val collapsedGenerations: StateFlow<Set<String>> = _collapsedGenerations
-
     private val _selectedTypes = MutableStateFlow<Set<String>>(emptySet())
-    val selectedTypes: StateFlow<Set<String>> = _selectedTypes
-
     private val _showFavoritesOnly = MutableStateFlow(false)
-    val showFavoritesOnly: StateFlow<Boolean> = _showFavoritesOnly
 
-    val favoriteIds: StateFlow<Set<Int>> = repository.getFavoriteIds()
+    private val _favoriteIds: StateFlow<Set<Int>> = repository.getFavoriteIds()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
-
-    fun toggleGeneration(generation: String) {
-        _collapsedGenerations.value = _collapsedGenerations.value.let { current ->
-            if (generation in current) current - generation else current + generation
-        }
-    }
-
-    fun toggleTypeFilter(type: String) {
-        _selectedTypes.value = _selectedTypes.value.let { current ->
-            if (type in current) current - type else current + type
-        }
-    }
-
-    fun clearTypeFilters() {
-        _selectedTypes.value = emptySet()
-    }
 
     val uiState: StateFlow<PokemonListUiState> = combine(
         _allPokemon,
         _searchQuery,
         _selectedTypes,
-        favoriteIds,
+        _favoriteIds,
         _showFavoritesOnly
     ) { loadState, query, selectedTypes, favorites, showFavOnly ->
         when (loadState) {
-            is LoadState.Loading -> PokemonListUiState.Loading
-            is LoadState.Error -> PokemonListUiState.Error(loadState.message)
+            is LoadState.Loading -> PokemonListUiState(isLoading = true)
+            is LoadState.Error -> PokemonListUiState(errorMessage = loadState.message)
             is LoadState.Loaded -> {
                 val searchFiltered = if (query.isBlank()) {
                     loadState.pokemon
@@ -87,16 +62,51 @@ class PokemonListViewModel @Inject constructor(
                 val grouped = filtered
                     .sortedBy { it.id }
                     .groupBy { generationOf(it.id) }
-                PokemonListUiState.Success(grouped)
+                PokemonListUiState(
+                    pokemonByGeneration = grouped,
+                    searchQuery = query,
+                    selectedTypes = selectedTypes,
+                    favoriteIds = favorites,
+                    showFavoritesOnly = showFavOnly
+                )
             }
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PokemonListUiState.Loading)
+    }.combine(_isRefreshing) { state, refreshing ->
+        state.copy(isRefreshing = refreshing)
+    }.combine(_collapsedGenerations) { state, collapsed ->
+        state.copy(collapsedGenerations = collapsed)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PokemonListUiState(isLoading = true))
 
     init {
         loadPokemon()
     }
 
-    fun loadPokemon() {
+    fun onEvent(event: PokemonListEvent) {
+        when (event) {
+            is PokemonListEvent.Search -> _searchQuery.value = event.query
+            is PokemonListEvent.ToggleGeneration -> {
+                _collapsedGenerations.value = _collapsedGenerations.value.let { current ->
+                    if (event.generation in current) current - event.generation else current + event.generation
+                }
+            }
+            is PokemonListEvent.ToggleTypeFilter -> {
+                _selectedTypes.value = _selectedTypes.value.let { current ->
+                    if (event.type in current) current - event.type else current + event.type
+                }
+            }
+            PokemonListEvent.ClearTypeFilters -> _selectedTypes.value = emptySet()
+            is PokemonListEvent.ToggleFavorite -> {
+                viewModelScope.launch { repository.toggleFavorite(event.id) }
+            }
+            PokemonListEvent.ToggleShowFavoritesOnly -> {
+                _showFavoritesOnly.value = !_showFavoritesOnly.value
+            }
+            PokemonListEvent.LoadPokemon -> loadPokemon()
+            PokemonListEvent.RefreshPokemon -> refreshPokemon()
+        }
+    }
+
+    private fun loadPokemon() {
         viewModelScope.launch {
             _allPokemon.value = LoadState.Loading
             try {
@@ -108,7 +118,7 @@ class PokemonListViewModel @Inject constructor(
         }
     }
 
-    fun refreshPokemon() {
+    private fun refreshPokemon() {
         viewModelScope.launch {
             _isRefreshing.value = true
             try {
@@ -122,25 +132,22 @@ class PokemonListViewModel @Inject constructor(
         }
     }
 
-    fun onSearchQueryChanged(query: String) {
-        _searchQuery.value = query
-    }
-
-    fun toggleFavorite(id: Int) {
-        viewModelScope.launch {
-            repository.toggleFavorite(id)
-        }
-    }
-
-    fun toggleShowFavoritesOnly() {
-        _showFavoritesOnly.value = !_showFavoritesOnly.value
-    }
-
     private sealed interface LoadState {
         data object Loading : LoadState
         data class Loaded(val pokemon: List<Pokemon>) : LoadState
         data class Error(val message: String) : LoadState
     }
+}
+
+sealed interface PokemonListEvent {
+    data class Search(val query: String) : PokemonListEvent
+    data class ToggleGeneration(val generation: String) : PokemonListEvent
+    data class ToggleTypeFilter(val type: String) : PokemonListEvent
+    data object ClearTypeFilters : PokemonListEvent
+    data class ToggleFavorite(val id: Int) : PokemonListEvent
+    data object ToggleShowFavoritesOnly : PokemonListEvent
+    data object LoadPokemon : PokemonListEvent
+    data object RefreshPokemon : PokemonListEvent
 }
 
 val ALL_POKEMON_TYPES = listOf(
@@ -162,8 +169,14 @@ fun generationOf(id: Int): String = when {
     else -> "Other"
 }
 
-sealed interface PokemonListUiState {
-    data object Loading : PokemonListUiState
-    data class Success(val pokemonByGeneration: Map<String, List<Pokemon>>) : PokemonListUiState
-    data class Error(val message: String) : PokemonListUiState
-}
+data class PokemonListUiState(
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null,
+    val pokemonByGeneration: Map<String, List<Pokemon>> = emptyMap(),
+    val searchQuery: String = "",
+    val collapsedGenerations: Set<String> = emptySet(),
+    val isRefreshing: Boolean = false,
+    val selectedTypes: Set<String> = emptySet(),
+    val favoriteIds: Set<Int> = emptySet(),
+    val showFavoritesOnly: Boolean = false
+)

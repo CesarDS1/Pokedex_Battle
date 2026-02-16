@@ -185,10 +185,20 @@ class PokemonRepositoryImpl @Inject constructor(
                 ?: moveResponse.name.replace("-", " ").split(" ").joinToString(" ") {
                     it.replaceFirstChar { c -> c.uppercase() }
                 }
+            val flavorText = moveResponse.flavorTextEntries
+                .filter { it.language.name == lang }
+                .maxByOrNull { it.versionGroup.url.trimEnd('/').substringAfterLast('/').toIntOrNull() ?: 0 }
+                ?.flavorText
+                ?: moveResponse.flavorTextEntries
+                    .filter { it.language.name == "en" }
+                    .maxByOrNull { it.versionGroup.url.trimEnd('/').substringAfterLast('/').toIntOrNull() ?: 0 }
+                    ?.flavorText
+                ?: ""
             Move(
                 name = localizedMoveName,
                 level = level,
-                type = moveResponse.type.name.replaceFirstChar { it.uppercase() }
+                type = moveResponse.type.name.replaceFirstChar { it.uppercase() },
+                description = flavorText.replace("\n", " ").replace("\\s+".toRegex(), " ").trim()
             )
         }.sortedWith(compareBy<Move> { it.level }.thenBy { it.name })
 

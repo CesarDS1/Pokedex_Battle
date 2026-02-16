@@ -54,8 +54,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.cesar.pokedex.R
 import coil.compose.AsyncImage
 import com.cesar.pokedex.domain.model.Pokemon
-import com.cesar.pokedex.ui.screen.pokemondetail.TypeBadge
-import com.cesar.pokedex.ui.screen.pokemondetail.typeColor
+import com.cesar.pokedex.ui.component.TypeBadge
+import com.cesar.pokedex.ui.component.typeColor
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -65,12 +65,6 @@ fun PokemonListScreen(
     viewModel: PokemonListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
-    val collapsedGenerations by viewModel.collapsedGenerations.collectAsState()
-    val isRefreshing by viewModel.isRefreshing.collectAsState()
-    val selectedTypes by viewModel.selectedTypes.collectAsState()
-    val favoriteIds by viewModel.favoriteIds.collectAsState()
-    val showFavoritesOnly by viewModel.showFavoritesOnly.collectAsState()
 
     Scaffold(
         topBar = {
@@ -89,11 +83,11 @@ fun PokemonListScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = viewModel::toggleShowFavoritesOnly) {
+                    IconButton(onClick = { viewModel.onEvent(PokemonListEvent.ToggleShowFavoritesOnly) }) {
                         Icon(
-                            imageVector = if (showFavoritesOnly) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            imageVector = if (uiState.showFavoritesOnly) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = stringResource(R.string.favorites),
-                            tint = if (showFavoritesOnly) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                            tint = if (uiState.showFavoritesOnly) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -107,8 +101,8 @@ fun PokemonListScreen(
                 .padding(innerPadding)
         ) {
             OutlinedTextField(
-                value = searchQuery,
-                onValueChange = viewModel::onSearchQueryChanged,
+                value = uiState.searchQuery,
+                onValueChange = { viewModel.onEvent(PokemonListEvent.Search(it)) },
                 placeholder = { Text(stringResource(R.string.search_pokemon)) },
                 leadingIcon = {
                     Icon(
@@ -117,8 +111,8 @@ fun PokemonListScreen(
                     )
                 },
                 trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { viewModel.onSearchQueryChanged("") }) {
+                    if (uiState.searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { viewModel.onEvent(PokemonListEvent.Search("")) }) {
                             Icon(
                                 imageVector = Icons.Default.Clear,
                                 contentDescription = stringResource(R.string.clear)
@@ -133,13 +127,13 @@ fun PokemonListScreen(
             )
 
             TypeFilterRow(
-                selectedTypes = selectedTypes,
-                onToggleType = viewModel::toggleTypeFilter,
-                onClearTypes = viewModel::clearTypeFilters
+                selectedTypes = uiState.selectedTypes,
+                onToggleType = { viewModel.onEvent(PokemonListEvent.ToggleTypeFilter(it)) },
+                onClearTypes = { viewModel.onEvent(PokemonListEvent.ClearTypeFilters) }
             )
 
-            when (val state = uiState) {
-                is PokemonListUiState.Loading -> {
+            when {
+                uiState.isLoading -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -148,19 +142,19 @@ fun PokemonListScreen(
                     }
                 }
 
-                is PokemonListUiState.Error -> {
+                uiState.errorMessage != null -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                text = state.message,
+                                text = uiState.errorMessage!!,
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.error
                             )
                             Button(
-                                onClick = { viewModel.loadPokemon() },
+                                onClick = { viewModel.onEvent(PokemonListEvent.LoadPokemon) },
                                 modifier = Modifier.padding(top = 16.dp)
                             ) {
                                 Text(stringResource(R.string.retry))
@@ -169,8 +163,8 @@ fun PokemonListScreen(
                     }
                 }
 
-                is PokemonListUiState.Success -> {
-                    if (state.pokemonByGeneration.isEmpty()) {
+                else -> {
+                    if (uiState.pokemonByGeneration.isEmpty()) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -183,8 +177,8 @@ fun PokemonListScreen(
                         }
                     } else {
                         PullToRefreshBox(
-                            isRefreshing = isRefreshing,
-                            onRefresh = { viewModel.refreshPokemon() },
+                            isRefreshing = uiState.isRefreshing,
+                            onRefresh = { viewModel.onEvent(PokemonListEvent.RefreshPokemon) },
                             modifier = Modifier.fillMaxSize()
                         ) {
                             LazyColumn(
@@ -192,22 +186,22 @@ fun PokemonListScreen(
                                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                                 verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                state.pokemonByGeneration.forEach { (generation, pokemonList) ->
-                                    val isExpanded = generation !in collapsedGenerations
+                                uiState.pokemonByGeneration.forEach { (generation, pokemonList) ->
+                                    val isExpanded = generation !in uiState.collapsedGenerations
                                     stickyHeader(key = generation) {
                                         GenerationHeader(
                                             title = generation,
                                             isExpanded = isExpanded,
-                                            onToggle = { viewModel.toggleGeneration(generation) }
+                                            onToggle = { viewModel.onEvent(PokemonListEvent.ToggleGeneration(generation)) }
                                         )
                                     }
                                     if (isExpanded) {
                                         items(pokemonList, key = { it.id }) { pokemon ->
                                             PokemonListItem(
                                                 pokemon = pokemon,
-                                                isFavorite = pokemon.id in favoriteIds,
+                                                isFavorite = pokemon.id in uiState.favoriteIds,
                                                 onClick = { onPokemonClick(pokemon.id) },
-                                                onFavoriteClick = { viewModel.toggleFavorite(pokemon.id) }
+                                                onFavoriteClick = { viewModel.onEvent(PokemonListEvent.ToggleFavorite(pokemon.id)) }
                                             )
                                         }
                                         item { Spacer(modifier = Modifier.height(8.dp)) }

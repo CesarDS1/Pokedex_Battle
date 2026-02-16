@@ -106,7 +106,7 @@ class PokemonMovesViewModelTest {
 
             coEvery { repository.getPokemonDetail(25) } returns testDetail
 
-            viewModel.loadMoves()
+            viewModel.onEvent(PokemonMovesEvent.LoadMoves)
 
             val success = awaitItem()
             assertTrue(success is PokemonMovesUiState.Success)
