@@ -21,7 +21,21 @@
       "Bash(/Users/cesarnr/AndroidStudioProjects/Pokedex_Battle/gradlew:*)",
       "Bash(./gradlew test:*)",
       "Bash(./gradlew assembleDebug:*)",
-      "Bash(./gradlew compileDebugUnitTestKotlin:*)"
+      "Bash(./gradlew compileDebugUnitTestKotlin:*)",
+      "Bash(where:*)",
+      "Bash(pip show:*)",
+      "Bash(py -3 -c:*)",
+      "Bash(py -3 -m pip install pillow)",
+      "Bash(node --version:*)",
+      "Bash(node -e:*)",
+      "Bash(java -version:*)",
+      "Bash(javac:*)",
+      "Bash(java:*)",
+      "Bash(del:*)",
+      "Bash(git worktree remove:*)",
+      "Bash(git branch:*)",
+      "Bash(./gradlew testDebugUnitTest:*)",
+      "Bash(cat:*)"
     ]
   }
 }

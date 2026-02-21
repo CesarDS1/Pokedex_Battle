@@ -45,4 +45,7 @@ interface PokemonDao {
 
     @Query("SELECT EXISTS(SELECT 1 FROM favorites WHERE id = :id)")
     suspend fun isFavorite(id: Int): Boolean
+
+    @Query("SELECT * FROM pokemon WHERE id = :id")
+    suspend fun getPokemonById(id: Int): PokemonEntity?
 }

@@ -5,9 +5,12 @@ import androidx.room.Room
 import com.cesar.pokedex.data.locale.DeviceLocaleProvider
 import com.cesar.pokedex.data.local.PokedexDatabase
 import com.cesar.pokedex.data.local.dao.PokemonDao
+import com.cesar.pokedex.data.local.dao.TeamDao
 import com.cesar.pokedex.data.remote.PokeApiService
 import com.cesar.pokedex.data.repository.PokemonRepositoryImpl
+import com.cesar.pokedex.data.repository.TeamRepositoryImpl
 import com.cesar.pokedex.domain.repository.PokemonRepository
+import com.cesar.pokedex.domain.repository.TeamRepository
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
@@ -64,10 +67,22 @@ object DataModule {
 
     @Provides
     @Singleton
+    fun provideTeamDao(database: PokedexDatabase): TeamDao = database.teamDao()
+
+    @Provides
+    @Singleton
     fun providePokemonRepository(
         api: PokeApiService,
         dao: PokemonDao,
         localeProvider: DeviceLocaleProvider
     ): PokemonRepository =
         PokemonRepositoryImpl(api, dao, localeProvider)
+
+    @Provides
+    @Singleton
+    fun provideTeamRepository(
+        teamDao: TeamDao,
+        pokemonDao: PokemonDao
+    ): TeamRepository =
+        TeamRepositoryImpl(teamDao, pokemonDao)
 }

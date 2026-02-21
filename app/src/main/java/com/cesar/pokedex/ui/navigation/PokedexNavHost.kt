@@ -13,6 +13,9 @@ import com.cesar.pokedex.ui.screen.pokemondetail.PokemonDetailScreen
 import com.cesar.pokedex.ui.screen.pokemonevolution.PokemonEvolutionScreen
 import com.cesar.pokedex.ui.screen.pokemonlist.PokemonListScreen
 import com.cesar.pokedex.ui.screen.pokemonmoves.PokemonMovesScreen
+import com.cesar.pokedex.ui.screen.pokemonteam.AddPokemonToTeamScreen
+import com.cesar.pokedex.ui.screen.pokemonteam.TeamDetailScreen
+import com.cesar.pokedex.ui.screen.pokemonteam.TeamListScreen
 
 private const val TRANSITION_DURATION = 300
 
@@ -54,6 +57,9 @@ fun PokedexNavHost(
             PokemonListScreen(
                 onPokemonClick = { pokemonId ->
                     navController.navigate("pokemon_detail/$pokemonId")
+                },
+                onTeamsClick = {
+                    navController.navigate("team_list")
                 }
             )
         }
@@ -89,6 +95,35 @@ fun PokedexNavHost(
             arguments = listOf(navArgument("pokemonId") { type = NavType.IntType })
         ) {
             PokemonMovesScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+        composable("team_list") {
+            TeamListScreen(
+                onBackClick = { navController.popBackStack() },
+                onTeamClick = { teamId -> navController.navigate("team_detail/$teamId") }
+            )
+        }
+        composable(
+            route = "team_detail/{teamId}",
+            arguments = listOf(navArgument("teamId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val teamId = backStackEntry.arguments?.getLong("teamId") ?: 0L
+            TeamDetailScreen(
+                onBackClick = { navController.popBackStack() },
+                onAddPokemonClick = {
+                    navController.navigate("team_add_pokemon/$teamId")
+                },
+                onPokemonClick = { pokemonId ->
+                    navController.navigate("pokemon_detail/$pokemonId")
+                }
+            )
+        }
+        composable(
+            route = "team_add_pokemon/{teamId}",
+            arguments = listOf(navArgument("teamId") { type = NavType.LongType })
+        ) {
+            AddPokemonToTeamScreen(
                 onBackClick = { navController.popBackStack() }
             )
         }

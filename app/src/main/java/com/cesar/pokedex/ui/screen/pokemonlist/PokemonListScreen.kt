@@ -24,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -61,6 +62,7 @@ import com.cesar.pokedex.ui.component.typeColor
 @Composable
 fun PokemonListScreen(
     onPokemonClick: (Int) -> Unit = {},
+    onTeamsClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: PokemonListViewModel = hiltViewModel()
 ) {
@@ -83,6 +85,12 @@ fun PokemonListScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onTeamsClick) {
+                        Icon(
+                            imageVector = Icons.Default.Groups,
+                            contentDescription = "Teams"
+                        )
+                    }
                     IconButton(onClick = { viewModel.onEvent(PokemonListEvent.ToggleShowFavoritesOnly) }) {
                         Icon(
                             imageVector = if (uiState.showFavoritesOnly) Icons.Default.Favorite else Icons.Default.FavoriteBorder,

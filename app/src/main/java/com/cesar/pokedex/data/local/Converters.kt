@@ -11,4 +11,10 @@ class Converters {
 
     @TypeConverter
     fun toStringList(value: String): List<String> = Json.decodeFromString(value)
+
+    @TypeConverter
+    fun fromIntList(value: List<Int>): String = Json.encodeToString(value)
+
+    @TypeConverter
+    fun toIntList(value: String): List<Int> = Json.decodeFromString(value)
 }
