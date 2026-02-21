@@ -33,13 +33,15 @@ class TeamDetailViewModel @Inject constructor(
     private val _memberDetails = MutableStateFlow<List<PokemonDetail>>(emptyList())
     private val _allPokemon = MutableStateFlow<List<Pokemon>>(emptyList())
     private val _selectedEnemyTypes = MutableStateFlow<Set<String>>(emptySet())
+    private val _isLoadingSuggestions = MutableStateFlow(true)
 
     val uiState: StateFlow<TeamDetailUiState> = combine(
         teamRepository.getAllTeams(),
         _memberDetails,
         _allPokemon,
-        _selectedEnemyTypes
-    ) { teams, memberDetails, allPokemon, enemyTypes ->
+        _selectedEnemyTypes,
+        _isLoadingSuggestions
+    ) { teams, memberDetails, allPokemon, enemyTypes, isLoadingSuggestions ->
         val team = teams.firstOrNull { it.id == teamId }
             ?: return@combine TeamDetailUiState()
 
@@ -55,7 +57,8 @@ class TeamDetailViewModel @Inject constructor(
             analysis = analysis,
             suggestions = suggestions,
             selectedEnemyTypes = enemyTypes,
-            loadedMemberCount = memberDetails.size
+            loadedMemberCount = memberDetails.size,
+            isLoadingSuggestions = isLoadingSuggestions
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TeamDetailUiState())
 
@@ -66,9 +69,11 @@ class TeamDetailViewModel @Inject constructor(
 
     private fun loadAllPokemon() {
         viewModelScope.launch {
+            _isLoadingSuggestions.value = true
             try {
                 _allPokemon.value = pokemonRepository.getPokemonList()
             } catch (_: Exception) { }
+            _isLoadingSuggestions.value = false
         }
     }
 
@@ -113,7 +118,8 @@ data class TeamDetailUiState(
     val analysis: TeamAnalysis? = null,
     val suggestions: List<TeamSuggestion> = emptyList(),
     val selectedEnemyTypes: Set<String> = emptySet(),
-    val loadedMemberCount: Int = 0
+    val loadedMemberCount: Int = 0,
+    val isLoadingSuggestions: Boolean = true
 )
 
 sealed interface TeamDetailEvent {

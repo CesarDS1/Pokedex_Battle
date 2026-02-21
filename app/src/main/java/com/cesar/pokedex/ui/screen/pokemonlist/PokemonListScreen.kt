@@ -1,9 +1,9 @@
 package com.cesar.pokedex.ui.screen.pokemonlist
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Favorite
@@ -27,10 +29,10 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.draw.clip
 import androidx.compose.material3.Button
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -46,14 +48,18 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.cesar.pokedex.R
 import coil.compose.AsyncImage
+import com.cesar.pokedex.R
 import com.cesar.pokedex.domain.model.Pokemon
 import com.cesar.pokedex.ui.component.TypeBadge
 import com.cesar.pokedex.ui.component.typeColor
@@ -205,8 +211,8 @@ fun PokemonListScreen(
                         ) {
                             LazyColumn(
                                 modifier = Modifier.fillMaxSize(),
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 uiState.pokemonByGeneration.forEach { (generation, pokemonList) ->
                                     val isExpanded = generation !in uiState.collapsedGenerations
@@ -218,13 +224,29 @@ fun PokemonListScreen(
                                         )
                                     }
                                     if (isExpanded) {
-                                        items(pokemonList, key = { it.id }) { pokemon ->
-                                            PokemonListItem(
-                                                pokemon = pokemon,
-                                                isFavorite = pokemon.id in uiState.favoriteIds,
-                                                onClick = { onPokemonClick(pokemon.id) },
-                                                onFavoriteClick = { viewModel.onEvent(PokemonListEvent.ToggleFavorite(pokemon.id)) }
-                                            )
+                                        val rows = pokemonList.chunked(2)
+                                        items(rows, key = { it.first().id }) { row ->
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                row.forEach { pokemon ->
+                                                    PokemonGridCard(
+                                                        pokemon = pokemon,
+                                                        isFavorite = pokemon.id in uiState.favoriteIds,
+                                                        onClick = { onPokemonClick(pokemon.id) },
+                                                        onFavoriteClick = {
+                                                            viewModel.onEvent(
+                                                                PokemonListEvent.ToggleFavorite(pokemon.id)
+                                                            )
+                                                        },
+                                                        modifier = Modifier.weight(1f)
+                                                    )
+                                                }
+                                                if (row.size < 2) {
+                                                    Spacer(modifier = Modifier.weight(1f))
+                                                }
+                                            }
                                         }
                                         item { Spacer(modifier = Modifier.height(8.dp)) }
                                     }
@@ -277,53 +299,93 @@ private fun GenerationHeader(
 }
 
 @Composable
-private fun PokemonListItem(
+private fun PokemonGridCard(
     pokemon: Pokemon,
     isFavorite: Boolean,
     onClick: () -> Unit,
     onFavoriteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    val primaryType = pokemon.types.firstOrNull() ?: "normal"
+    val cardColor = typeColor(primaryType)
+
+    ElevatedCard(
+        onClick = onClick,
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = cardColor.copy(alpha = 0.15f)
+        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
     ) {
-        AsyncImage(
-            model = pokemon.imageUrl,
-            contentDescription = pokemon.name,
-            modifier = Modifier.size(96.dp)
-        )
         Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier.weight(1f)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "#${pokemon.id.toString().padStart(3, '0')}",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = pokemon.name,
-                style = MaterialTheme.typography.titleMedium
-            )
-            if (pokemon.types.isNotEmpty()) {
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    pokemon.types.forEach { typeName ->
-                        TypeBadge(typeName = typeName)
-                    }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "#${pokemon.id.toString().padStart(3, '0')}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                IconButton(
+                    onClick = onFavoriteClick,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = stringResource(R.string.favorites),
+                        tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp)
+                    )
                 }
             }
-        }
-        IconButton(onClick = onFavoriteClick) {
-            Icon(
-                imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                contentDescription = stringResource(R.string.favorites),
-                tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.size(88.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(88.dp)
+                        .clip(CircleShape)
+                        .background(cardColor.copy(alpha = 0.25f))
+                )
+                AsyncImage(
+                    model = pokemon.imageUrl,
+                    contentDescription = pokemon.name,
+                    modifier = Modifier.size(80.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = pokemon.name,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.padding(bottom = 4.dp)
+            ) {
+                pokemon.types.forEach { typeName ->
+                    TypeBadge(typeName = typeName)
+                }
+            }
         }
     }
 }

@@ -1,0 +1,26 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{kt,kts}]
+indent_style = space
+indent_size = 4
+max_line_length = 120
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ktlint overrides
+# ──────────────────────────────────────────────────────────────────────────────
+
+# Composable functions use PascalCase — suppress the standard naming rule for them.
+ktlint_function_naming_ignore_when_annotated_with = Composable
+
+# ──────────────────────────────────────────────────────────────────────────────
+# io.nlopez.compose.rules configuration
+# ──────────────────────────────────────────────────────────────────────────────
+
+# Only enforce modifier visibility checks on public composables.
+compose_check_modifiers_for_visibility = only_public

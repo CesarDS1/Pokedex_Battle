@@ -36,10 +36,19 @@ class PokemonRepositoryImpl @Inject constructor(
 
     private val json = Json { ignoreUnknownKeys = true }
 
+    // Used to detect stale cache entries that were stored with localized (non-English) type names
+    // before the fix that switched buildTypeMap() to always use the PokeAPI English slug.
+    private val englishTypeNames = setOf(
+        "Normal", "Fire", "Water", "Electric", "Grass", "Ice",
+        "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug",
+        "Rock", "Ghost", "Dragon", "Dark", "Steel", "Fairy"
+    )
+
     override suspend fun getPokemonList(forceRefresh: Boolean): List<Pokemon> {
         if (!forceRefresh) {
             val cached = dao.getAllPokemon()
-            if (cached.isNotEmpty()) {
+            val firstType = cached.firstOrNull()?.types?.firstOrNull()
+            if (firstType != null && firstType in englishTypeNames) {
                 return cached.map { it.toDomain() }
             }
         }
@@ -48,10 +57,9 @@ class PokemonRepositoryImpl @Inject constructor(
     }
 
     private suspend fun fetchAndCachePokemonList(): List<Pokemon> = coroutineScope {
-        val lang = localeProvider.getLanguageCode()
         val countResponse = api.getPokemonList(limit = 1)
         val responseDeferred = async { api.getPokemonList(limit = countResponse.count) }
-        val typeMapDeferred = async { buildTypeMap(lang) }
+        val typeMapDeferred = async { buildTypeMap() }
 
         val response = responseDeferred.await()
         val typeMap = typeMapDeferred.await()
@@ -62,7 +70,7 @@ class PokemonRepositoryImpl @Inject constructor(
                 id = id,
                 name = dto.name.replaceFirstChar { it.uppercase() },
                 imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png",
-                types = typeMap[id]?.map { it.replaceFirstChar { c -> c.uppercase() } } ?: emptyList()
+                types = typeMap[id] ?: emptyList()
             )
         }
 
@@ -70,7 +78,10 @@ class PokemonRepositoryImpl @Inject constructor(
         pokemonList
     }
 
-    private suspend fun buildTypeMap(lang: String): Map<Int, List<String>> = coroutineScope {
+    // Type names are stored in English so that typeColor(), TypeEffectivenessChart, and the type
+    // filter all work correctly regardless of the device locale. Localized names are only needed
+    // for the detail screen, which fetches them separately via getPokemonDetail().
+    private suspend fun buildTypeMap(): Map<Int, List<String>> = coroutineScope {
         val typeList = api.getTypeList()
         val typeResponses = typeList.results.map { dto ->
             async { api.getType(dto.name) }
@@ -78,10 +89,10 @@ class PokemonRepositoryImpl @Inject constructor(
 
         val typeMap = mutableMapOf<Int, MutableList<Pair<Int, String>>>()
         for (typeResponse in typeResponses) {
-            val localizedTypeName = typeResponse.names.localized(lang) ?: typeResponse.name
+            val typeName = typeResponse.name.replaceFirstChar { it.uppercase() }
             for (slot in typeResponse.pokemon) {
                 val pokemonId = slot.pokemon.url.trimEnd('/').substringAfterLast('/').toIntOrNull() ?: continue
-                typeMap.getOrPut(pokemonId) { mutableListOf() }.add(slot.slot to localizedTypeName)
+                typeMap.getOrPut(pokemonId) { mutableListOf() }.add(slot.slot to typeName)
             }
         }
         typeMap.mapValues { (_, slots) -> slots.sortedBy { it.first }.map { it.second } }

@@ -35,7 +35,12 @@
       "Bash(git worktree remove:*)",
       "Bash(git branch:*)",
       "Bash(./gradlew testDebugUnitTest:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "WebFetch(domain:plugins.gradle.org)",
+      "WebFetch(domain:mrmans0n.github.io)",
+      "WebFetch(domain:mvnrepository.com)",
+      "WebFetch(domain:central.sonatype.com)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ]
   }
 }

@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -122,6 +123,7 @@ fun TeamDetailScreen(
                         suggestions = uiState.suggestions,
                         selectedEnemyTypes = uiState.selectedEnemyTypes,
                         teamSize = uiState.team?.members?.size ?: 0,
+                        isLoading = uiState.isLoadingSuggestions,
                         onToggleEnemyType = { type -> viewModel.onEvent(TeamDetailEvent.ToggleEnemyType(type)) },
                         onClearEnemyTypes = { viewModel.onEvent(TeamDetailEvent.ClearEnemyTypes) },
                         onAddSuggestion = { pokemonId -> viewModel.onEvent(TeamDetailEvent.AddSuggestion(pokemonId)) }
@@ -411,6 +413,7 @@ private fun SuggestTab(
     suggestions: List<TeamSuggestion>,
     selectedEnemyTypes: Set<String>,
     teamSize: Int,
+    isLoading: Boolean,
     onToggleEnemyType: (String) -> Unit,
     onClearEnemyTypes: () -> Unit,
     onAddSuggestion: (Int) -> Unit,
@@ -458,6 +461,10 @@ private fun SuggestTab(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
+            }
+        } else if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
             }
         } else if (suggestions.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

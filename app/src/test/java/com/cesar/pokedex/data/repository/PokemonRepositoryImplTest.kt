@@ -697,6 +697,41 @@ class PokemonRepositoryImplTest {
     }
 
     @Test
+    fun `getPokemonList re-fetches when cached pokemon have empty types`() = runTest {
+        coEvery { dao.getAllPokemon() } returns listOf(
+            PokemonEntity(id = 1, name = "Bulbasaur", imageUrl = "https://example.com/1.png", types = emptyList())
+        )
+        coEvery { api.getPokemonList(limit = 1) } returns PokemonListResponse(
+            count = 1,
+            results = listOf(PokemonDto("bulbasaur", "https://pokeapi.co/api/v2/pokemon-species/1/"))
+        )
+        stubTypeListEmpty()
+
+        repository.getPokemonList()
+
+        coVerify { dao.deleteAllPokemon() }
+        coVerify { api.getPokemonList(limit = 1) }
+    }
+
+    @Test
+    fun `getPokemonList re-fetches when cached types are not English`() = runTest {
+        // "Fuego" is Spanish for Fire and is NOT in the English type name set
+        coEvery { dao.getAllPokemon() } returns listOf(
+            PokemonEntity(id = 1, name = "Bulbasaur", imageUrl = "https://example.com/1.png", types = listOf("Fuego"))
+        )
+        coEvery { api.getPokemonList(limit = 1) } returns PokemonListResponse(
+            count = 1,
+            results = listOf(PokemonDto("bulbasaur", "https://pokeapi.co/api/v2/pokemon-species/1/"))
+        )
+        stubTypeListEmpty()
+
+        repository.getPokemonList()
+
+        coVerify { dao.deleteAllPokemon() }
+        coVerify { api.getPokemonList(limit = 1) }
+    }
+
+    @Test
     fun `getEvolutionInfo returns cached data when available`() = runTest {
         val cachedJson = """{"evolutions":[],"varieties":[{"id":1,"name":"Bulbasaur","imageUrl":"https://example.com/1.png","isDefault":true}]}"""
         coEvery { dao.getEvolutionInfo(1) } returns PokemonEvolutionEntity(id = 1, json = cachedJson)

@@ -17,6 +17,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -183,6 +184,35 @@ class TeamDetailViewModelTest {
         viewModel.uiState.test {
             val state = awaitItem()
             assertTrue(state.team == null)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `isLoadingSuggestions is false after pokemon list is loaded`() = runTest {
+        // getPokemonList() is already stubbed in class setup to return [charizard, blastoise].
+        // With UnconfinedTestDispatcher, loadAllPokemon() completes before awaitItem() runs,
+        // so the first emission reflects the settled final state.
+        val viewModel = createViewModel()
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertFalse("isLoadingSuggestions should be false after list loads", state.isLoadingSuggestions)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `isLoadingSuggestions is false when pokemon list load throws`() = runTest {
+        // Override the default stub to simulate a network failure.
+        // The try-catch in loadAllPokemon() always sets _isLoadingSuggestions to false afterwards.
+        coEvery { pokemonRepository.getPokemonList() } throws RuntimeException("Network error")
+
+        val viewModel = createViewModel()
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertFalse("isLoadingSuggestions should be false even after error", state.isLoadingSuggestions)
             cancelAndIgnoreRemainingEvents()
         }
     }

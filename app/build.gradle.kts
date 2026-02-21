@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.ktlint)
 }
 
 android {
@@ -37,6 +38,15 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+}
+
+ktlint {
+    android.set(true)
+    outputColorName.set("RED")
+    reporters {
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
     }
 }
 
@@ -79,6 +89,8 @@ dependencies {
 
     // ViewModel Compose
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    ktlintRuleset(libs.compose.rules.ktlint)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
