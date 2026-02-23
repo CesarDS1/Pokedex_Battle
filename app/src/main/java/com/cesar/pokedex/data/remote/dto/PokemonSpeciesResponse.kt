@@ -16,7 +16,8 @@ data class PokemonSpeciesResponse(
 @Serializable
 data class FlavorTextEntry(
     @SerialName("flavor_text") val flavorText: String,
-    val language: NamedApiResource
+    val language: NamedApiResource,
+    val version: NamedApiResource
 )
 
 @Serializable

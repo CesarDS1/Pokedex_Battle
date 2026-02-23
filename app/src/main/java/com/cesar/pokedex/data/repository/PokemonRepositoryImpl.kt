@@ -10,6 +10,7 @@ import com.cesar.pokedex.data.remote.PokeApiService
 import com.cesar.pokedex.data.remote.dto.ChainLink
 import com.cesar.pokedex.data.remote.dto.LocalizedName
 import com.cesar.pokedex.domain.model.Ability
+import com.cesar.pokedex.domain.model.GameEntry
 import com.cesar.pokedex.domain.model.Move
 import com.cesar.pokedex.domain.model.PokemonStat
 import com.cesar.pokedex.domain.model.EvolutionStage
@@ -231,6 +232,17 @@ class PokemonRepositoryImpl @Inject constructor(
         val localizedPokemonName = species.names.localized(lang)
             ?: detail.name.replaceFirstChar { it.uppercase() }
 
+        val gameEntries = species.flavorTextEntries
+            .distinctBy { it.version.name }
+            .map { entry ->
+                GameEntry(
+                    gameName = entry.version.name
+                        .replace("-", " ")
+                        .split(" ")
+                        .joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } }
+                )
+            }
+
         val pokemonDetail = PokemonDetail(
             id = speciesId,
             name = localizedPokemonName,
@@ -244,7 +256,8 @@ class PokemonRepositoryImpl @Inject constructor(
             abilities = abilities,
             moves = moves,
             cryUrl = detail.cries?.latest ?: detail.cries?.legacy,
-            stats = stats
+            stats = stats,
+            gameEntries = gameEntries
         )
 
         dao.insertPokemonDetail(PokemonDetailEntity(id = id, json = json.encodeToString(pokemonDetail)))

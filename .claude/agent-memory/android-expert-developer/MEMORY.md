@@ -27,6 +27,18 @@ viewModel.uiState.test {
 ```
 To override a class-level `coEvery` stub, re-declare it inside the test before creating the ViewModel.
 
+## UI Component Locations
+- `typeColor()`, `TypeBadge`, `WrappingRow` — `ui/component/TypeComponents.kt`
+- `MatchupsTab` — `ui/screen/pokemondetail/MatchupsTab.kt` (separate file)
+- `StatsTab` — `ui/screen/pokemondetail/StatsTab.kt` (separate file)
+- Detail screen hero gradient uses `typeColor(pokemon.types.firstOrNull()?.name ?: "Normal").copy(alpha = 0.25f)` with `Brush.verticalGradient`
+
+## Compose Import Notes
+- `AnimatedContent` + `togetherWith` need `androidx.compose.animation.*` imports
+- `SubcomposeAsyncImage` is from `coil.compose.SubcomposeAsyncImage` (replaces `AsyncImage` when loading state needed)
+- `OutlinedButton` replaces `FilledTonalButton` for secondary navigation actions in this screen
+- `mutableFloatStateOf` is in `androidx.compose.runtime` (stable in Compose 1.7.x / BOM 2024.09.00)
+
 ## Files Reference
 - Production repo: `app/src/main/java/com/cesar/pokedex/data/repository/PokemonRepositoryImpl.kt`
 - Repo test: `app/src/test/java/com/cesar/pokedex/data/repository/PokemonRepositoryImplTest.kt`

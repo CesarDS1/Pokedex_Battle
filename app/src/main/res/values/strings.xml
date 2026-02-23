@@ -18,6 +18,8 @@
     <string name="tab_about">About</string>
     <string name="tab_stats">Stats</string>
     <string name="tab_matchups">Matchups</string>
+    <string name="tab_games">Games</string>
+    <string name="no_game_entries">No game entries available.</string>
     <string name="evolutions_and_forms">Evolutions &amp; Forms</string>
     <string name="moves_by_level">Moves by Level</string>
     <string name="height">Height</string>

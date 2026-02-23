@@ -378,7 +378,7 @@ class PokemonRepositoryImplTest {
     fun `getPokemonDetail returns empty description when no english entry`() = runTest {
         stubDetailAndSpecies(
             flavorTextEntries = listOf(
-                FlavorTextEntry("Un ratón eléctrico.", NamedApiResource("es", ""))
+                FlavorTextEntry("Un ratón eléctrico.", NamedApiResource("es", ""), NamedApiResource("red", ""))
             )
         )
 
@@ -773,7 +773,7 @@ class PokemonRepositoryImplTest {
         ),
         generation: String = "generation-i",
         flavorTextEntries: List<FlavorTextEntry> = listOf(
-            FlavorTextEntry("An electric mouse.", NamedApiResource("en", ""))
+            FlavorTextEntry("An electric mouse.", NamedApiResource("en", ""), NamedApiResource("red", ""))
         ),
         stats: List<StatSlot> = emptyList()
     ) {

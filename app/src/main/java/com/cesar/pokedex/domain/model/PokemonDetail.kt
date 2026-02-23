@@ -16,8 +16,12 @@ data class PokemonDetail(
     val abilities: List<Ability>,
     val moves: List<Move> = emptyList(),
     val cryUrl: String? = null,
-    val stats: List<PokemonStat> = emptyList()
+    val stats: List<PokemonStat> = emptyList(),
+    val gameEntries: List<GameEntry> = emptyList()
 )
+
+@Serializable
+data class GameEntry(val gameName: String)
 
 @Serializable
 data class PokemonType(
