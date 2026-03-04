@@ -214,33 +214,40 @@ private fun PokemonDetailContent(
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
+            Text(
+                text = pokemon.name,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = pokemon.name,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                if (pokemon.cryUrl != null) {
-                    IconButton(
-                        onClick = { onPlayCry(pokemon.cryUrl) },
-                        enabled = !isPlayingCry
-                    ) {
-                        AnimatedContent(
-                            targetState = isPlayingCry,
-                            transitionSpec = { fadeIn() togetherWith fadeOut() },
-                            label = "cryButton"
-                        ) { playing ->
-                            if (playing) {
-                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Filled.PlayArrow,
-                                    contentDescription = stringResource(R.string.play_cry)
-                                )
-                            }
+                pokemon.types.forEach { type -> TypeBadge(typeName = type.name) }
+            }
+
+            if (pokemon.cryUrl != null) {
+                IconButton(
+                    onClick = { onPlayCry(pokemon.cryUrl) },
+                    enabled = !isPlayingCry,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    AnimatedContent(
+                        targetState = isPlayingCry,
+                        transitionSpec = { fadeIn() togetherWith fadeOut() },
+                        label = "cryButton"
+                    ) { playing ->
+                        if (playing) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                        } else {
+                            Icon(
+                                imageVector = Icons.Filled.PlayArrow,
+                                contentDescription = stringResource(R.string.play_cry),
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                     }
                 }
@@ -300,14 +307,6 @@ private fun AboutTab(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        WrappingRow(horizontalSpacing = 8.dp, verticalSpacing = 4.dp) {
-            pokemon.types.forEach { type ->
-                TypeBadge(typeName = type.name)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
         PokemonInfoCard(pokemon = pokemon)
 
         Spacer(modifier = Modifier.height(12.dp))

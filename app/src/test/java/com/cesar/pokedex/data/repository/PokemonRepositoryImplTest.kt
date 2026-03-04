@@ -29,6 +29,7 @@ import com.cesar.pokedex.data.remote.dto.StatResponse
 import com.cesar.pokedex.data.remote.dto.TypePokemonSlot
 import com.cesar.pokedex.data.remote.dto.TypeResponse
 import com.cesar.pokedex.data.local.dao.PokemonDao
+import com.cesar.pokedex.data.local.entity.FavoritePokemonEntity
 import com.cesar.pokedex.data.local.entity.PokemonDetailEntity
 import com.cesar.pokedex.data.local.entity.PokemonEntity
 import com.cesar.pokedex.data.local.entity.PokemonEvolutionEntity
@@ -38,6 +39,8 @@ import io.mockk.coJustRun
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -741,6 +744,50 @@ class PokemonRepositoryImplTest {
         assertEquals(1, result.varieties.size)
         assertEquals("Bulbasaur", result.varieties[0].name)
         coVerify(exactly = 0) { api.getPokemonSpecies(any()) }
+    }
+
+    // endregion
+
+    // region Favorites
+
+    @Test
+    fun `toggleFavorite insertsWhenNotCurrentlyFavorite`() = runTest {
+        coEvery { dao.isFavorite(25) } returns false
+        coJustRun { dao.insertFavorite(any()) }
+
+        repository.toggleFavorite(25)
+
+        coVerify { dao.insertFavorite(FavoritePokemonEntity(25)) }
+        coVerify(exactly = 0) { dao.deleteFavorite(any()) }
+    }
+
+    @Test
+    fun `toggleFavorite deletesWhenCurrentlyFavorite`() = runTest {
+        coEvery { dao.isFavorite(25) } returns true
+        coJustRun { dao.deleteFavorite(any()) }
+
+        repository.toggleFavorite(25)
+
+        coVerify { dao.deleteFavorite(25) }
+        coVerify(exactly = 0) { dao.insertFavorite(any()) }
+    }
+
+    @Test
+    fun `getFavoriteIds mapsListToSet`() = runTest {
+        every { dao.getFavoriteIds() } returns flowOf(listOf(1, 4, 25))
+
+        val result = repository.getFavoriteIds().first()
+
+        assertEquals(setOf(1, 4, 25), result)
+    }
+
+    @Test
+    fun `getFavoriteIds emptyListMapsToEmptySet`() = runTest {
+        every { dao.getFavoriteIds() } returns flowOf(emptyList())
+
+        val result = repository.getFavoriteIds().first()
+
+        assertEquals(emptySet<Int>(), result)
     }
 
     // endregion

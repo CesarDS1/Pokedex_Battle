@@ -1,11 +1,9 @@
 package com.cesar.pokedex.ui.screen.pokemonteam
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,10 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -26,7 +20,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -37,7 +30,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -54,14 +46,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.cesar.pokedex.domain.model.Pokemon
 import com.cesar.pokedex.domain.model.TeamAnalysis
-import com.cesar.pokedex.domain.model.TeamSuggestion
 import com.cesar.pokedex.ui.component.TypeBadge
 import com.cesar.pokedex.ui.component.WrappingRow
 import com.cesar.pokedex.ui.component.typeColor
-import com.cesar.pokedex.ui.screen.pokemonlist.ALL_POKEMON_TYPES
 import kotlinx.coroutines.launch
 
-private val TABS = listOf("Roster", "Analysis", "Suggest")
+private val TABS = listOf("Roster", "Analysis")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -119,15 +109,6 @@ fun TeamDetailScreen(
                         onRemoveMember = { pokemonId -> viewModel.onEvent(TeamDetailEvent.RemoveMember(pokemonId)) }
                     )
                     1 -> AnalysisTab(analysis = uiState.analysis)
-                    2 -> SuggestTab(
-                        suggestions = uiState.suggestions,
-                        selectedEnemyTypes = uiState.selectedEnemyTypes,
-                        teamSize = uiState.team?.members?.size ?: 0,
-                        isLoading = uiState.isLoadingSuggestions,
-                        onToggleEnemyType = { type -> viewModel.onEvent(TeamDetailEvent.ToggleEnemyType(type)) },
-                        onClearEnemyTypes = { viewModel.onEvent(TeamDetailEvent.ClearEnemyTypes) },
-                        onAddSuggestion = { pokemonId -> viewModel.onEvent(TeamDetailEvent.AddSuggestion(pokemonId)) }
-                    )
                 }
             }
         }
@@ -405,144 +386,5 @@ private fun TypeCountBadge(
             style = MaterialTheme.typography.labelSmall,
             color = Color.White.copy(alpha = 0.85f)
         )
-    }
-}
-
-@Composable
-private fun SuggestTab(
-    suggestions: List<TeamSuggestion>,
-    selectedEnemyTypes: Set<String>,
-    teamSize: Int,
-    isLoading: Boolean,
-    onToggleEnemyType: (String) -> Unit,
-    onClearEnemyTypes: () -> Unit,
-    onAddSuggestion: (Int) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier.fillMaxSize()) {
-        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Text(
-                text = "Select enemy types to find counters:",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(vertical = 4.dp)
-            ) {
-                items(ALL_POKEMON_TYPES) { type ->
-                    val isSelected = type.lowercase() in selectedEnemyTypes
-                    val color = typeColor(type)
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(color.copy(alpha = if (isSelected) 1f else 0.4f))
-                            .clickable { onToggleEnemyType(type.lowercase()) }
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
-                    ) {
-                        Text(text = type, style = MaterialTheme.typography.labelMedium, color = Color.White)
-                    }
-                }
-            }
-            if (selectedEnemyTypes.isNotEmpty()) {
-                TextButton(onClick = onClearEnemyTypes) {
-                    Icon(imageVector = Icons.Default.Clear, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Clear")
-                }
-            }
-        }
-
-        if (selectedEnemyTypes.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(
-                    text = "Select one or more enemy types above.",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
-                )
-            }
-        } else if (isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        } else if (suggestions.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(
-                    text = "No suitable suggestions found.",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
-                )
-            }
-        } else {
-            LazyColumn(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(suggestions, key = { it.pokemon.id }) { suggestion ->
-                    SuggestionCard(
-                        suggestion = suggestion,
-                        teamFull = teamSize >= 6,
-                        onAdd = { onAddSuggestion(suggestion.pokemon.id) }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun SuggestionCard(
-    suggestion: TeamSuggestion,
-    teamFull: Boolean,
-    onAdd: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    ElevatedCard(modifier = modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            AsyncImage(
-                model = suggestion.pokemon.imageUrl,
-                contentDescription = suggestion.pokemon.name,
-                modifier = Modifier.size(56.dp)
-            )
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = suggestion.pokemon.name,
-                    style = MaterialTheme.typography.titleSmall
-                )
-                WrappingRow(horizontalSpacing = 4.dp, verticalSpacing = 4.dp) {
-                    suggestion.pokemon.types.forEach { TypeBadge(typeName = it) }
-                }
-                if (suggestion.coverageDetails.isNotEmpty()) {
-                    Text(
-                        text = suggestion.coverageDetails.take(2).joinToString(" · "),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = "Score: ${suggestion.score}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                if (!teamFull) {
-                    IconButton(onClick = onAdd, modifier = Modifier.size(32.dp)) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Add to team",
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-            }
-        }
     }
 }

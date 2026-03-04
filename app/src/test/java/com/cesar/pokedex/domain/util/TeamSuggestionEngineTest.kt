@@ -102,4 +102,59 @@ class TeamSuggestionEngineTest {
         val suggestion = result.firstOrNull { it.pokemon.id == 1 }
         assertTrue("Coverage details should be populated", suggestion != null && suggestion.coverageDetails.isNotEmpty())
     }
+
+    // ── scoreAll tests ─────────────────────────────────────────────────────────
+
+    @Test
+    fun `scoreAll returns empty map when enemy types empty`() {
+        val result = TeamSuggestionEngine.scoreAll(listOf(makePokemon(1, "Grass")), emptyList(), emptyList())
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `scoreAll includes all pokemon regardless of score`() {
+        // Fire/Flying is weak to Water (score negative), but should still appear
+        val charizard = makePokemon(6, "Fire", "Flying")
+        val bulbasaur = makePokemon(1, "Grass")  // good vs water
+        val result = TeamSuggestionEngine.scoreAll(listOf(charizard, bulbasaur), listOf("water"), emptyList())
+        assertTrue("All non-excluded pokemon should be scored", result.containsKey(charizard.id))
+        assertTrue(result.containsKey(bulbasaur.id))
+    }
+
+    @Test
+    fun `scoreAll gives positive score to grass vs water`() {
+        val result = TeamSuggestionEngine.scoreAll(listOf(makePokemon(1, "Grass")), listOf("water"), emptyList())
+        assertTrue((result[1] ?: 0) > 0)
+    }
+
+    @Test
+    fun `scoreAll gives negative score to fire vs water`() {
+        val result = TeamSuggestionEngine.scoreAll(listOf(makePokemon(1, "Fire")), listOf("water"), emptyList())
+        assertTrue("Fire is weak to Water so score should be negative", (result[1] ?: 0) < 0)
+    }
+
+    @Test
+    fun `scoreAll excludes team members`() {
+        val result = TeamSuggestionEngine.scoreAll(
+            listOf(makePokemon(1, "Grass"), makePokemon(2, "Water")),
+            listOf("fire"),
+            teamMemberIds = listOf(1)
+        )
+        assertFalse(result.containsKey(1))
+        assertTrue(result.containsKey(2))
+    }
+
+    @Test
+    fun `scoreAll excludes pokemon with no types`() {
+        val noType = makePokemon(99)
+        val result = TeamSuggestionEngine.scoreAll(listOf(noType), listOf("water"), emptyList())
+        assertFalse(result.containsKey(99))
+    }
+
+    @Test
+    fun `scoreAll is not capped at 20`() {
+        val allPokemon = (1..50).map { makePokemon(it, "Grass") }
+        val result = TeamSuggestionEngine.scoreAll(allPokemon, listOf("water"), emptyList())
+        assertEquals(50, result.size)
+    }
 }

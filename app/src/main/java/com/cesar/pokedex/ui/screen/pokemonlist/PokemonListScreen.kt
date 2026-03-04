@@ -1,7 +1,7 @@
 package com.cesar.pokedex.ui.screen.pokemonlist
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,16 +29,16 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material3.Button
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -46,6 +46,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -140,23 +141,46 @@ fun PokemonListScreen(
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             )
 
-            TypeFilterRow(
-                selectedTypes = uiState.selectedTypes,
-                onToggleType = { viewModel.onEvent(PokemonListEvent.ToggleTypeFilter(it)) }
-            )
-
-            if (uiState.selectedTypes.isNotEmpty()) {
-                TextButton(
-                    onClick = { viewModel.onEvent(PokemonListEvent.ClearTypeFilters) },
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Clear,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
+            Surface(
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 2.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.filter_by_type),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        if (uiState.selectedTypes.isNotEmpty()) {
+                            TextButton(
+                                onClick = { viewModel.onEvent(PokemonListEvent.ClearTypeFilters) },
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = stringResource(R.string.clear_filters),
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            }
+                        }
+                    }
+                    TypeFilterRow(
+                        selectedTypes = uiState.selectedTypes,
+                        onToggleType = { viewModel.onEvent(PokemonListEvent.ToggleTypeFilter(it)) }
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(stringResource(R.string.clear_filters))
+                    Spacer(modifier = Modifier.padding(bottom = 4.dp))
                 }
             }
 
@@ -298,6 +322,7 @@ private fun GenerationHeader(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PokemonGridCard(
     pokemon: Pokemon,
@@ -309,14 +334,15 @@ private fun PokemonGridCard(
     val primaryType = pokemon.types.firstOrNull() ?: "normal"
     val cardColor = typeColor(primaryType)
 
-    ElevatedCard(
-        onClick = onClick,
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = cardColor.copy(alpha = 0.15f)
-        ),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(cardColor.copy(alpha = 0.15f))
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() },
+                onClick = onClick
+            )
     ) {
         Column(
             modifier = Modifier

@@ -5,12 +5,15 @@ import com.cesar.pokedex.domain.model.Pokemon
 import com.cesar.pokedex.domain.repository.PokemonRepository
 import com.cesar.pokedex.util.MainDispatcherRule
 import io.mockk.coEvery
+import io.mockk.coJustRun
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -215,4 +218,143 @@ class PokemonListViewModelTest {
             assertTrue(grouped.containsKey("Generation IV — Sinnoh"))
         }
     }
+
+    // region Favorites
+
+    @Test
+    fun `toggleShowFavoritesOnly setsShowFavoritesOnlyToTrue`() = runTest {
+        coEvery { repository.getPokemonList() } returns emptyList()
+        val viewModel = createViewModel()
+        viewModel.onEvent(PokemonListEvent.ToggleShowFavoritesOnly)
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertTrue(state.showFavoritesOnly)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `toggleShowFavoritesOnly togglesBackToFalse`() = runTest {
+        coEvery { repository.getPokemonList() } returns emptyList()
+        val viewModel = createViewModel()
+        viewModel.onEvent(PokemonListEvent.ToggleShowFavoritesOnly)
+        viewModel.onEvent(PokemonListEvent.ToggleShowFavoritesOnly)
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertFalse(state.showFavoritesOnly)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `showFavoritesOnly filtersToOnlyFavoritedPokemon`() = runTest {
+        val pokemonList = listOf(
+            Pokemon(id = 1, name = "Bulbasaur", imageUrl = "", types = listOf("Grass")),
+            Pokemon(id = 4, name = "Charmander", imageUrl = "", types = listOf("Fire"))
+        )
+        every { repository.getFavoriteIds() } returns flowOf(setOf(1))
+        coEvery { repository.getPokemonList() } returns pokemonList
+        val viewModel = createViewModel()
+        viewModel.onEvent(PokemonListEvent.ToggleShowFavoritesOnly)
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            val results = state.pokemonByGeneration.values.flatten()
+            assertEquals(1, results.size)
+            assertEquals("Bulbasaur", results[0].name)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `showFavoritesOnly showsNoPokemonWhenNoFavorites`() = runTest {
+        val pokemonList = listOf(
+            Pokemon(id = 1, name = "Bulbasaur", imageUrl = "", types = listOf("Grass"))
+        )
+        coEvery { repository.getPokemonList() } returns pokemonList
+        val viewModel = createViewModel()
+        viewModel.onEvent(PokemonListEvent.ToggleShowFavoritesOnly)
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertTrue(state.pokemonByGeneration.values.flatten().isEmpty())
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `favoriteIds areExposedInUiState`() = runTest {
+        val pokemonList = listOf(
+            Pokemon(id = 25, name = "Pikachu", imageUrl = "", types = emptyList())
+        )
+        every { repository.getFavoriteIds() } returns flowOf(setOf(25))
+        coEvery { repository.getPokemonList() } returns pokemonList
+        val viewModel = createViewModel()
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertEquals(setOf(25), state.favoriteIds)
+            assertEquals(1, state.pokemonByGeneration.values.flatten().size)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `favoriteIds reactToNewEmissions`() = runTest {
+        val favoriteFlow = MutableStateFlow<Set<Int>>(emptySet())
+        every { repository.getFavoriteIds() } returns favoriteFlow
+        val pokemonList = listOf(
+            Pokemon(id = 25, name = "Pikachu", imageUrl = "", types = emptyList())
+        )
+        coEvery { repository.getPokemonList() } returns pokemonList
+        val viewModel = createViewModel()
+
+        viewModel.uiState.test {
+            val initial = awaitItem()
+            assertEquals(emptySet<Int>(), initial.favoriteIds)
+
+            favoriteFlow.value = setOf(25)
+
+            val updated = awaitItem()
+            assertEquals(setOf(25), updated.favoriteIds)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `toggleFavorite callsRepositoryWithCorrectId`() = runTest {
+        coJustRun { repository.toggleFavorite(any()) }
+        coEvery { repository.getPokemonList() } returns emptyList()
+        val viewModel = createViewModel()
+
+        viewModel.onEvent(PokemonListEvent.ToggleFavorite(25))
+
+        coVerify { repository.toggleFavorite(25) }
+    }
+
+    @Test
+    fun `showFavoritesOnly combinedWithSearchFilter`() = runTest {
+        val pokemonList = listOf(
+            Pokemon(id = 1, name = "Bulbasaur", imageUrl = "", types = listOf("Grass")),
+            Pokemon(id = 4, name = "Charmander", imageUrl = "", types = listOf("Fire")),
+            Pokemon(id = 25, name = "Pikachu", imageUrl = "", types = listOf("Electric"))
+        )
+        every { repository.getFavoriteIds() } returns flowOf(setOf(1, 4))
+        coEvery { repository.getPokemonList() } returns pokemonList
+        val viewModel = createViewModel()
+        viewModel.onEvent(PokemonListEvent.ToggleShowFavoritesOnly)
+        viewModel.onEvent(PokemonListEvent.Search("bulb"))
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            val results = state.pokemonByGeneration.values.flatten()
+            assertEquals(1, results.size)
+            assertEquals("Bulbasaur", results[0].name)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    // endregion
 }

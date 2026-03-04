@@ -31,6 +31,9 @@
     <string name="base_stats">Estadísticas Base</string>
     <string name="total">Total</string>
     <string name="type_matchups_format">Ventajas de %1$s</string>
+    <string name="defensive_matchups">Defensiva</string>
+    <string name="immune_to">Inmune a</string>
+    <string name="offensive_matchups_format">%1$s — Ofensiva</string>
     <string name="weak_to">Débil contra</string>
     <string name="resistant_to">Resistente a</string>
     <string name="strong_against">Fuerte contra</string>
@@ -40,6 +43,10 @@
     <string name="evolution_chain">Cadena de Evolución</string>
     <string name="does_not_evolve">Este Pokemon no evoluciona.</string>
     <string name="alternate_forms">Formas Alternativas</string>
+
+    <!-- Team builder -->
+    <string name="filter_by_type">Filtrar por tipo:</string>
+    <string name="suggest_vs">Sugerir vs:</string>
 
     <!-- Moves screen -->
     <string name="no_level_up_moves">Este Pokemon no aprende movimientos al subir de nivel.</string>

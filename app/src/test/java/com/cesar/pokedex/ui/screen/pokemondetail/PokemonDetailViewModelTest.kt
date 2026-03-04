@@ -8,12 +8,15 @@ import com.cesar.pokedex.domain.model.PokemonType
 import com.cesar.pokedex.domain.repository.PokemonRepository
 import com.cesar.pokedex.util.MainDispatcherRule
 import io.mockk.coEvery
+import io.mockk.coJustRun
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -140,4 +143,88 @@ class PokemonDetailViewModelTest {
             )
         }
     }
+
+    // region Favorites
+
+    @Test
+    fun `isFavorite isTrueWhenPokemonIdIsInFavoriteSet`() = runTest {
+        every { repository.getFavoriteIds() } returns flowOf(setOf(25))
+        coEvery { repository.getPokemonDetail(25) } returns testDetail
+        val viewModel = createViewModel()
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertTrue(state is PokemonDetailUiState.Success)
+            assertTrue((state as PokemonDetailUiState.Success).isFavorite)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `isFavorite isFalseWhenPokemonIdIsNotInFavoriteSet`() = runTest {
+        coEvery { repository.getPokemonDetail(25) } returns testDetail
+        val viewModel = createViewModel()
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertTrue(state is PokemonDetailUiState.Success)
+            assertFalse((state as PokemonDetailUiState.Success).isFavorite)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `isFavorite reactsToNewEmissionFromFavoriteIds`() = runTest {
+        val favoriteFlow = MutableStateFlow<Set<Int>>(emptySet())
+        every { repository.getFavoriteIds() } returns favoriteFlow
+        coEvery { repository.getPokemonDetail(25) } returns testDetail
+        val viewModel = createViewModel()
+
+        viewModel.uiState.test {
+            val initial = awaitItem()
+            assertTrue(initial is PokemonDetailUiState.Success)
+            assertFalse((initial as PokemonDetailUiState.Success).isFavorite)
+
+            favoriteFlow.value = setOf(25)
+
+            val updated = awaitItem()
+            assertTrue(updated is PokemonDetailUiState.Success)
+            assertTrue((updated as PokemonDetailUiState.Success).isFavorite)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `toggleFavorite callsRepositoryToggleFavoriteWithPokemonId`() = runTest {
+        coJustRun { repository.toggleFavorite(any()) }
+        coEvery { repository.getPokemonDetail(25) } returns testDetail
+        val viewModel = createViewModel()
+
+        viewModel.onEvent(PokemonDetailEvent.ToggleFavorite)
+
+        coVerify { repository.toggleFavorite(25) }
+    }
+
+    @Test
+    fun `toggleFavorite doesNotChangeLoadStateDirectly`() = runTest {
+        coJustRun { repository.toggleFavorite(any()) }
+        coEvery { repository.getPokemonDetail(25) } returns testDetail
+        val viewModel = createViewModel()
+
+        viewModel.uiState.test {
+            val before = awaitItem()
+            assertTrue(before is PokemonDetailUiState.Success)
+
+            viewModel.onEvent(PokemonDetailEvent.ToggleFavorite)
+
+            // No new emission for Success type (isFavorite unchanged here since mock returns same flow)
+            // The load state remains Success after the toggle
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        val finalState = viewModel.uiState.value
+        assertTrue(finalState is PokemonDetailUiState.Success)
+    }
+
+    // endregion
 }

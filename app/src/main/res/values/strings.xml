@@ -33,6 +33,9 @@
     <string name="base_stats">Base Stats</string>
     <string name="total">Total</string>
     <string name="type_matchups_format">%1$s Matchups</string>
+    <string name="defensive_matchups">Defensive</string>
+    <string name="immune_to">Immune to</string>
+    <string name="offensive_matchups_format">%1$s — Offensive</string>
     <string name="weak_to">Weak to</string>
     <string name="resistant_to">Resistant to</string>
     <string name="strong_against">Strong against</string>
@@ -42,6 +45,10 @@
     <string name="evolution_chain">Evolution Chain</string>
     <string name="does_not_evolve">This Pokemon does not evolve.</string>
     <string name="alternate_forms">Alternate Forms</string>
+
+    <!-- Team builder -->
+    <string name="filter_by_type">Filter by type:</string>
+    <string name="suggest_vs">Suggest vs:</string>
 
     <!-- Moves screen -->
     <string name="no_level_up_moves">This Pokemon doesn\'t learn any moves by leveling up.</string>

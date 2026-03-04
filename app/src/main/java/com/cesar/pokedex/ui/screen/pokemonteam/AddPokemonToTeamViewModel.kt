@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.cesar.pokedex.domain.model.Pokemon
 import com.cesar.pokedex.domain.repository.PokemonRepository
 import com.cesar.pokedex.domain.repository.TeamRepository
+import com.cesar.pokedex.domain.util.TeamSuggestionEngine
 import com.cesar.pokedex.ui.screen.pokemonlist.ALL_POKEMON_TYPES
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -30,14 +31,15 @@ class AddPokemonToTeamViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     private val _selectedTypes = MutableStateFlow<Set<String>>(emptySet())
     private val _isLoading = MutableStateFlow(true)
+    private val _selectedEnemyTypes = MutableStateFlow<Set<String>>(emptySet())
 
     val uiState = combine(
-        _allPokemon,
-        _searchQuery,
-        _selectedTypes,
+        combine(_allPokemon, _searchQuery, _selectedTypes) { all, q, types -> Triple(all, q, types) },
         _isLoading,
-        teamRepository.getAllTeams()
-    ) { allPokemon, query, selectedTypes, isLoading, teams ->
+        teamRepository.getAllTeams(),
+        _selectedEnemyTypes
+    ) { triple, isLoading, teams, enemyTypes ->
+        val (allPokemon, query, selectedTypes) = triple
         val teamMemberIds = teams.firstOrNull { it.id == teamId }?.members?.map { it.id }?.toSet() ?: emptySet()
 
         val filtered = allPokemon
@@ -51,13 +53,25 @@ class AddPokemonToTeamViewModel @Inject constructor(
                 else list.filter { pokemon -> pokemon.types.any { it.lowercase() in selectedTypes.map { s -> s.lowercase() } } }
             }
 
+        val suggestions = if (enemyTypes.isEmpty()) emptyMap()
+        else TeamSuggestionEngine.scoreAll(
+            allPokemon = allPokemon,
+            enemyTypes = enemyTypes.toList(),
+            teamMemberIds = teamMemberIds.toList()
+        )
+
+        val sortedFiltered = if (suggestions.isEmpty()) filtered
+        else filtered.sortedWith(compareByDescending { suggestions[it.id] ?: 0 })
+
         AddPokemonUiState(
-            pokemon = filtered,
+            pokemon = sortedFiltered,
             searchQuery = query,
             selectedTypes = selectedTypes,
             isLoading = isLoading,
             teamMemberIds = teamMemberIds,
-            allTypes = ALL_POKEMON_TYPES
+            allTypes = ALL_POKEMON_TYPES,
+            selectedEnemyTypes = enemyTypes,
+            suggestions = suggestions
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AddPokemonUiState())
 
@@ -88,6 +102,12 @@ class AddPokemonToTeamViewModel @Inject constructor(
                     _events.send(AddPokemonEvent.PopBack)
                 }
             }
+            is AddPokemonToTeamEvent.ToggleEnemyType -> {
+                _selectedEnemyTypes.value = _selectedEnemyTypes.value.let { current ->
+                    if (event.type in current) current - event.type else current + event.type
+                }
+            }
+            AddPokemonToTeamEvent.ClearEnemyTypes -> _selectedEnemyTypes.value = emptySet()
         }
     }
 }
@@ -98,7 +118,9 @@ data class AddPokemonUiState(
     val selectedTypes: Set<String> = emptySet(),
     val isLoading: Boolean = true,
     val teamMemberIds: Set<Int> = emptySet(),
-    val allTypes: List<String> = emptyList()
+    val allTypes: List<String> = emptyList(),
+    val selectedEnemyTypes: Set<String> = emptySet(),
+    val suggestions: Map<Int, Int> = emptyMap()
 )
 
 sealed interface AddPokemonToTeamEvent {
@@ -106,6 +128,8 @@ sealed interface AddPokemonToTeamEvent {
     data class ToggleTypeFilter(val type: String) : AddPokemonToTeamEvent
     data object ClearTypeFilters : AddPokemonToTeamEvent
     data class AddPokemon(val pokemonId: Int) : AddPokemonToTeamEvent
+    data class ToggleEnemyType(val type: String) : AddPokemonToTeamEvent
+    data object ClearEnemyTypes : AddPokemonToTeamEvent
 }
 
 sealed interface AddPokemonEvent {

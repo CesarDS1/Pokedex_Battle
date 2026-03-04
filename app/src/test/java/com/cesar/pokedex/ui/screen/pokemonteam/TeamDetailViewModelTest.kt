@@ -14,12 +14,11 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -33,7 +32,6 @@ class TeamDetailViewModelTest {
     private val savedStateHandle = SavedStateHandle(mapOf("teamId" to teamId))
 
     private val charizard = Pokemon(id = 6, name = "Charizard", imageUrl = "", types = listOf("Fire", "Flying"))
-    private val blastoise = Pokemon(id = 9, name = "Blastoise", imageUrl = "", types = listOf("Water"))
     private val defaultTeam = PokemonTeam(id = teamId, name = "Test Team", members = listOf(charizard))
 
     private fun makeDetail(pokemon: Pokemon) = PokemonDetail(
@@ -49,9 +47,7 @@ class TeamDetailViewModelTest {
 
     private val pokemonRepository: PokemonRepository = mockk {
         every { getFavoriteIds() } returns flowOf(emptySet())
-        coEvery { getPokemonList() } returns listOf(charizard, blastoise)
         coEvery { getPokemonDetail(charizard.id) } returns makeDetail(charizard)
-        coEvery { getPokemonDetail(blastoise.id) } returns makeDetail(blastoise)
     }
 
     private fun createViewModel() = TeamDetailViewModel(savedStateHandle, teamRepository, pokemonRepository)
@@ -69,49 +65,6 @@ class TeamDetailViewModelTest {
     }
 
     @Test
-    fun `toggle enemy type updates selected enemy types`() = runTest {
-        val viewModel = createViewModel()
-
-        viewModel.uiState.test {
-            awaitItem()
-            viewModel.onEvent(TeamDetailEvent.ToggleEnemyType("water"))
-            val state = awaitItem()
-            assertTrue("water" in state.selectedEnemyTypes)
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `toggle enemy type twice removes it`() = runTest {
-        val viewModel = createViewModel()
-
-        viewModel.uiState.test {
-            awaitItem()
-            viewModel.onEvent(TeamDetailEvent.ToggleEnemyType("water"))
-            awaitItem()
-            viewModel.onEvent(TeamDetailEvent.ToggleEnemyType("water"))
-            val state = awaitItem()
-            assertTrue("water" !in state.selectedEnemyTypes)
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `clear enemy types empties the set`() = runTest {
-        val viewModel = createViewModel()
-
-        viewModel.uiState.test {
-            awaitItem()
-            viewModel.onEvent(TeamDetailEvent.ToggleEnemyType("water"))
-            awaitItem()
-            viewModel.onEvent(TeamDetailEvent.ClearEnemyTypes)
-            val state = awaitItem()
-            assertTrue(state.selectedEnemyTypes.isEmpty())
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
     fun `remove member calls repository`() = runTest {
         coEvery { teamRepository.removeMember(teamId, charizard.id) } returns Unit
 
@@ -119,34 +72,6 @@ class TeamDetailViewModelTest {
         viewModel.onEvent(TeamDetailEvent.RemoveMember(charizard.id))
 
         coVerify { teamRepository.removeMember(teamId, charizard.id) }
-    }
-
-    @Test
-    fun `add suggestion calls repository addMember`() = runTest {
-        coEvery { teamRepository.addMember(teamId, blastoise.id) } returns Unit
-
-        val viewModel = createViewModel()
-        viewModel.onEvent(TeamDetailEvent.AddSuggestion(blastoise.id))
-
-        coVerify { teamRepository.addMember(teamId, blastoise.id) }
-    }
-
-    @Test
-    fun `suggestions populated when enemy types selected`() = runTest {
-        val viewModel = createViewModel()
-
-        viewModel.uiState.test {
-            awaitItem()
-            viewModel.onEvent(TeamDetailEvent.ToggleEnemyType("water"))
-            val state = awaitItem()
-            // Charizard (Fire/Flying) would score negatively vs Water, but Blastoise (Water) resists
-            // Grass, Electric types from allPokemon would score positively
-            // Since allPokemon = [charizard, blastoise] and charizard is on team,
-            // only blastoise (Water) would be evaluated vs Water enemy
-            // Blastoise resists Water (+1) but water vs water is 0.5x
-            assertNotNull(state.team)
-            cancelAndIgnoreRemainingEvents()
-        }
     }
 
     @Test
@@ -183,36 +108,7 @@ class TeamDetailViewModelTest {
 
         viewModel.uiState.test {
             val state = awaitItem()
-            assertTrue(state.team == null)
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `isLoadingSuggestions is false after pokemon list is loaded`() = runTest {
-        // getPokemonList() is already stubbed in class setup to return [charizard, blastoise].
-        // With UnconfinedTestDispatcher, loadAllPokemon() completes before awaitItem() runs,
-        // so the first emission reflects the settled final state.
-        val viewModel = createViewModel()
-
-        viewModel.uiState.test {
-            val state = awaitItem()
-            assertFalse("isLoadingSuggestions should be false after list loads", state.isLoadingSuggestions)
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `isLoadingSuggestions is false when pokemon list load throws`() = runTest {
-        // Override the default stub to simulate a network failure.
-        // The try-catch in loadAllPokemon() always sets _isLoadingSuggestions to false afterwards.
-        coEvery { pokemonRepository.getPokemonList() } throws RuntimeException("Network error")
-
-        val viewModel = createViewModel()
-
-        viewModel.uiState.test {
-            val state = awaitItem()
-            assertFalse("isLoadingSuggestions should be false even after error", state.isLoadingSuggestions)
+            assertNull(state.team)
             cancelAndIgnoreRemainingEvents()
         }
     }

@@ -152,6 +152,7 @@ class PokemonRepositoryImpl @Inject constructor(
                 ?: typeResponse.name.replaceFirstChar { it.uppercase() }
             PokemonType(
                 name = localizedTypeName.replaceFirstChar { it.uppercase() },
+                apiName = typeResponse.name.lowercase(),
                 weaknesses = typeResponse.damageRelations.doubleDamageFrom.map {
                     it.name.replaceFirstChar { c -> c.uppercase() }
                 },

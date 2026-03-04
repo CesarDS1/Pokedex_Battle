@@ -26,6 +26,7 @@ data class GameEntry(val gameName: String)
 @Serializable
 data class PokemonType(
     val name: String,
+    val apiName: String = "",  // English lowercase slug from PokeAPI (e.g. "fire", "flying")
     val weaknesses: List<String>,
     val resistances: List<String>,
     val strengths: List<String>,

@@ -2,6 +2,7 @@ package com.cesar.pokedex.data.di
 
 import android.content.Context
 import androidx.room.Room
+import com.cesar.pokedex.BuildConfig
 import com.cesar.pokedex.data.locale.DeviceLocaleProvider
 import com.cesar.pokedex.data.local.PokedexDatabase
 import com.cesar.pokedex.data.local.dao.PokemonDao
@@ -34,11 +35,15 @@ object DataModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient = OkHttpClient.Builder()
-        .addInterceptor(HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BASIC
-        })
-        .build()
+    fun provideOkHttpClient(): OkHttpClient {
+        val builder = OkHttpClient.Builder()
+        if (BuildConfig.DEBUG) {
+            builder.addInterceptor(HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BASIC
+            })
+        }
+        return builder.build()
+    }
 
     @Provides
     @Singleton
@@ -58,7 +63,7 @@ object DataModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): PokedexDatabase =
         Room.databaseBuilder(context, PokedexDatabase::class.java, "pokedex.db")
-            .fallbackToDestructiveMigration(dropAllTables = true)
+            .fallbackToDestructiveMigration(dropAllTables = false)
             .build()
 
     @Provides
