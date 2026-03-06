@@ -71,49 +71,60 @@ fun PokemonEvolutionScreen(
         },
         modifier = modifier
     ) { innerPadding ->
-        when (val state = uiState) {
-            is PokemonEvolutionUiState.Loading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
+        EvolutionScreenContent(
+            uiState = uiState,
+            onRetry = { viewModel.onEvent(PokemonEvolutionEvent.LoadEvolution) },
+            onPokemonClick = onPokemonClick,
+            modifier = Modifier.padding(innerPadding)
+        )
+    }
+}
 
-            is PokemonEvolutionUiState.Error -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = state.message,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                        Button(
-                            onClick = { viewModel.onEvent(PokemonEvolutionEvent.LoadEvolution) },
-                            modifier = Modifier.padding(top = 16.dp)
-                        ) {
-                            Text(stringResource(R.string.retry))
-                        }
+@Composable
+internal fun EvolutionScreenContent(
+    uiState: PokemonEvolutionUiState,
+    onRetry: () -> Unit,
+    onPokemonClick: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    when (val state = uiState) {
+        is PokemonEvolutionUiState.Loading -> {
+            Box(
+                modifier = modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+
+        is PokemonEvolutionUiState.Error -> {
+            Box(
+                modifier = modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = state.message,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Button(
+                        onClick = onRetry,
+                        modifier = Modifier.padding(top = 16.dp)
+                    ) {
+                        Text(stringResource(R.string.retry))
                     }
                 }
             }
+        }
 
-            is PokemonEvolutionUiState.Success -> {
-                EvolutionContent(
-                    info = state.info,
-                    currentPokemonId = state.currentPokemonId,
-                    onPokemonClick = onPokemonClick,
-                    modifier = Modifier.padding(innerPadding)
-                )
-            }
+        is PokemonEvolutionUiState.Success -> {
+            EvolutionContent(
+                info = state.info,
+                currentPokemonId = state.currentPokemonId,
+                onPokemonClick = onPokemonClick,
+                modifier = modifier
+            )
         }
     }
 }

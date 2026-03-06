@@ -86,171 +86,182 @@ fun AddPokemonToTeamScreen(
         },
         modifier = modifier
     ) { innerPadding ->
-        Column(
+        AddPokemonToTeamContent(
+            uiState = uiState,
+            onEvent = viewModel::onEvent,
+            modifier = Modifier.padding(innerPadding)
+        )
+    }
+}
+
+@Composable
+internal fun AddPokemonToTeamContent(
+    uiState: AddPokemonUiState,
+    onEvent: (AddPokemonToTeamEvent) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxSize()
+    ) {
+        OutlinedTextField(
+            value = uiState.searchQuery,
+            onValueChange = { onEvent(AddPokemonToTeamEvent.Search(it)) },
+            placeholder = { Text("Search Pokemon…") },
+            leadingIcon = {
+                Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
+            },
+            trailingIcon = {
+                if (uiState.searchQuery.isNotEmpty()) {
+                    IconButton(onClick = { onEvent(AddPokemonToTeamEvent.Search("")) }) {
+                        Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear")
+                    }
+                }
+            },
+            singleLine = true,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+
+        // Filter panel — unified surface container
+        Surface(
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            OutlinedTextField(
-                value = uiState.searchQuery,
-                onValueChange = { viewModel.onEvent(AddPokemonToTeamEvent.Search(it)) },
-                placeholder = { Text("Search Pokemon…") },
-                leadingIcon = {
-                    Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
-                },
-                trailingIcon = {
-                    if (uiState.searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { viewModel.onEvent(AddPokemonToTeamEvent.Search("")) }) {
-                            Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear")
+            Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                // Own type filter section
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.filter_by_type),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    if (uiState.selectedTypes.isNotEmpty()) {
+                        TextButton(
+                            onClick = { onEvent(AddPokemonToTeamEvent.ClearTypeFilters) },
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Clear", style = MaterialTheme.typography.labelSmall)
                         }
                     }
-                },
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            )
+                }
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(uiState.allTypes) { type ->
+                        val isSelected = type in uiState.selectedTypes
+                        val color = typeColor(type)
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(color.copy(alpha = if (isSelected) 1f else 0.4f))
+                                .clickable { onEvent(AddPokemonToTeamEvent.ToggleTypeFilter(type)) }
+                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Text(text = type, style = MaterialTheme.typography.labelMedium, color = Color.White)
+                        }
+                    }
+                }
 
-            // Filter panel — unified surface container
-            Surface(
-                color = MaterialTheme.colorScheme.surfaceContainerLow,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                    // Own type filter section
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 2.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = stringResource(R.string.filter_by_type),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        if (uiState.selectedTypes.isNotEmpty()) {
-                            TextButton(
-                                onClick = { viewModel.onEvent(AddPokemonToTeamEvent.ClearTypeFilters) },
-                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Clear,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(14.dp)
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+
+                // Suggest vs section
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.suggest_vs),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    if (uiState.selectedEnemyTypes.isNotEmpty()) {
+                        TextButton(
+                            onClick = { onEvent(AddPokemonToTeamEvent.ClearEnemyTypes) },
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Clear", style = MaterialTheme.typography.labelSmall)
+                        }
+                    }
+                }
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(uiState.allTypes) { type ->
+                        val isSelected = type.lowercase() in uiState.selectedEnemyTypes
+                        val color = typeColor(type)
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .then(
+                                    if (isSelected) Modifier.border(
+                                        width = 2.dp,
+                                        color = MaterialTheme.colorScheme.error,
+                                        shape = RoundedCornerShape(16.dp)
+                                    ) else Modifier
                                 )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Clear", style = MaterialTheme.typography.labelSmall)
-                            }
+                                .background(color.copy(alpha = if (isSelected) 1f else 0.4f))
+                                .clickable { onEvent(AddPokemonToTeamEvent.ToggleEnemyType(type.lowercase())) }
+                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Text(text = type, style = MaterialTheme.typography.labelMedium, color = Color.White)
                         }
                     }
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(uiState.allTypes) { type ->
-                            val isSelected = type in uiState.selectedTypes
-                            val color = typeColor(type)
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(16.dp))
-                                    .background(color.copy(alpha = if (isSelected) 1f else 0.4f))
-                                    .clickable { viewModel.onEvent(AddPokemonToTeamEvent.ToggleTypeFilter(type)) }
-                                    .padding(horizontal = 12.dp, vertical = 6.dp)
-                            ) {
-                                Text(text = type, style = MaterialTheme.typography.labelMedium, color = Color.White)
-                            }
-                        }
-                    }
+                }
+                Spacer(modifier = Modifier.padding(bottom = 4.dp))
+            }
+        }
 
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-
-                    // Suggest vs section
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 2.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = stringResource(R.string.suggest_vs),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        if (uiState.selectedEnemyTypes.isNotEmpty()) {
-                            TextButton(
-                                onClick = { viewModel.onEvent(AddPokemonToTeamEvent.ClearEnemyTypes) },
-                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Clear,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Clear", style = MaterialTheme.typography.labelSmall)
-                            }
-                        }
-                    }
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(uiState.allTypes) { type ->
-                            val isSelected = type.lowercase() in uiState.selectedEnemyTypes
-                            val color = typeColor(type)
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(16.dp))
-                                    .then(
-                                        if (isSelected) Modifier.border(
-                                            width = 2.dp,
-                                            color = MaterialTheme.colorScheme.error,
-                                            shape = RoundedCornerShape(16.dp)
-                                        ) else Modifier
-                                    )
-                                    .background(color.copy(alpha = if (isSelected) 1f else 0.4f))
-                                    .clickable { viewModel.onEvent(AddPokemonToTeamEvent.ToggleEnemyType(type.lowercase())) }
-                                    .padding(horizontal = 12.dp, vertical = 6.dp)
-                            ) {
-                                Text(text = type, style = MaterialTheme.typography.labelMedium, color = Color.White)
-                            }
-                        }
-                    }
-                    Spacer(modifier = Modifier.padding(bottom = 4.dp))
+        when {
+            uiState.isLoading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
                 }
             }
-
-            when {
-                uiState.isLoading -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
+            uiState.pokemon.isEmpty() -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "No Pokemon found.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
-                uiState.pokemon.isEmpty() -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = "No Pokemon found.",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+            }
+            else -> {
+                LazyColumn(
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    items(uiState.pokemon, key = { it.id }) { pokemon ->
+                        val score = if (uiState.selectedEnemyTypes.isEmpty()) null
+                                    else uiState.suggestions[pokemon.id] ?: 0
+                        AddPokemonItem(
+                            pokemon = pokemon,
+                            score = score,
+                            onAdd = { onEvent(AddPokemonToTeamEvent.AddPokemon(pokemon.id)) }
                         )
-                    }
-                }
-                else -> {
-                    LazyColumn(
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        items(uiState.pokemon, key = { it.id }) { pokemon ->
-                            val score = if (uiState.selectedEnemyTypes.isEmpty()) null
-                                        else uiState.suggestions[pokemon.id] ?: 0
-                            AddPokemonItem(
-                                pokemon = pokemon,
-                                score = score,
-                                onAdd = { viewModel.onEvent(AddPokemonToTeamEvent.AddPokemon(pokemon.id)) }
-                            )
-                        }
                     }
                 }
             }

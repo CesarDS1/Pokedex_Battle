@@ -61,47 +61,56 @@ fun PokemonMovesScreen(
         },
         modifier = modifier
     ) { innerPadding ->
-        when (val state = uiState) {
-            is PokemonMovesUiState.Loading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
+        MovesScreenContent(
+            uiState = uiState,
+            onRetry = { viewModel.onEvent(PokemonMovesEvent.LoadMoves) },
+            modifier = Modifier.padding(innerPadding)
+        )
+    }
+}
 
-            is PokemonMovesUiState.Error -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = state.message,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                        Button(
-                            onClick = { viewModel.onEvent(PokemonMovesEvent.LoadMoves) },
-                            modifier = Modifier.padding(top = 16.dp)
-                        ) {
-                            Text(stringResource(R.string.retry))
-                        }
+@Composable
+internal fun MovesScreenContent(
+    uiState: PokemonMovesUiState,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    when (val state = uiState) {
+        is PokemonMovesUiState.Loading -> {
+            Box(
+                modifier = modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+
+        is PokemonMovesUiState.Error -> {
+            Box(
+                modifier = modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = state.message,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Button(
+                        onClick = onRetry,
+                        modifier = Modifier.padding(top = 16.dp)
+                    ) {
+                        Text(stringResource(R.string.retry))
                     }
                 }
             }
+        }
 
-            is PokemonMovesUiState.Success -> {
-                MovesContent(
-                    moves = state.moves,
-                    modifier = Modifier.padding(innerPadding)
-                )
-            }
+        is PokemonMovesUiState.Success -> {
+            MovesContent(
+                moves = state.moves,
+                modifier = modifier
+            )
         }
     }
 }

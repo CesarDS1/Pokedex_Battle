@@ -45,7 +45,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.cesar.pokedex.domain.model.Pokemon
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TeamListScreen(
     onBackClick: () -> Unit,
@@ -63,6 +62,22 @@ fun TeamListScreen(
         }
     }
 
+    TeamListContent(
+        uiState = uiState,
+        onEvent = viewModel::onEvent,
+        onBackClick = onBackClick,
+        modifier = modifier
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun TeamListContent(
+    uiState: TeamListUiState,
+    onEvent: (TeamListEvent) -> Unit,
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -78,7 +93,7 @@ fun TeamListScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { viewModel.onEvent(TeamListEvent.ShowCreateDialog) }) {
+            FloatingActionButton(onClick = { onEvent(TeamListEvent.ShowCreateDialog) }) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Create team")
             }
         },
@@ -107,8 +122,8 @@ fun TeamListScreen(
                         SwipeToDeleteTeamCard(
                             teamName = team.name,
                             members = team.members,
-                            onClick = { viewModel.onEvent(TeamListEvent.NavigateToTeam(team.id)) },
-                            onDelete = { viewModel.onEvent(TeamListEvent.DeleteTeam(team.id)) }
+                            onClick = { onEvent(TeamListEvent.NavigateToTeam(team.id)) },
+                            onDelete = { onEvent(TeamListEvent.DeleteTeam(team.id)) }
                         )
                     }
                 }
@@ -117,8 +132,8 @@ fun TeamListScreen(
 
         if (uiState.showCreateDialog) {
             CreateTeamDialog(
-                onDismiss = { viewModel.onEvent(TeamListEvent.DismissCreateDialog) },
-                onCreate = { name -> viewModel.onEvent(TeamListEvent.CreateTeam(name)) }
+                onDismiss = { onEvent(TeamListEvent.DismissCreateDialog) },
+                onCreate = { name -> onEvent(TeamListEvent.CreateTeam(name)) }
             )
         }
     }

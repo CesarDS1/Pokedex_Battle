@@ -112,4 +112,81 @@ class TeamDetailViewModelTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
+
+    @Test
+    fun `analysis shows weaknesses for fire flying team member`() = runTest {
+        val viewModel = createViewModel()
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            val weaknesses = state.analysis?.weaknesses ?: emptyMap()
+            // Fire/Flying is weak to Water, Electric, Rock
+            assertTrue("Fire/Flying should be weak to water", (weaknesses["water"] ?: 0) >= 1)
+            assertTrue("Fire/Flying should be weak to rock", (weaknesses["rock"] ?: 0) >= 1)
+            assertTrue("Fire/Flying should be weak to electric", (weaknesses["electric"] ?: 0) >= 1)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `analysis offensive coverage includes types fire hits super effectively`() = runTest {
+        val viewModel = createViewModel()
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            val coverage = state.analysis?.offensiveCoverage ?: emptySet()
+            // Fire attacks are super effective against Grass, Ice, Bug, Steel
+            assertTrue("fire coverage should include grass", "grass" in coverage)
+            assertTrue("fire coverage should include ice", "ice" in coverage)
+            assertTrue("fire coverage should include bug", "bug" in coverage)
+            assertTrue("fire coverage should include steel", "steel" in coverage)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `analysis detects coverage gap when two members share the same weakness`() = runTest {
+        val magmar = Pokemon(id = 126, name = "Magmar", imageUrl = "", types = listOf("Fire"))
+        val teamWithTwoFire = PokemonTeam(id = teamId, name = "Fire Team", members = listOf(charizard, magmar))
+        every { teamRepository.getAllTeams() } returns flowOf(listOf(teamWithTwoFire))
+        coEvery { pokemonRepository.getPokemonDetail(magmar.id) } returns makeDetail(magmar)
+
+        val viewModel = createViewModel()
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            val gaps = state.analysis?.coverageGaps ?: emptyList()
+            // Two Fire-type members → water is a coverage gap (2+ weak, 0 resist)
+            assertTrue("water should be a coverage gap for two fire members", "water" in gaps)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `member details are loaded for each team member`() = runTest {
+        val blastoise = Pokemon(id = 9, name = "Blastoise", imageUrl = "", types = listOf("Water"))
+        val team = PokemonTeam(id = teamId, name = "Team", members = listOf(charizard, blastoise))
+        every { teamRepository.getAllTeams() } returns flowOf(listOf(team))
+        coEvery { pokemonRepository.getPokemonDetail(blastoise.id) } returns makeDetail(blastoise)
+
+        createViewModel()
+
+        coVerify { pokemonRepository.getPokemonDetail(charizard.id) }
+        coVerify { pokemonRepository.getPokemonDetail(blastoise.id) }
+    }
+
+    @Test
+    fun `analysis average stats are populated from loaded member details`() = runTest {
+        val viewModel = createViewModel()
+
+        // UnconfinedTestDispatcher runs init coroutines eagerly, so by the time we
+        // subscribe, _memberDetails is already populated and the first emission has stats.
+        viewModel.uiState.test {
+            val state = awaitItem()
+            val avgHp = state.analysis?.averageStats?.get("hp")
+            assertNotNull("average hp stat should be present after details load", avgHp)
+            assertEquals(78f, avgHp ?: 0f, 0.001f)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
 }

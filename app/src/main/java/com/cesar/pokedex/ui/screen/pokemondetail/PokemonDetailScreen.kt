@@ -71,11 +71,9 @@ import com.cesar.pokedex.R
 import com.cesar.pokedex.domain.model.GameEntry
 import com.cesar.pokedex.domain.model.PokemonDetail
 import com.cesar.pokedex.ui.component.TypeBadge
-import com.cesar.pokedex.ui.component.WrappingRow
 import com.cesar.pokedex.ui.component.typeColor
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PokemonDetailScreen(
     onBackClick: () -> Unit,
@@ -85,7 +83,26 @@ fun PokemonDetailScreen(
     viewModel: PokemonDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    PokemonDetailScreenContent(
+        uiState = uiState,
+        onEvent = viewModel::onEvent,
+        onBackClick = onBackClick,
+        onEvolutionClick = onEvolutionClick,
+        onMovesClick = onMovesClick,
+        modifier = modifier
+    )
+}
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun PokemonDetailScreenContent(
+    uiState: PokemonDetailUiState,
+    onEvent: (PokemonDetailEvent) -> Unit,
+    onBackClick: () -> Unit,
+    onEvolutionClick: (Int) -> Unit,
+    onMovesClick: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
     val isFavorite = (uiState as? PokemonDetailUiState.Success)?.isFavorite ?: false
 
     Scaffold(
@@ -101,7 +118,7 @@ fun PokemonDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.onEvent(PokemonDetailEvent.ToggleFavorite) }) {
+                    IconButton(onClick = { onEvent(PokemonDetailEvent.ToggleFavorite) }) {
                         Icon(
                             imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = stringResource(R.string.favorites),
@@ -139,7 +156,7 @@ fun PokemonDetailScreen(
                             color = MaterialTheme.colorScheme.error
                         )
                         Button(
-                            onClick = { viewModel.onEvent(PokemonDetailEvent.LoadDetail) },
+                            onClick = { onEvent(PokemonDetailEvent.LoadDetail) },
                             modifier = Modifier.padding(top = 16.dp)
                         ) {
                             Text(stringResource(R.string.retry))
@@ -154,7 +171,7 @@ fun PokemonDetailScreen(
                     onEvolutionClick = onEvolutionClick,
                     onMovesClick = onMovesClick,
                     isPlayingCry = state.isPlayingCry,
-                    onPlayCry = { url -> viewModel.onEvent(PokemonDetailEvent.PlayCry(url)) },
+                    onPlayCry = { url -> onEvent(PokemonDetailEvent.PlayCry(url)) },
                     modifier = Modifier.padding(innerPadding)
                 )
             }

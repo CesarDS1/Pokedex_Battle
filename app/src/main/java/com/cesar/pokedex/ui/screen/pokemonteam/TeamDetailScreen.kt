@@ -53,7 +53,6 @@ import kotlinx.coroutines.launch
 
 private val TABS = listOf("Roster", "Analysis")
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TeamDetailScreen(
     onBackClick: () -> Unit,
@@ -63,6 +62,26 @@ fun TeamDetailScreen(
     viewModel: TeamDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    TeamDetailScreenContent(
+        uiState = uiState,
+        onEvent = viewModel::onEvent,
+        onBackClick = onBackClick,
+        onAddPokemonClick = onAddPokemonClick,
+        onPokemonClick = onPokemonClick,
+        modifier = modifier
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun TeamDetailScreenContent(
+    uiState: TeamDetailUiState,
+    onEvent: (TeamDetailEvent) -> Unit,
+    onBackClick: () -> Unit,
+    onAddPokemonClick: () -> Unit,
+    onPokemonClick: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
     val pagerState = rememberPagerState { TABS.size }
     val scope = rememberCoroutineScope()
 
@@ -106,7 +125,7 @@ fun TeamDetailScreen(
                         members = uiState.team?.members ?: emptyList(),
                         onAddClick = onAddPokemonClick,
                         onMemberClick = onPokemonClick,
-                        onRemoveMember = { pokemonId -> viewModel.onEvent(TeamDetailEvent.RemoveMember(pokemonId)) }
+                        onRemoveMember = { pokemonId -> onEvent(TeamDetailEvent.RemoveMember(pokemonId)) }
                     )
                     1 -> AnalysisTab(analysis = uiState.analysis)
                 }

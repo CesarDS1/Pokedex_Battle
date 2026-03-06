@@ -2,7 +2,14 @@ package com.cesar.pokedex.ui.screen.pokemonlist
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -36,8 +43,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -65,7 +73,6 @@ import com.cesar.pokedex.domain.model.Pokemon
 import com.cesar.pokedex.ui.component.TypeBadge
 import com.cesar.pokedex.ui.component.typeColor
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun PokemonListScreen(
     onPokemonClick: (Int) -> Unit = {},
@@ -74,11 +81,37 @@ fun PokemonListScreen(
     viewModel: PokemonListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    PokemonListContent(
+        uiState = uiState,
+        onEvent = viewModel::onEvent,
+        onPokemonClick = onPokemonClick,
+        onTeamsClick = onTeamsClick,
+        modifier = modifier
+    )
+}
 
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@Composable
+internal fun PokemonListContent(
+    uiState: PokemonListUiState,
+    onEvent: (PokemonListEvent) -> Unit,
+    onPokemonClick: (Int) -> Unit,
+    onTeamsClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
+                    val infiniteTransition = rememberInfiniteTransition(label = "pokeball_rotation")
+                    val rotation by infiniteTransition.animateFloat(
+                        initialValue = 0f,
+                        targetValue = 360f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(durationMillis = 3000, easing = LinearEasing)
+                        ),
+                        label = "pokeball_angle"
+                    )
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -86,7 +119,7 @@ fun PokemonListScreen(
                         Image(
                             painter = painterResource(R.drawable.pokeball),
                             contentDescription = null,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp).rotate(rotation)
                         )
                         Text(stringResource(R.string.app_name))
                     }
@@ -98,7 +131,7 @@ fun PokemonListScreen(
                             contentDescription = "Teams"
                         )
                     }
-                    IconButton(onClick = { viewModel.onEvent(PokemonListEvent.ToggleShowFavoritesOnly) }) {
+                    IconButton(onClick = { onEvent(PokemonListEvent.ToggleShowFavoritesOnly) }) {
                         Icon(
                             imageVector = if (uiState.showFavoritesOnly) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = stringResource(R.string.favorites),
@@ -115,31 +148,44 @@ fun PokemonListScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            OutlinedTextField(
-                value = uiState.searchQuery,
-                onValueChange = { viewModel.onEvent(PokemonListEvent.Search(it)) },
-                placeholder = { Text(stringResource(R.string.search_pokemon)) },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = stringResource(R.string.search)
-                    )
-                },
-                trailingIcon = {
-                    if (uiState.searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { viewModel.onEvent(PokemonListEvent.Search("")) }) {
-                            Icon(
-                                imageVector = Icons.Default.Clear,
-                                contentDescription = stringResource(R.string.clear)
-                            )
-                        }
-                    }
-                },
-                singleLine = true,
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
-            )
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            ) {
+                TextField(
+                    value = uiState.searchQuery,
+                    onValueChange = { onEvent(PokemonListEvent.Search(it)) },
+                    placeholder = { Text(stringResource(R.string.search_pokemon)) },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = stringResource(R.string.search)
+                        )
+                    },
+                    trailingIcon = {
+                        if (uiState.searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { onEvent(PokemonListEvent.Search("")) }) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = stringResource(R.string.clear)
+                                )
+                            }
+                        }
+                    },
+                    singleLine = true,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent,
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
             Surface(
                 color = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -160,7 +206,7 @@ fun PokemonListScreen(
                         )
                         if (uiState.selectedTypes.isNotEmpty()) {
                             TextButton(
-                                onClick = { viewModel.onEvent(PokemonListEvent.ClearTypeFilters) },
+                                onClick = { onEvent(PokemonListEvent.ClearTypeFilters) },
                                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
                             ) {
                                 Icon(
@@ -178,7 +224,7 @@ fun PokemonListScreen(
                     }
                     TypeFilterRow(
                         selectedTypes = uiState.selectedTypes,
-                        onToggleType = { viewModel.onEvent(PokemonListEvent.ToggleTypeFilter(it)) }
+                        onToggleType = { onEvent(PokemonListEvent.ToggleTypeFilter(it)) }
                     )
                     Spacer(modifier = Modifier.padding(bottom = 4.dp))
                 }
@@ -206,7 +252,7 @@ fun PokemonListScreen(
                                 color = MaterialTheme.colorScheme.error
                             )
                             Button(
-                                onClick = { viewModel.onEvent(PokemonListEvent.LoadPokemon) },
+                                onClick = { onEvent(PokemonListEvent.LoadPokemon) },
                                 modifier = Modifier.padding(top = 16.dp)
                             ) {
                                 Text(stringResource(R.string.retry))
@@ -230,7 +276,7 @@ fun PokemonListScreen(
                     } else {
                         PullToRefreshBox(
                             isRefreshing = uiState.isRefreshing,
-                            onRefresh = { viewModel.onEvent(PokemonListEvent.RefreshPokemon) },
+                            onRefresh = { onEvent(PokemonListEvent.RefreshPokemon) },
                             modifier = Modifier.fillMaxSize()
                         ) {
                             LazyColumn(
@@ -244,7 +290,8 @@ fun PokemonListScreen(
                                         GenerationHeader(
                                             title = generation,
                                             isExpanded = isExpanded,
-                                            onToggle = { viewModel.onEvent(PokemonListEvent.ToggleGeneration(generation)) }
+                                            pokemonCount = pokemonList.size,
+                                            onToggle = { onEvent(PokemonListEvent.ToggleGeneration(generation)) }
                                         )
                                     }
                                     if (isExpanded) {
@@ -260,7 +307,7 @@ fun PokemonListScreen(
                                                         isFavorite = pokemon.id in uiState.favoriteIds,
                                                         onClick = { onPokemonClick(pokemon.id) },
                                                         onFavoriteClick = {
-                                                            viewModel.onEvent(
+                                                            onEvent(
                                                                 PokemonListEvent.ToggleFavorite(pokemon.id)
                                                             )
                                                         },
@@ -288,6 +335,7 @@ fun PokemonListScreen(
 private fun GenerationHeader(
     title: String,
     isExpanded: Boolean,
+    pokemonCount: Int,
     onToggle: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -295,31 +343,89 @@ private fun GenerationHeader(
         targetValue = if (isExpanded) 0f else -90f,
         label = "chevronRotation"
     )
+    val parts = title.split(" — ")
+    val generationLabel = parts.getOrElse(0) { title }
+    val regionName = parts.getOrElse(1) { "" }
+    val accentColor = regionAccentColor(regionName)
+
     Box(
-        modifier = Modifier
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clip(RoundedCornerShape(14.dp))
             .background(MaterialTheme.colorScheme.background)
+            .background(
+                brush = Brush.horizontalGradient(
+                    colors = listOf(accentColor.copy(alpha = 0.18f), Color.Transparent)
+                )
+            )
             .clickable(onClick = onToggle)
     ) {
         Row(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp),
+                .padding(horizontal = 14.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.weight(1f)
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .height(36.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(accentColor)
             )
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = generationLabel.uppercase(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = accentColor,
+                    letterSpacing = 1.5.sp
+                )
+                if (regionName.isNotEmpty()) {
+                    Text(
+                        text = regionName,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+            Surface(
+                color = accentColor.copy(alpha = 0.15f),
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Text(
+                    text = "$pokemonCount",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = accentColor,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                )
+            }
+            Spacer(Modifier.width(6.dp))
             Icon(
                 imageVector = Icons.Default.KeyboardArrowDown,
                 contentDescription = stringResource(if (isExpanded) R.string.collapse else R.string.expand),
-                tint = MaterialTheme.colorScheme.primary,
+                tint = accentColor,
                 modifier = Modifier.rotate(rotationAngle)
             )
         }
     }
+}
+
+@Composable
+private fun regionAccentColor(region: String): Color = when (region.lowercase()) {
+    "kanto"  -> Color(0xFFE53935)
+    "johto"  -> Color(0xFFFFB300)
+    "hoenn"  -> Color(0xFF1E88E5)
+    "sinnoh" -> Color(0xFF8E24AA)
+    "unova"  -> Color(0xFF546E7A)
+    "kalos"  -> Color(0xFF039BE5)
+    "alola"  -> Color(0xFFFF8F00)
+    "galar"  -> Color(0xFFD81B60)
+    "paldea" -> Color(0xFF00897B)
+    else     -> MaterialTheme.colorScheme.primary
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
