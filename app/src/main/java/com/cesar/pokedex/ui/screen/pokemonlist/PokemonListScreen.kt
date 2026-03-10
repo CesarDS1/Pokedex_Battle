@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -77,6 +78,7 @@ import com.cesar.pokedex.ui.component.typeColor
 fun PokemonListScreen(
     onPokemonClick: (Int) -> Unit = {},
     onTeamsClick: () -> Unit = {},
+    onAboutClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: PokemonListViewModel = hiltViewModel()
 ) {
@@ -86,6 +88,7 @@ fun PokemonListScreen(
         onEvent = viewModel::onEvent,
         onPokemonClick = onPokemonClick,
         onTeamsClick = onTeamsClick,
+        onAboutClick = onAboutClick,
         modifier = modifier
     )
 }
@@ -97,6 +100,7 @@ internal fun PokemonListContent(
     onEvent: (PokemonListEvent) -> Unit,
     onPokemonClick: (Int) -> Unit,
     onTeamsClick: () -> Unit,
+    onAboutClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -125,6 +129,12 @@ internal fun PokemonListContent(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onAboutClick) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "About"
+                        )
+                    }
                     IconButton(onClick = onTeamsClick) {
                         Icon(
                             imageVector = Icons.Default.Groups,

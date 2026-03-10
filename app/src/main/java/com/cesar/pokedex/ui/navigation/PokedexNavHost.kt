@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.cesar.pokedex.ui.screen.pokemondetail.PokemonDetailScreen
 import com.cesar.pokedex.ui.screen.pokemonevolution.PokemonEvolutionScreen
+import com.cesar.pokedex.ui.screen.about.AboutScreen
 import com.cesar.pokedex.ui.screen.pokemonlist.PokemonListScreen
 import com.cesar.pokedex.ui.screen.pokemonmoves.PokemonMovesScreen
 import com.cesar.pokedex.ui.screen.pokemonteam.AddPokemonToTeamScreen
@@ -60,8 +61,14 @@ fun PokedexNavHost(
                 },
                 onTeamsClick = {
                     navController.navigate("team_list")
+                },
+                onAboutClick = {
+                    navController.navigate("about")
                 }
             )
+        }
+        composable("about") {
+            AboutScreen(onBackClick = { navController.popBackStack() })
         }
         composable(
             route = "pokemon_detail/{pokemonId}",
