@@ -28,8 +28,7 @@ class TeamListContentTest {
             PokedexTheme {
                 TeamListContent(
                     uiState = TeamListUiState(teams = emptyList()),
-                    onEvent = {},
-                    onBackClick = {}
+                    onEvent = {}
                 )
             }
         }
@@ -42,8 +41,7 @@ class TeamListContentTest {
             PokedexTheme {
                 TeamListContent(
                     uiState = TeamListUiState(teams = listOf(sampleTeam)),
-                    onEvent = {},
-                    onBackClick = {}
+                    onEvent = {}
                 )
             }
         }
@@ -56,8 +54,7 @@ class TeamListContentTest {
             PokedexTheme {
                 TeamListContent(
                     uiState = TeamListUiState(teams = listOf(sampleTeam)),
-                    onEvent = {},
-                    onBackClick = {}
+                    onEvent = {}
                 )
             }
         }
@@ -70,8 +67,7 @@ class TeamListContentTest {
             PokedexTheme {
                 TeamListContent(
                     uiState = TeamListUiState(teams = emptyList(), showCreateDialog = true),
-                    onEvent = {},
-                    onBackClick = {}
+                    onEvent = {}
                 )
             }
         }
@@ -86,8 +82,7 @@ class TeamListContentTest {
             PokedexTheme {
                 TeamListContent(
                     uiState = TeamListUiState(teams = emptyList(), showCreateDialog = false),
-                    onEvent = {},
-                    onBackClick = {}
+                    onEvent = {}
                 )
             }
         }
@@ -101,8 +96,7 @@ class TeamListContentTest {
             PokedexTheme {
                 TeamListContent(
                     uiState = TeamListUiState(teams = listOf(sampleTeam, secondTeam)),
-                    onEvent = {},
-                    onBackClick = {}
+                    onEvent = {}
                 )
             }
         }
@@ -117,8 +111,7 @@ class TeamListContentTest {
             PokedexTheme {
                 TeamListContent(
                     uiState = TeamListUiState(teams = listOf(emptyTeam)),
-                    onEvent = {},
-                    onBackClick = {}
+                    onEvent = {}
                 )
             }
         }

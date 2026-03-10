@@ -29,8 +29,7 @@ class PokemonListContentTest {
                 PokemonListContent(
                     uiState = PokemonListUiState(isLoading = true),
                     onEvent = {},
-                    onPokemonClick = {},
-                    onTeamsClick = {}
+                    onPokemonClick = {}
                 )
             }
         }
@@ -44,8 +43,7 @@ class PokemonListContentTest {
                 PokemonListContent(
                     uiState = loadedState,
                     onEvent = {},
-                    onPokemonClick = {},
-                    onTeamsClick = {}
+                    onPokemonClick = {}
                 )
             }
         }
@@ -66,8 +64,7 @@ class PokemonListContentTest {
                 PokemonListContent(
                     uiState = filteredState,
                     onEvent = {},
-                    onPokemonClick = {},
-                    onTeamsClick = {}
+                    onPokemonClick = {}
                 )
             }
         }
@@ -82,8 +79,7 @@ class PokemonListContentTest {
                 PokemonListContent(
                     uiState = loadedState,
                     onEvent = {},
-                    onPokemonClick = {},
-                    onTeamsClick = {}
+                    onPokemonClick = {}
                 )
             }
         }
@@ -106,8 +102,7 @@ class PokemonListContentTest {
                 PokemonListContent(
                     uiState = favoritesState,
                     onEvent = {},
-                    onPokemonClick = {},
-                    onTeamsClick = {}
+                    onPokemonClick = {}
                 )
             }
         }
@@ -122,8 +117,7 @@ class PokemonListContentTest {
                 PokemonListContent(
                     uiState = PokemonListUiState(errorMessage = "Network error"),
                     onEvent = {},
-                    onPokemonClick = {},
-                    onTeamsClick = {}
+                    onPokemonClick = {}
                 )
             }
         }
@@ -138,8 +132,7 @@ class PokemonListContentTest {
                 PokemonListContent(
                     uiState = loadedState.copy(searchQuery = ""),
                     onEvent = {},
-                    onPokemonClick = {},
-                    onTeamsClick = {}
+                    onPokemonClick = {}
                 )
             }
         }

@@ -12,8 +12,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
@@ -21,7 +22,6 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -47,8 +47,8 @@ import com.cesar.pokedex.domain.model.Pokemon
 
 @Composable
 fun TeamListScreen(
-    onBackClick: () -> Unit,
     onTeamClick: (Long) -> Unit,
+    bottomPadding: Dp = 0.dp,
     modifier: Modifier = Modifier,
     viewModel: TeamListViewModel = hiltViewModel()
 ) {
@@ -65,7 +65,7 @@ fun TeamListScreen(
     TeamListContent(
         uiState = uiState,
         onEvent = viewModel::onEvent,
-        onBackClick = onBackClick,
+        bottomPadding = bottomPadding,
         modifier = modifier
     )
 }
@@ -75,22 +75,12 @@ fun TeamListScreen(
 internal fun TeamListContent(
     uiState: TeamListUiState,
     onEvent: (TeamListEvent) -> Unit,
-    onBackClick: () -> Unit,
+    bottomPadding: Dp = 0.dp,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("My Teams") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                }
-            )
+            TopAppBar(title = { Text("My Teams") })
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { onEvent(TeamListEvent.ShowCreateDialog) }) {
@@ -116,7 +106,7 @@ internal fun TeamListContent(
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp)
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp + bottomPadding)
                 ) {
                     items(uiState.teams, key = { it.id }) { team ->
                         SwipeToDeleteTeamCard(

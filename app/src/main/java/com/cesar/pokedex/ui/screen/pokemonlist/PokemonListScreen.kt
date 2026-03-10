@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -33,7 +34,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
@@ -77,8 +77,8 @@ import com.cesar.pokedex.ui.component.typeColor
 @Composable
 fun PokemonListScreen(
     onPokemonClick: (Int) -> Unit = {},
-    onTeamsClick: () -> Unit = {},
     onAboutClick: () -> Unit = {},
+    bottomPadding: Dp = 0.dp,
     modifier: Modifier = Modifier,
     viewModel: PokemonListViewModel = hiltViewModel()
 ) {
@@ -87,8 +87,8 @@ fun PokemonListScreen(
         uiState = uiState,
         onEvent = viewModel::onEvent,
         onPokemonClick = onPokemonClick,
-        onTeamsClick = onTeamsClick,
         onAboutClick = onAboutClick,
+        bottomPadding = bottomPadding,
         modifier = modifier
     )
 }
@@ -99,8 +99,8 @@ internal fun PokemonListContent(
     uiState: PokemonListUiState,
     onEvent: (PokemonListEvent) -> Unit,
     onPokemonClick: (Int) -> Unit,
-    onTeamsClick: () -> Unit,
     onAboutClick: () -> Unit = {},
+    bottomPadding: Dp = 0.dp,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -133,12 +133,6 @@ internal fun PokemonListContent(
                         Icon(
                             imageVector = Icons.Default.Info,
                             contentDescription = "About"
-                        )
-                    }
-                    IconButton(onClick = onTeamsClick) {
-                        Icon(
-                            imageVector = Icons.Default.Groups,
-                            contentDescription = "Teams"
                         )
                     }
                     IconButton(onClick = { onEvent(PokemonListEvent.ToggleShowFavoritesOnly) }) {
@@ -291,7 +285,7 @@ internal fun PokemonListContent(
                         ) {
                             LazyColumn(
                                 modifier = Modifier.fillMaxSize(),
-                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                                contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 8.dp + bottomPadding),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 uiState.pokemonByGeneration.forEach { (generation, pokemonList) ->
