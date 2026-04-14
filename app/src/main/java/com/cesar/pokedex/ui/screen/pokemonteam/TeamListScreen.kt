@@ -83,7 +83,10 @@ internal fun TeamListContent(
             TopAppBar(title = { Text("My Teams") })
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { onEvent(TeamListEvent.ShowCreateDialog) }) {
+            FloatingActionButton(
+                onClick = { onEvent(TeamListEvent.ShowCreateDialog) },
+                modifier = Modifier.padding(bottom = bottomPadding)
+            ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Create team")
             }
         },
