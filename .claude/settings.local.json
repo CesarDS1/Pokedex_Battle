@@ -40,7 +40,14 @@
       "WebFetch(domain:mrmans0n.github.io)",
       "WebFetch(domain:mvnrepository.com)",
       "WebFetch(domain:central.sonatype.com)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Read(//c/Users/ingce/AppData/Local/Programs/**)",
+      "Bash(ls \"/c/Python\"*)",
+      "Read(//c/Program Files/**)",
+      "Bash(npm --version)",
+      "Bash(wsl --version)",
+      "Bash(wsl python3 *)",
+      "Bash(powershell *)"
     ]
   }
 }

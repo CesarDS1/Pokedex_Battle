@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Pokedex</string>
+    <string name="app_name">Dex Battle VG</string>
     <string name="search_pokemon">Buscar Pokemon…</string>
     <string name="search">Buscar</string>
     <string name="clear">Limpiar</string>

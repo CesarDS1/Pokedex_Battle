@@ -1,43 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- White circle (ball body) -->
+    <!-- White circle (Pokeball body) -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M54,24 A30,30 0 1,1 53.99,24z" />
+        android:pathData="M54,18 A36,36 0 1,1 53.99,18z" />
 
     <!-- Red top half -->
     <path
         android:fillColor="#EE1515"
-        android:pathData="M24,54 A30,30 0 0,1 84,54 L24,54z" />
+        android:pathData="M18,54 A36,36 0 0,1 90,54 Z" />
 
-    <!-- Dark band across middle -->
+    <!-- DEX – white strokes on red top half -->
+    <!-- D -->
     <path
-        android:fillColor="#222222"
-        android:pathData="M24,52 L84,52 L84,56 L24,56z" />
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M35,28 L35,42 M35,28 Q46,28 46,35 Q46,42 35,42" />
+    <!-- E -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M49,28 L49,42 M49,28 L59,28 M49,35 L56,35 M49,42 L59,42" />
+    <!-- X -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M62,28 L74,42 M74,28 L62,42" />
 
-    <!-- Outer ring of center button -->
+    <!-- Dark center band -->
     <path
-        android:fillColor="#222222"
+        android:fillColor="#1A1A1A"
+        android:pathData="M18,50 L90,50 L90,58 L18,58 Z" />
+
+    <!-- Slash "/" on the band -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M50,58 L58,50" />
+
+    <!-- Center button outer ring -->
+    <path
+        android:fillColor="#1A1A1A"
         android:pathData="M54,44 A10,10 0 1,1 53.99,44z" />
 
-    <!-- Inner white button -->
+    <!-- Center button inner white -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M54,47 A7,7 0 1,1 53.99,47z" />
+        android:pathData="M54,48 A6,6 0 1,1 53.99,48z" />
 
     <!-- Button highlight -->
     <path
-        android:fillColor="#F0F0F0"
-        android:pathData="M51,51 A4,4 0 1,1 50.99,51z" />
+        android:fillColor="#F5F5F5"
+        android:pathData="M52,50 A3,3 0 1,1 51.99,50z" />
+
+    <!-- BATTLE – dark strokes on white bottom half -->
+    <!-- B -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#1A1A1A"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M28,65 L28,76 M28,65 L32,65 Q35,65 35,68 Q35,70.5 28,70.5 M28,70.5 L32,70.5 Q35,70.5 35,73.5 Q35,76 28,76" />
+    <!-- A -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#1A1A1A"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M37,76 L41,65 L45,76 M38.5,71.5 L43.5,71.5" />
+    <!-- T (1st) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#1A1A1A"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M47,65 L54,65 M50.5,65 L50.5,76" />
+    <!-- T (2nd) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#1A1A1A"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M56,65 L63,65 M59.5,65 L59.5,76" />
+    <!-- L -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#1A1A1A"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M65,65 L65,76 M65,76 L71,76" />
+    <!-- E -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#1A1A1A"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M73,65 L73,76 M73,65 L80,65 M73,70.5 L78,70.5 M73,76 L80,76" />
 
     <!-- Pokeball outline -->
     <path
         android:fillColor="#00000000"
-        android:pathData="M54,24 A30,30 0 1,1 53.99,24z"
-        android:strokeWidth="2"
-        android:strokeColor="#222222" />
+        android:strokeColor="#1A1A1A"
+        android:strokeWidth="2.5"
+        android:pathData="M54,18 A36,36 0 1,1 53.99,18z" />
+
 </vector>
