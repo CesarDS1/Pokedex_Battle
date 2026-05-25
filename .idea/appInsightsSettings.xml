@@ -36,10 +36,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.cesar.pokedex" />
+                  <option name="mobileSdkAppId" value="1:322208264841:android:4c69ea99f82c0184094c58" />
+                  <option name="projectId" value="dexbattle-4ab16" />
+                  <option name="projectNumber" value="322208264841" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
