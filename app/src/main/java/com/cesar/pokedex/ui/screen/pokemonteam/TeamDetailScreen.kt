@@ -34,6 +34,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -142,8 +143,10 @@ private fun RosterTab(
     onRemoveMember: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val slots = members + List(6 - members.size) { null }
-    val rows = slots.chunked(2)
+    val rows = remember(members) {
+        val slots: List<Pokemon?> = members + List(6 - members.size) { null }
+        slots.chunked(2)
+    }
 
     Column(
         modifier = modifier
@@ -276,6 +279,13 @@ private fun AnalysisTab(
         return
     }
 
+    val sortedWeaknesses = remember(analysis.weaknesses) {
+        analysis.weaknesses.entries.sortedByDescending { it.value }
+    }
+    val sortedResistances = remember(analysis.resistances) {
+        analysis.resistances.entries.sortedByDescending { it.value }
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -284,11 +294,11 @@ private fun AnalysisTab(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         AnalysisSectionCard(title = "Defensive Weaknesses") {
-            if (analysis.weaknesses.isEmpty()) {
+            if (sortedWeaknesses.isEmpty()) {
                 Text("None", color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
                 WrappingRow(horizontalSpacing = 8.dp, verticalSpacing = 8.dp) {
-                    analysis.weaknesses.entries.sortedByDescending { it.value }.forEach { (type, count) ->
+                    sortedWeaknesses.forEach { (type, count) ->
                         TypeCountBadge(type = type, count = count, isNegative = true)
                     }
                 }
@@ -296,11 +306,11 @@ private fun AnalysisTab(
         }
 
         AnalysisSectionCard(title = "Defensive Resistances") {
-            if (analysis.resistances.isEmpty()) {
+            if (sortedResistances.isEmpty()) {
                 Text("None", color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
                 WrappingRow(horizontalSpacing = 8.dp, verticalSpacing = 8.dp) {
-                    analysis.resistances.entries.sortedByDescending { it.value }.forEach { (type, count) ->
+                    sortedResistances.forEach { (type, count) ->
                         TypeCountBadge(type = type, count = count, isNegative = false)
                     }
                 }

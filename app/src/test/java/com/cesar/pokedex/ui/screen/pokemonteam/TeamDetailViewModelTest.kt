@@ -169,7 +169,12 @@ class TeamDetailViewModelTest {
         every { teamRepository.getAllTeams() } returns flowOf(listOf(team))
         coEvery { pokemonRepository.getPokemonDetail(blastoise.id) } returns makeDetail(blastoise)
 
-        createViewModel()
+        val viewModel = createViewModel()
+
+        viewModel.uiState.test {
+            awaitItem()
+            cancelAndIgnoreRemainingEvents()
+        }
 
         coVerify { pokemonRepository.getPokemonDetail(charizard.id) }
         coVerify { pokemonRepository.getPokemonDetail(blastoise.id) }

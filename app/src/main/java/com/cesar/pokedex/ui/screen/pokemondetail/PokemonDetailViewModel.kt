@@ -77,31 +77,30 @@ class PokemonDetailViewModel @Inject constructor(
     }
 
     private fun playCry(url: String) {
+        mediaPlayer?.reset()
         mediaPlayer?.release()
-        mediaPlayer = MediaPlayer().apply {
-            setAudioAttributes(
+        mediaPlayer = null
+        val player = MediaPlayer()
+        try {
+            player.setAudioAttributes(
                 AudioAttributes.Builder()
                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                     .setUsage(AudioAttributes.USAGE_MEDIA)
                     .build()
             )
-            setDataSource(url)
-            setOnPreparedListener {
-                _isPlayingCry.value = true
-                start()
-            }
-            setOnCompletionListener {
-                _isPlayingCry.value = false
-            }
-            setOnErrorListener { _, _, _ ->
-                _isPlayingCry.value = false
-                true
-            }
-            prepareAsync()
+            player.setDataSource(url)
+            player.setOnPreparedListener { _isPlayingCry.value = true; player.start() }
+            player.setOnCompletionListener { _isPlayingCry.value = false }
+            player.setOnErrorListener { _, _, _ -> _isPlayingCry.value = false; true }
+            player.prepareAsync()
+            mediaPlayer = player
+        } catch (e: Exception) {
+            player.release()
         }
     }
 
     override fun onCleared() {
+        mediaPlayer?.reset()
         mediaPlayer?.release()
         mediaPlayer = null
     }

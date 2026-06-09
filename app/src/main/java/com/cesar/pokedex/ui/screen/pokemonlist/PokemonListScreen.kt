@@ -73,13 +73,14 @@ import com.cesar.pokedex.R
 import com.cesar.pokedex.domain.model.Pokemon
 import com.cesar.pokedex.ui.component.TypeBadge
 import com.cesar.pokedex.ui.component.typeColor
+import com.cesar.pokedex.ui.theme.regionAccentColor
 
 @Composable
 fun PokemonListScreen(
+    modifier: Modifier = Modifier,
     onPokemonClick: (Int) -> Unit = {},
     onAboutClick: () -> Unit = {},
     bottomPadding: Dp = 0.dp,
-    modifier: Modifier = Modifier,
     viewModel: PokemonListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -103,19 +104,19 @@ internal fun PokemonListContent(
     bottomPadding: Dp = 0.dp,
     modifier: Modifier = Modifier
 ) {
+    val infiniteTransition = rememberInfiniteTransition(label = "pokeball_rotation")
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 3000, easing = LinearEasing)
+        ),
+        label = "pokeball_angle"
+    )
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    val infiniteTransition = rememberInfiniteTransition(label = "pokeball_rotation")
-                    val rotation by infiniteTransition.animateFloat(
-                        initialValue = 0f,
-                        targetValue = 360f,
-                        animationSpec = infiniteRepeatable(
-                            animation = tween(durationMillis = 3000, easing = LinearEasing)
-                        ),
-                        label = "pokeball_angle"
-                    )
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -251,7 +252,7 @@ internal fun PokemonListContent(
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                text = uiState.errorMessage!!,
+                                text = uiState.errorMessage,
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.error
                             )
@@ -288,18 +289,17 @@ internal fun PokemonListContent(
                                 contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 8.dp + bottomPadding),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                uiState.pokemonByGeneration.forEach { (generation, pokemonList) ->
+                                uiState.pokemonByGeneration.forEach { (generation, rows) ->
                                     val isExpanded = generation !in uiState.collapsedGenerations
                                     stickyHeader(key = generation) {
                                         GenerationHeader(
                                             title = generation,
                                             isExpanded = isExpanded,
-                                            pokemonCount = pokemonList.size,
+                                            pokemonCount = rows.sumOf { it.size },
                                             onToggle = { onEvent(PokemonListEvent.ToggleGeneration(generation)) }
                                         )
                                     }
                                     if (isExpanded) {
-                                        val rows = pokemonList.chunked(2)
                                         items(rows, key = { it.first().id }) { row ->
                                             Row(
                                                 modifier = Modifier.fillMaxWidth(),
@@ -347,9 +347,10 @@ private fun GenerationHeader(
         targetValue = if (isExpanded) 0f else -90f,
         label = "chevronRotation"
     )
-    val parts = title.split(" — ")
-    val generationLabel = parts.getOrElse(0) { title }
-    val regionName = parts.getOrElse(1) { "" }
+    val (generationLabel, regionName) = remember(title) {
+        val parts = title.split(" — ")
+        parts.getOrElse(0) { title } to parts.getOrElse(1) { "" }
+    }
     val accentColor = regionAccentColor(regionName)
 
     Box(
@@ -418,19 +419,7 @@ private fun GenerationHeader(
     }
 }
 
-@Composable
-private fun regionAccentColor(region: String): Color = when (region.lowercase()) {
-    "kanto"  -> Color(0xFFE53935)
-    "johto"  -> Color(0xFFFFB300)
-    "hoenn"  -> Color(0xFF1E88E5)
-    "sinnoh" -> Color(0xFF8E24AA)
-    "unova"  -> Color(0xFF546E7A)
-    "kalos"  -> Color(0xFF039BE5)
-    "alola"  -> Color(0xFFFF8F00)
-    "galar"  -> Color(0xFFD81B60)
-    "paldea" -> Color(0xFF00897B)
-    else     -> MaterialTheme.colorScheme.primary
-}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -18,7 +18,7 @@ class PokemonListContentTest {
 
     private val loadedState = PokemonListUiState(
         pokemonByGeneration = mapOf(
-            "Generation I — Kanto" to listOf(bulbasaur, charmander)
+            "Generation I — Kanto" to listOf(listOf(bulbasaur, charmander))
         )
     )
 
@@ -55,7 +55,7 @@ class PokemonListContentTest {
     fun searchQuery_filtersResults() {
         val filteredState = PokemonListUiState(
             pokemonByGeneration = mapOf(
-                "Generation I — Kanto" to listOf(charmander)
+                "Generation I — Kanto" to listOf(listOf(charmander))
             ),
             searchQuery = "char"
         )
@@ -92,7 +92,7 @@ class PokemonListContentTest {
     fun favoritesOnly_filtersNonFavorites() {
         val favoritesState = PokemonListUiState(
             pokemonByGeneration = mapOf(
-                "Generation I — Kanto" to listOf(bulbasaur)
+                "Generation I — Kanto" to listOf(listOf(bulbasaur))
             ),
             showFavoritesOnly = true,
             favoriteIds = setOf(1)

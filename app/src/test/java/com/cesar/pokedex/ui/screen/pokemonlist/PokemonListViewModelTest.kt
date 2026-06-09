@@ -46,7 +46,7 @@ class PokemonListViewModelTest {
             val state = awaitItem()
             assertNull(state.errorMessage)
             assertEquals(listOf("Generation I — Kanto"), state.pokemonByGeneration.keys.toList())
-            assertEquals(pokemonList, state.pokemonByGeneration.values.flatten())
+            assertEquals(pokemonList, state.pokemonByGeneration.values.flatten().flatten())
         }
     }
 
@@ -80,7 +80,7 @@ class PokemonListViewModelTest {
 
             val success = awaitItem()
             assertNull(success.errorMessage)
-            assertEquals(pokemonList, success.pokemonByGeneration.values.flatten())
+            assertEquals(pokemonList, success.pokemonByGeneration.values.flatten().flatten())
         }
     }
 
@@ -98,7 +98,7 @@ class PokemonListViewModelTest {
 
         viewModel.uiState.test {
             val state = awaitItem()
-            val results = state.pokemonByGeneration.values.flatten()
+            val results = state.pokemonByGeneration.values.flatten().flatten()
             assertEquals(1, results.size)
             assertEquals("Charmander", results.first().name)
         }
@@ -115,7 +115,7 @@ class PokemonListViewModelTest {
 
         viewModel.uiState.test {
             val state = awaitItem()
-            val pokemon = state.pokemonByGeneration.values.flatten().first()
+            val pokemon = state.pokemonByGeneration.values.flatten().flatten().first()
             assertEquals(listOf("Grass", "Poison"), pokemon.types)
         }
     }
@@ -134,7 +134,7 @@ class PokemonListViewModelTest {
 
         viewModel.uiState.test {
             val state = awaitItem()
-            val results = state.pokemonByGeneration.values.flatten()
+            val results = state.pokemonByGeneration.values.flatten().flatten()
             assertEquals(1, results.size)
             assertEquals("Pikachu", results.first().name)
         }
@@ -261,7 +261,7 @@ class PokemonListViewModelTest {
 
         viewModel.uiState.test {
             val state = awaitItem()
-            val results = state.pokemonByGeneration.values.flatten()
+            val results = state.pokemonByGeneration.values.flatten().flatten()
             assertEquals(1, results.size)
             assertEquals("Bulbasaur", results[0].name)
             cancelAndIgnoreRemainingEvents()
@@ -279,7 +279,7 @@ class PokemonListViewModelTest {
 
         viewModel.uiState.test {
             val state = awaitItem()
-            assertTrue(state.pokemonByGeneration.values.flatten().isEmpty())
+            assertTrue(state.pokemonByGeneration.values.flatten().flatten().isEmpty())
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -296,7 +296,7 @@ class PokemonListViewModelTest {
         viewModel.uiState.test {
             val state = awaitItem()
             assertEquals(setOf(25), state.favoriteIds)
-            assertEquals(1, state.pokemonByGeneration.values.flatten().size)
+            assertEquals(1, state.pokemonByGeneration.values.flatten().flatten().size)
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -349,7 +349,7 @@ class PokemonListViewModelTest {
 
         viewModel.uiState.test {
             val state = awaitItem()
-            val results = state.pokemonByGeneration.values.flatten()
+            val results = state.pokemonByGeneration.values.flatten().flatten()
             assertEquals(1, results.size)
             assertEquals("Bulbasaur", results[0].name)
             cancelAndIgnoreRemainingEvents()

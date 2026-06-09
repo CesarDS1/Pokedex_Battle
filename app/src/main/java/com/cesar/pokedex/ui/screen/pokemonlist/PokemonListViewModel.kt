@@ -23,6 +23,7 @@ class PokemonListViewModel @Inject constructor(
     private val _isRefreshing = MutableStateFlow(false)
     private val _collapsedGenerations = MutableStateFlow<Set<String>>(emptySet())
     private val _selectedTypes = MutableStateFlow<Set<String>>(emptySet())
+    private val _displayOptions = combine(_isRefreshing, _collapsedGenerations) { r, c -> r to c }
     private val _showFavoritesOnly = MutableStateFlow(false)
 
     private val _favoriteIds: StateFlow<Set<Int>> = repository.getFavoriteIds()
@@ -47,11 +48,12 @@ class PokemonListViewModel @Inject constructor(
                                 pokemon.id.toString().contains(query)
                     }
                 }
+                val selectedTypesLower = selectedTypes.map { it.lowercase() }
                 val typeFiltered = if (selectedTypes.isEmpty()) {
                     searchFiltered
                 } else {
                     searchFiltered.filter { pokemon ->
-                        pokemon.types.any { it.lowercase() in selectedTypes.map { s -> s.lowercase() } }
+                        pokemon.types.any { it.lowercase() in selectedTypesLower }
                     }
                 }
                 val filtered = if (showFavOnly) {
@@ -62,6 +64,7 @@ class PokemonListViewModel @Inject constructor(
                 val grouped = filtered
                     .sortedBy { it.id }
                     .groupBy { generationOf(it.id) }
+                    .mapValues { (_, list) -> list.chunked(2) }
                 PokemonListUiState(
                     pokemonByGeneration = grouped,
                     searchQuery = query,
@@ -71,10 +74,8 @@ class PokemonListViewModel @Inject constructor(
                 )
             }
         }
-    }.combine(_isRefreshing) { state, refreshing ->
-        state.copy(isRefreshing = refreshing)
-    }.combine(_collapsedGenerations) { state, collapsed ->
-        state.copy(collapsedGenerations = collapsed)
+    }.combine(_displayOptions) { state, (refreshing, collapsed) ->
+        state.copy(isRefreshing = refreshing, collapsedGenerations = collapsed)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PokemonListUiState(isLoading = true))
 
     init {
@@ -172,7 +173,7 @@ fun generationOf(id: Int): String = when {
 data class PokemonListUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val pokemonByGeneration: Map<String, List<Pokemon>> = emptyMap(),
+    val pokemonByGeneration: Map<String, List<List<Pokemon>>> = emptyMap(),
     val searchQuery: String = "",
     val collapsedGenerations: Set<String> = emptySet(),
     val isRefreshing: Boolean = false,

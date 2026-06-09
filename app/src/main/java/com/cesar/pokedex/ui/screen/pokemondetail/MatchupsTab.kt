@@ -29,18 +29,18 @@ internal fun MatchupsTab(
     val pokemonTypeKeys = remember(types) {
         types.map { it.apiName.ifBlank { it.name.lowercase() } }
     }
-    val matchups = remember(pokemonTypeKeys) {
+    val matchups = remember(types) {
         TypeEffectivenessChart.allMatchupsFor(pokemonTypeKeys)
     }
-    val weak = remember(matchups) {
+    val weak = remember(types) {
         matchups.filter { it.value > 1f }.keys.sorted()
             .map { it.replaceFirstChar { c -> c.uppercase() } }
     }
-    val resistant = remember(matchups) {
+    val resistant = remember(types) {
         matchups.filter { it.value < 1f && it.value > 0f }.keys.sorted()
             .map { it.replaceFirstChar { c -> c.uppercase() } }
     }
-    val immune = remember(matchups) {
+    val immune = remember(types) {
         matchups.filter { it.value == 0f }.keys.sorted()
             .map { it.replaceFirstChar { c -> c.uppercase() } }
     }

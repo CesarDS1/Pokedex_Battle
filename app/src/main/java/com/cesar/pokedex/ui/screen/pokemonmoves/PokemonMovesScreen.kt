@@ -26,6 +26,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -134,7 +135,7 @@ private fun MovesContent(
                 modifier = Modifier.padding(vertical = 12.dp)
             )
         } else {
-            val grouped = moves.groupBy { it.level }
+            val grouped = remember(moves) { moves.groupBy { it.level } }
             grouped.forEach { (level, movesAtLevel) ->
                 LevelGroup(level = level, moves = movesAtLevel)
                 Spacer(modifier = Modifier.height(12.dp))

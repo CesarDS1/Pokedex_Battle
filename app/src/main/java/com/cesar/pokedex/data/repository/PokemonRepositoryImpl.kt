@@ -20,11 +20,13 @@ import com.cesar.pokedex.domain.model.PokemonEvolutionInfo
 import com.cesar.pokedex.domain.model.PokemonType
 import com.cesar.pokedex.domain.model.PokemonVariety
 import com.cesar.pokedex.domain.repository.PokemonRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
@@ -35,7 +37,9 @@ class PokemonRepositoryImpl @Inject constructor(
     private val localeProvider: DeviceLocaleProvider
 ) : PokemonRepository {
 
-    private val json = Json { ignoreUnknownKeys = true }
+    companion object {
+        private val json = Json { ignoreUnknownKeys = true }
+    }
 
     // Used to detect stale cache entries that were stored with localized (non-English) type names
     // before the fix that switched buildTypeMap() to always use the PokeAPI English slug.
@@ -102,7 +106,7 @@ class PokemonRepositoryImpl @Inject constructor(
     override suspend fun getPokemonDetail(id: Int): PokemonDetail {
         val cached = dao.getPokemonDetail(id)
         if (cached != null) {
-            return json.decodeFromString<PokemonDetail>(cached.json)
+            return withContext(Dispatchers.IO) { json.decodeFromString<PokemonDetail>(cached.json) }
         }
         return fetchAndCachePokemonDetail(id)
     }
@@ -268,7 +272,7 @@ class PokemonRepositoryImpl @Inject constructor(
     override suspend fun getEvolutionInfo(id: Int): PokemonEvolutionInfo {
         val cached = dao.getEvolutionInfo(id)
         if (cached != null) {
-            return json.decodeFromString<PokemonEvolutionInfo>(cached.json)
+            return withContext(Dispatchers.IO) { json.decodeFromString<PokemonEvolutionInfo>(cached.json) }
         }
         return fetchAndCacheEvolutionInfo(id)
     }

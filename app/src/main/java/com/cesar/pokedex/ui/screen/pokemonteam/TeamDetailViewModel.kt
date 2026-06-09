@@ -10,10 +10,12 @@ import com.cesar.pokedex.domain.repository.PokemonRepository
 import com.cesar.pokedex.domain.repository.TeamRepository
 import com.cesar.pokedex.domain.util.TeamAnalyzer
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -27,44 +29,21 @@ class TeamDetailViewModel @Inject constructor(
 
     private val teamId: Long = checkNotNull(savedStateHandle["teamId"])
 
-    private val _memberDetails = MutableStateFlow<List<PokemonDetail>>(emptyList())
-
-    val uiState: StateFlow<TeamDetailUiState> = combine(
-        teamRepository.getAllTeams(),
-        _memberDetails
-    ) { teams, memberDetails ->
-        val team = teams.firstOrNull { it.id == teamId }
-            ?: return@combine TeamDetailUiState()
-
-        val analysis = TeamAnalyzer.analyze(team.members, memberDetails)
-
-        TeamDetailUiState(
-            team = team,
-            analysis = analysis
-        )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TeamDetailUiState())
-
-    init {
-        observeTeamAndLoadDetails()
-    }
-
-    private fun observeTeamAndLoadDetails() {
-        viewModelScope.launch {
-            teamRepository.getAllTeams().collect { teams ->
-                val team = teams.firstOrNull { it.id == teamId } ?: return@collect
-                loadMemberDetails(team)
+    val uiState: StateFlow<TeamDetailUiState> = teamRepository.getAllTeams()
+        .map { teams -> teams.firstOrNull { it.id == teamId } }
+        .flatMapLatest { team ->
+            if (team == null) return@flatMapLatest flowOf(TeamDetailUiState())
+            flow {
+                val details = team.members.mapNotNull { member ->
+                    try { pokemonRepository.getPokemonDetail(member.id) } catch (_: Exception) { null }
+                }
+                emit(TeamDetailUiState(
+                    team = team,
+                    analysis = TeamAnalyzer.analyze(team.members, details)
+                ))
             }
         }
-    }
-
-    private fun loadMemberDetails(team: PokemonTeam) {
-        viewModelScope.launch {
-            val details = team.members.mapNotNull { member ->
-                try { pokemonRepository.getPokemonDetail(member.id) } catch (_: Exception) { null }
-            }
-            _memberDetails.value = details
-        }
-    }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TeamDetailUiState())
 
     fun onEvent(event: TeamDetailEvent) {
         when (event) {
