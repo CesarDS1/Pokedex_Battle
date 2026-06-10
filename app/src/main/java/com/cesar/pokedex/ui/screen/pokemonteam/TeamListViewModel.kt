@@ -20,12 +20,14 @@ class TeamListViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _showCreateDialog = MutableStateFlow(false)
+    private val _pendingDeleteTeam = MutableStateFlow<PokemonTeam?>(null)
 
     val uiState = combine(
         teamRepository.getAllTeams(),
-        _showCreateDialog
-    ) { teams, showDialog ->
-        TeamListUiState(teams = teams, showCreateDialog = showDialog)
+        _showCreateDialog,
+        _pendingDeleteTeam
+    ) { teams, showDialog, pendingDelete ->
+        TeamListUiState(teams = teams, showCreateDialog = showDialog, pendingDeleteTeam = pendingDelete)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TeamListUiState())
 
     private val _events = Channel<TeamNavigationEvent>(Channel.BUFFERED)
@@ -42,9 +44,13 @@ class TeamListViewModel @Inject constructor(
                     _events.send(TeamNavigationEvent.NavigateToTeamDetail(id))
                 }
             }
-            is TeamListEvent.DeleteTeam -> {
-                viewModelScope.launch { teamRepository.deleteTeam(event.id) }
+            is TeamListEvent.RequestDelete -> _pendingDeleteTeam.value = event.team
+            TeamListEvent.ConfirmDelete -> {
+                val team = _pendingDeleteTeam.value ?: return
+                _pendingDeleteTeam.value = null
+                viewModelScope.launch { teamRepository.deleteTeam(team.id) }
             }
+            TeamListEvent.CancelDelete -> _pendingDeleteTeam.value = null
             is TeamListEvent.NavigateToTeam -> {
                 viewModelScope.launch {
                     _events.send(TeamNavigationEvent.NavigateToTeamDetail(event.id))
@@ -56,14 +62,17 @@ class TeamListViewModel @Inject constructor(
 
 data class TeamListUiState(
     val teams: List<PokemonTeam> = emptyList(),
-    val showCreateDialog: Boolean = false
+    val showCreateDialog: Boolean = false,
+    val pendingDeleteTeam: PokemonTeam? = null
 )
 
 sealed interface TeamListEvent {
     data object ShowCreateDialog : TeamListEvent
     data object DismissCreateDialog : TeamListEvent
     data class CreateTeam(val name: String) : TeamListEvent
-    data class DeleteTeam(val id: Long) : TeamListEvent
+    data class RequestDelete(val team: PokemonTeam) : TeamListEvent
+    data object ConfirmDelete : TeamListEvent
+    data object CancelDelete : TeamListEvent
     data class NavigateToTeam(val id: Long) : TeamListEvent
 }
 

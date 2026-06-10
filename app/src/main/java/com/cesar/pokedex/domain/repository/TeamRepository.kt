@@ -10,4 +10,5 @@ interface TeamRepository {
     suspend fun addMember(teamId: Long, pokemonId: Int)
     suspend fun removeMember(teamId: Long, pokemonId: Int)
     suspend fun deleteTeam(id: Long)
+    suspend fun reorderMembers(teamId: Long, newOrder: List<Int>)
 }

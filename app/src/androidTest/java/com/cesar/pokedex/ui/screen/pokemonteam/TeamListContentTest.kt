@@ -32,7 +32,7 @@ class TeamListContentTest {
                 )
             }
         }
-        composeRule.onNodeWithText("No teams yet. Tap + to create one.").assertIsDisplayed()
+        composeRule.onNodeWithText("No teams yet").assertIsDisplayed()
     }
 
     @Test
@@ -58,7 +58,7 @@ class TeamListContentTest {
                 )
             }
         }
-        composeRule.onNodeWithText("2/6").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("2 of 6 slots filled").assertIsDisplayed()
     }
 
     @Test
@@ -115,6 +115,32 @@ class TeamListContentTest {
                 )
             }
         }
-        composeRule.onNodeWithText("0/6").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("0 of 6 slots filled").assertIsDisplayed()
+    }
+
+    @Test
+    fun deleteConfirmationDialog_visibleWhenPendingDeleteTeamIsSet() {
+        composeRule.setContent {
+            PokedexTheme {
+                TeamListContent(
+                    uiState = TeamListUiState(teams = listOf(sampleTeam), pendingDeleteTeam = sampleTeam),
+                    onEvent = {}
+                )
+            }
+        }
+        composeRule.onNodeWithText("Delete team?").assertIsDisplayed()
+    }
+
+    @Test
+    fun deleteConfirmationDialog_hiddenByDefault() {
+        composeRule.setContent {
+            PokedexTheme {
+                TeamListContent(
+                    uiState = TeamListUiState(teams = listOf(sampleTeam)),
+                    onEvent = {}
+                )
+            }
+        }
+        composeRule.onAllNodesWithText("Delete team?").assertCountEquals(0)
     }
 }

@@ -17,6 +17,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -193,5 +194,69 @@ class TeamDetailViewModelTest {
             assertEquals(78f, avgHp ?: 0f, 0.001f)
             cancelAndIgnoreRemainingEvents()
         }
+    }
+
+    @Test
+    fun `ShowRenameDialog event sets showRenameDialog to true`() = runTest {
+        val viewModel = createViewModel()
+
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onEvent(TeamDetailEvent.ShowRenameDialog)
+            val state = awaitItem()
+            assertTrue(state.showRenameDialog)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `DismissRenameDialog event sets showRenameDialog to false`() = runTest {
+        val viewModel = createViewModel()
+
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onEvent(TeamDetailEvent.ShowRenameDialog)
+            awaitItem()
+            viewModel.onEvent(TeamDetailEvent.DismissRenameDialog)
+            val state = awaitItem()
+            assertFalse(state.showRenameDialog)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `ConfirmRename calls renameTeam and dismisses dialog`() = runTest {
+        coEvery { teamRepository.renameTeam(teamId, "New Name") } returns Unit
+
+        val viewModel = createViewModel()
+        viewModel.onEvent(TeamDetailEvent.ShowRenameDialog)
+        viewModel.onEvent(TeamDetailEvent.ConfirmRename("New Name"))
+
+        coVerify { teamRepository.renameTeam(teamId, "New Name") }
+
+        viewModel.uiState.test {
+            assertFalse(awaitItem().showRenameDialog)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `SwapMembers calls reorderMembers with swapped ids`() = runTest {
+        val blastoise = Pokemon(id = 9, name = "Blastoise", imageUrl = "", types = listOf("Water"))
+        val team = PokemonTeam(id = teamId, name = "Team", members = listOf(charizard, blastoise))
+        every { teamRepository.getAllTeams() } returns flowOf(listOf(team))
+        coEvery { pokemonRepository.getPokemonDetail(blastoise.id) } returns makeDetail(blastoise)
+        coEvery { teamRepository.reorderMembers(teamId, any()) } returns Unit
+
+        val viewModel = createViewModel()
+
+        // Subscribe to start the WhileSubscribed upstream flow and wait for team to be loaded
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onEvent(TeamDetailEvent.SwapMembers(0, 1))
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        coVerify { teamRepository.reorderMembers(teamId, listOf(blastoise.id, charizard.id)) }
     }
 }

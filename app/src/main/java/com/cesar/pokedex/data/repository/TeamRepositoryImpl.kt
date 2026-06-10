@@ -57,4 +57,9 @@ class TeamRepositoryImpl @Inject constructor(
     override suspend fun deleteTeam(id: Long) {
         teamDao.deleteTeam(id)
     }
+
+    override suspend fun reorderMembers(teamId: Long, newOrder: List<Int>) {
+        val entity = teamDao.getTeamById(teamId) ?: return
+        teamDao.updateTeam(entity.copy(pokemonIds = newOrder))
+    }
 }

@@ -3,15 +3,16 @@ package com.cesar.pokedex.ui.screen.pokemonteam
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cesar.pokedex.domain.model.PokemonDetail
 import com.cesar.pokedex.domain.model.PokemonTeam
 import com.cesar.pokedex.domain.model.TeamAnalysis
 import com.cesar.pokedex.domain.repository.PokemonRepository
 import com.cesar.pokedex.domain.repository.TeamRepository
 import com.cesar.pokedex.domain.util.TeamAnalyzer
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -29,11 +30,14 @@ class TeamDetailViewModel @Inject constructor(
 
     private val teamId: Long = checkNotNull(savedStateHandle["teamId"])
 
-    val uiState: StateFlow<TeamDetailUiState> = teamRepository.getAllTeams()
+    private val _showRenameDialog = MutableStateFlow(false)
+
+    private val teamFlow = teamRepository.getAllTeams()
         .map { teams -> teams.firstOrNull { it.id == teamId } }
         .flatMapLatest { team ->
             if (team == null) return@flatMapLatest flowOf(TeamDetailUiState())
             flow {
+                emit(TeamDetailUiState(team = team))
                 val details = team.members.mapNotNull { member ->
                     try { pokemonRepository.getPokemonDetail(member.id) } catch (_: Exception) { null }
                 }
@@ -43,12 +47,30 @@ class TeamDetailViewModel @Inject constructor(
                 ))
             }
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TeamDetailUiState())
+
+    val uiState: StateFlow<TeamDetailUiState> = combine(teamFlow, _showRenameDialog) { state, showDialog ->
+        state.copy(showRenameDialog = showDialog)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TeamDetailUiState())
 
     fun onEvent(event: TeamDetailEvent) {
         when (event) {
             is TeamDetailEvent.RemoveMember -> {
                 viewModelScope.launch { teamRepository.removeMember(teamId, event.pokemonId) }
+            }
+            TeamDetailEvent.ShowRenameDialog -> _showRenameDialog.value = true
+            TeamDetailEvent.DismissRenameDialog -> _showRenameDialog.value = false
+            is TeamDetailEvent.ConfirmRename -> {
+                _showRenameDialog.value = false
+                viewModelScope.launch { teamRepository.renameTeam(teamId, event.name) }
+            }
+            is TeamDetailEvent.SwapMembers -> {
+                val members = uiState.value.team?.members ?: return
+                val list = members.toMutableList()
+                if (event.fromIndex !in list.indices || event.toIndex !in list.indices) return
+                val temp = list[event.fromIndex]
+                list[event.fromIndex] = list[event.toIndex]
+                list[event.toIndex] = temp
+                viewModelScope.launch { teamRepository.reorderMembers(teamId, list.map { it.id }) }
             }
         }
     }
@@ -56,9 +78,14 @@ class TeamDetailViewModel @Inject constructor(
 
 data class TeamDetailUiState(
     val team: PokemonTeam? = null,
-    val analysis: TeamAnalysis? = null
+    val analysis: TeamAnalysis? = null,
+    val showRenameDialog: Boolean = false
 )
 
 sealed interface TeamDetailEvent {
     data class RemoveMember(val pokemonId: Int) : TeamDetailEvent
+    data object ShowRenameDialog : TeamDetailEvent
+    data object DismissRenameDialog : TeamDetailEvent
+    data class ConfirmRename(val name: String) : TeamDetailEvent
+    data class SwapMembers(val fromIndex: Int, val toIndex: Int) : TeamDetailEvent
 }

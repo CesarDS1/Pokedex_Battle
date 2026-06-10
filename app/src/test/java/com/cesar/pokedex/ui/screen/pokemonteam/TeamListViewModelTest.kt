@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -112,13 +113,50 @@ class TeamListViewModelTest {
     }
 
     @Test
-    fun `DeleteTeam event calls repository`() = runTest {
+    fun `RequestDelete sets pendingDeleteTeam in state`() = runTest {
+        val team = PokemonTeam(id = 1L, name = "My Team", members = emptyList())
+        every { teamRepository.getAllTeams() } returns flowOf(listOf(team))
+
+        val viewModel = createViewModel()
+
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onEvent(TeamListEvent.RequestDelete(team))
+            val state = awaitItem()
+            assertEquals(team, state.pendingDeleteTeam)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `ConfirmDelete calls repository and clears pendingDeleteTeam`() = runTest {
+        val team = PokemonTeam(id = 1L, name = "My Team", members = emptyList())
+        every { teamRepository.getAllTeams() } returns flowOf(listOf(team))
         coEvery { teamRepository.deleteTeam(1L) } returns Unit
 
         val viewModel = createViewModel()
-        viewModel.onEvent(TeamListEvent.DeleteTeam(1L))
+        viewModel.onEvent(TeamListEvent.RequestDelete(team))
+        viewModel.onEvent(TeamListEvent.ConfirmDelete)
 
         coVerify { teamRepository.deleteTeam(1L) }
+    }
+
+    @Test
+    fun `CancelDelete clears pendingDeleteTeam without calling repository`() = runTest {
+        val team = PokemonTeam(id = 1L, name = "My Team", members = emptyList())
+        every { teamRepository.getAllTeams() } returns flowOf(listOf(team))
+
+        val viewModel = createViewModel()
+
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onEvent(TeamListEvent.RequestDelete(team))
+            awaitItem()
+            viewModel.onEvent(TeamListEvent.CancelDelete)
+            val state = awaitItem()
+            assertNull(state.pendingDeleteTeam)
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test

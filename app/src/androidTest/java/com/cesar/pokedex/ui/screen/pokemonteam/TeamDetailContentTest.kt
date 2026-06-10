@@ -1,5 +1,6 @@
 package com.cesar.pokedex.ui.screen.pokemonteam
 
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.cesar.pokedex.domain.model.Pokemon
@@ -155,5 +156,72 @@ class TeamDetailContentTest {
             }
         }
         composeRule.onNodeWithText("My Team").assertIsDisplayed()
+    }
+
+    @Test
+    fun editIconButton_triggersShowRenameDialogEvent() {
+        val capturedEvents = mutableListOf<TeamDetailEvent>()
+        composeRule.setContent {
+            PokedexTheme {
+                TeamDetailScreenContent(
+                    uiState = TeamDetailUiState(team = teamWithMembers, analysis = sampleAnalysis),
+                    onEvent = { capturedEvents.add(it) },
+                    onBackClick = {},
+                    onAddPokemonClick = {},
+                    onPokemonClick = {}
+                )
+            }
+        }
+        composeRule.onNodeWithContentDescription("Rename team").performClick()
+        assert(capturedEvents.contains(TeamDetailEvent.ShowRenameDialog))
+    }
+
+    @Test
+    fun renameDialog_visibleWhenShowRenameDialogTrue() {
+        composeRule.setContent {
+            PokedexTheme {
+                TeamDetailScreenContent(
+                    uiState = TeamDetailUiState(team = teamWithMembers, analysis = sampleAnalysis, showRenameDialog = true),
+                    onEvent = {},
+                    onBackClick = {},
+                    onAddPokemonClick = {},
+                    onPokemonClick = {}
+                )
+            }
+        }
+        composeRule.onNodeWithText("Rename Team").assertIsDisplayed()
+    }
+
+    @Test
+    fun rosterTab_reorderToggleButton_isDisplayed() {
+        composeRule.setContent {
+            PokedexTheme {
+                TeamDetailScreenContent(
+                    uiState = TeamDetailUiState(team = teamWithMembers, analysis = sampleAnalysis),
+                    onEvent = {},
+                    onBackClick = {},
+                    onAddPokemonClick = {},
+                    onPokemonClick = {}
+                )
+            }
+        }
+        composeRule.onNodeWithContentDescription("Reorder members").assertIsDisplayed()
+    }
+
+    @Test
+    fun analysisTab_showsLoadingIndicator_whenTeamHasMembersButAnalysisNull() {
+        composeRule.setContent {
+            PokedexTheme {
+                TeamDetailScreenContent(
+                    uiState = TeamDetailUiState(team = teamWithMembers, analysis = null),
+                    onEvent = {},
+                    onBackClick = {},
+                    onAddPokemonClick = {},
+                    onPokemonClick = {}
+                )
+            }
+        }
+        composeRule.onNodeWithText("Analysis").performClick()
+        composeRule.onNode(hasProgressBarRangeInfo(ProgressBarRangeInfo.Indeterminate)).assertExists()
     }
 }
