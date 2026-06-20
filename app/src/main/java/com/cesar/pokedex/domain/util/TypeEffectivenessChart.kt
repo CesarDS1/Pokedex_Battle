@@ -9,11 +9,7 @@ package com.cesar.pokedex.domain.util
  */
 object TypeEffectivenessChart {
 
-    private val ALL_TYPES = listOf(
-        "normal", "fire", "water", "electric", "grass", "ice",
-        "fighting", "poison", "ground", "flying", "psychic", "bug",
-        "rock", "ghost", "dragon", "dark", "steel", "fairy"
-    )
+    private val ALL_TYPES = ALL_POKEMON_TYPES.map { it.lowercase() }
 
     private val chart: Map<String, Map<String, Float>> = mapOf(
         "normal" to mapOf(

@@ -71,6 +71,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.cesar.pokedex.R
 import com.cesar.pokedex.domain.model.Pokemon
+import com.cesar.pokedex.domain.util.ALL_POKEMON_TYPES
 import com.cesar.pokedex.ui.component.TypeBadge
 import com.cesar.pokedex.ui.component.typeColor
 import com.cesar.pokedex.ui.theme.regionAccentColor

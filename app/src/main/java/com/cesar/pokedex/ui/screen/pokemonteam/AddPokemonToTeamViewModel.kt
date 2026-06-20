@@ -7,7 +7,7 @@ import com.cesar.pokedex.domain.model.Pokemon
 import com.cesar.pokedex.domain.repository.PokemonRepository
 import com.cesar.pokedex.domain.repository.TeamRepository
 import com.cesar.pokedex.domain.util.TeamSuggestionEngine
-import com.cesar.pokedex.ui.screen.pokemonlist.ALL_POKEMON_TYPES
+import com.cesar.pokedex.domain.util.ALL_POKEMON_TYPES
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow

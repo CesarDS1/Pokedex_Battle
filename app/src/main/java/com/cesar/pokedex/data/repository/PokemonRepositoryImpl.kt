@@ -20,6 +20,7 @@ import com.cesar.pokedex.domain.model.PokemonEvolutionInfo
 import com.cesar.pokedex.domain.model.PokemonType
 import com.cesar.pokedex.domain.model.PokemonVariety
 import com.cesar.pokedex.domain.repository.PokemonRepository
+import com.cesar.pokedex.domain.util.ALL_POKEMON_TYPES
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -43,11 +44,7 @@ class PokemonRepositoryImpl @Inject constructor(
 
     // Used to detect stale cache entries that were stored with localized (non-English) type names
     // before the fix that switched buildTypeMap() to always use the PokeAPI English slug.
-    private val englishTypeNames = setOf(
-        "Normal", "Fire", "Water", "Electric", "Grass", "Ice",
-        "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug",
-        "Rock", "Ghost", "Dragon", "Dark", "Steel", "Fairy"
-    )
+    private val englishTypeNames = ALL_POKEMON_TYPES.toSet()
 
     override suspend fun getPokemonList(forceRefresh: Boolean): List<Pokemon> {
         if (!forceRefresh) {

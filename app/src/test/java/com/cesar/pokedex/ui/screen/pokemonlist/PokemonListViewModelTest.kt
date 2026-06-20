@@ -9,6 +9,7 @@ import io.mockk.coJustRun
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -19,6 +20,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class PokemonListViewModelTest {
 
     @get:Rule
@@ -95,6 +97,8 @@ class PokemonListViewModelTest {
         val viewModel = createViewModel()
 
         viewModel.onEvent(PokemonListEvent.Search("char"))
+        mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(SEARCH_DEBOUNCE_MILLIS)
+        mainDispatcherRule.testDispatcher.scheduler.runCurrent()
 
         viewModel.uiState.test {
             val state = awaitItem()
@@ -131,6 +135,8 @@ class PokemonListViewModelTest {
         val viewModel = createViewModel()
 
         viewModel.onEvent(PokemonListEvent.Search("25"))
+        mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(SEARCH_DEBOUNCE_MILLIS)
+        mainDispatcherRule.testDispatcher.scheduler.runCurrent()
 
         viewModel.uiState.test {
             val state = awaitItem()
@@ -346,6 +352,8 @@ class PokemonListViewModelTest {
         val viewModel = createViewModel()
         viewModel.onEvent(PokemonListEvent.ToggleShowFavoritesOnly)
         viewModel.onEvent(PokemonListEvent.Search("bulb"))
+        mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(SEARCH_DEBOUNCE_MILLIS)
+        mainDispatcherRule.testDispatcher.scheduler.runCurrent()
 
         viewModel.uiState.test {
             val state = awaitItem()

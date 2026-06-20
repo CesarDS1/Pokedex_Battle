@@ -5,14 +5,19 @@ import androidx.lifecycle.viewModelScope
 import com.cesar.pokedex.domain.model.Pokemon
 import com.cesar.pokedex.domain.repository.PokemonRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+internal const val SEARCH_DEBOUNCE_MILLIS = 300L
+
+@OptIn(FlowPreview::class)
 @HiltViewModel
 class PokemonListViewModel @Inject constructor(
     private val repository: PokemonRepository
@@ -20,6 +25,10 @@ class PokemonListViewModel @Inject constructor(
 
     private val _allPokemon = MutableStateFlow<LoadState>(LoadState.Loading)
     private val _searchQuery = MutableStateFlow("")
+    private val _debouncedSearchQuery: StateFlow<String> = _searchQuery
+        .debounce(SEARCH_DEBOUNCE_MILLIS)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, "")
+    private val _searchQueries = combine(_searchQuery, _debouncedSearchQuery) { raw, debounced -> raw to debounced }
     private val _isRefreshing = MutableStateFlow(false)
     private val _collapsedGenerations = MutableStateFlow<Set<String>>(emptySet())
     private val _selectedTypes = MutableStateFlow<Set<String>>(emptySet())
@@ -31,21 +40,21 @@ class PokemonListViewModel @Inject constructor(
 
     val uiState: StateFlow<PokemonListUiState> = combine(
         _allPokemon,
-        _searchQuery,
+        _searchQueries,
         _selectedTypes,
         _favoriteIds,
         _showFavoritesOnly
-    ) { loadState, query, selectedTypes, favorites, showFavOnly ->
+    ) { loadState, (query, debouncedQuery), selectedTypes, favorites, showFavOnly ->
         when (loadState) {
             is LoadState.Loading -> PokemonListUiState(isLoading = true)
             is LoadState.Error -> PokemonListUiState(errorMessage = loadState.message)
             is LoadState.Loaded -> {
-                val searchFiltered = if (query.isBlank()) {
+                val searchFiltered = if (debouncedQuery.isBlank()) {
                     loadState.pokemon
                 } else {
                     loadState.pokemon.filter { pokemon ->
-                        pokemon.name.contains(query, ignoreCase = true) ||
-                                pokemon.id.toString().contains(query)
+                        pokemon.name.contains(debouncedQuery, ignoreCase = true) ||
+                                pokemon.id.toString().contains(debouncedQuery)
                     }
                 }
                 val selectedTypesLower = selectedTypes.map { it.lowercase() }
@@ -150,12 +159,6 @@ sealed interface PokemonListEvent {
     data object LoadPokemon : PokemonListEvent
     data object RefreshPokemon : PokemonListEvent
 }
-
-val ALL_POKEMON_TYPES = listOf(
-    "Normal", "Fire", "Water", "Electric", "Grass", "Ice",
-    "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug",
-    "Rock", "Ghost", "Dragon", "Dark", "Steel", "Fairy"
-)
 
 fun generationOf(id: Int): String = when {
     id <= 151 -> "Generation I — Kanto"
