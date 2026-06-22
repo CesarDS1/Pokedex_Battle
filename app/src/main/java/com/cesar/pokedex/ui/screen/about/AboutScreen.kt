@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -50,12 +51,12 @@ internal fun AboutScreenContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("About") },
+                title = { Text(stringResource(R.string.about_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 }
@@ -78,7 +79,7 @@ internal fun AboutScreenContent(
             )
 
             Text(
-                text = "Pokedex",
+                text = stringResource(R.string.about_app_name),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -88,7 +89,7 @@ internal fun AboutScreenContent(
                 shape = MaterialTheme.shapes.small
             ) {
                 Text(
-                    text = "v$versionName",
+                    text = stringResource(R.string.version_format, versionName),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
@@ -97,21 +98,13 @@ internal fun AboutScreenContent(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            DisclaimerCard(
-                text = "This app is not affiliated with, endorsed, or sponsored by Nintendo, Game Freak, or The Pokémon Company."
-            )
+            DisclaimerCard(text = stringResource(R.string.disclaimer_not_affiliated))
 
-            DisclaimerCard(
-                text = "Pokémon and all related names are trademarks of Nintendo / Creatures Inc. / GAME FREAK inc."
-            )
+            DisclaimerCard(text = stringResource(R.string.disclaimer_trademark))
 
-            DisclaimerCard(
-                text = "Pokémon data is sourced from PokéAPI (pokeapi.co), a free and open Pokémon RESTful API."
-            )
+            DisclaimerCard(text = stringResource(R.string.disclaimer_data_source))
 
-            DisclaimerCard(
-                text = "Images and information are used for non-commercial, educational/fan purposes only."
-            )
+            DisclaimerCard(text = stringResource(R.string.disclaimer_usage))
         }
     }
 }

@@ -18,6 +18,8 @@
     <string name="tab_about">Info</string>
     <string name="tab_stats">Estadísticas</string>
     <string name="tab_matchups">Ventajas</string>
+    <string name="tab_games">Juegos</string>
+    <string name="no_game_entries">No hay juegos disponibles.</string>
     <string name="evolutions_and_forms">Evoluciones y Formas</string>
     <string name="moves_by_level">Movimientos por Nivel</string>
     <string name="height">Altura</string>
@@ -52,4 +54,13 @@
     <string name="no_level_up_moves">Este Pokemon no aprende movimientos al subir de nivel.</string>
     <string name="level_format">Nivel %1$d</string>
     <string name="learned_by_default">Aprendido por defecto</string>
+
+    <!-- About screen -->
+    <string name="about_title">Acerca de</string>
+    <string name="about_app_name">Pokedex</string>
+    <string name="version_format">v%1$s</string>
+    <string name="disclaimer_not_affiliated">Esta aplicación no está afiliada, respaldada ni patrocinada por Nintendo, Game Freak ni The Pokémon Company.</string>
+    <string name="disclaimer_trademark">Pokémon y todos los nombres relacionados son marcas registradas de Nintendo / Creatures Inc. / GAME FREAK inc.</string>
+    <string name="disclaimer_data_source">Los datos de Pokémon provienen de PokéAPI (pokeapi.co), una API RESTful de Pokémon gratuita y abierta.</string>
+    <string name="disclaimer_usage">Las imágenes y la información se utilizan únicamente con fines no comerciales, educativos o de aficionados.</string>
 </resources>

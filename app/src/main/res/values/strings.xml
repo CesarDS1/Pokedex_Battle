@@ -54,4 +54,13 @@
     <string name="no_level_up_moves">This Pokemon doesn\'t learn any moves by leveling up.</string>
     <string name="level_format">Level %1$d</string>
     <string name="learned_by_default">Learned by default</string>
+
+    <!-- About screen -->
+    <string name="about_title">About</string>
+    <string name="about_app_name">Pokedex</string>
+    <string name="version_format">v%1$s</string>
+    <string name="disclaimer_not_affiliated">This app is not affiliated with, endorsed, or sponsored by Nintendo, Game Freak, or The Pokémon Company.</string>
+    <string name="disclaimer_trademark">Pokémon and all related names are trademarks of Nintendo / Creatures Inc. / GAME FREAK inc.</string>
+    <string name="disclaimer_data_source">Pokémon data is sourced from PokéAPI (pokeapi.co), a free and open Pokémon RESTful API.</string>
+    <string name="disclaimer_usage">Images and information are used for non-commercial, educational/fan purposes only.</string>
 </resources>
