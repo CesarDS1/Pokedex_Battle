@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 internal const val SEARCH_DEBOUNCE_MILLIS = 300L
 
@@ -26,7 +27,7 @@ class PokemonListViewModel @Inject constructor(
     private val _allPokemon = MutableStateFlow<LoadState>(LoadState.Loading)
     private val _searchQuery = MutableStateFlow("")
     private val _debouncedSearchQuery: StateFlow<String> = _searchQuery
-        .debounce(SEARCH_DEBOUNCE_MILLIS)
+        .debounce(SEARCH_DEBOUNCE_MILLIS.milliseconds)
         .stateIn(viewModelScope, SharingStarted.Eagerly, "")
     private val _searchQueries = combine(_searchQuery, _debouncedSearchQuery) { raw, debounced -> raw to debounced }
     private val _isRefreshing = MutableStateFlow(false)
