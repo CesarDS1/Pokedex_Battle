@@ -43,6 +43,8 @@
 -keep @dagger.Module class *
 -keep class dagger.hilt.** { *; }
 -dontwarn dagger.hilt.**
+# R8 full mode (AGP 9 default) strips Hilt-generated injector interfaces in the app package
+-keep interface **_GeneratedInjector { *; }
 
 # ── Coil ─────────────────────────────────────────────────────────────────────
 -dontwarn coil.**

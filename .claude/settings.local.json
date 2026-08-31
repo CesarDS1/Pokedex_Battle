@@ -47,7 +47,13 @@
       "Bash(npm --version)",
       "Bash(wsl --version)",
       "Bash(wsl python3 *)",
-      "Bash(powershell *)"
+      "Bash(powershell *)",
+      "Bash(./gradlew :app:compileDebugKotlin)",
+      "Bash(./gradlew :app:compileDebugKotlin --info)",
+      "Bash(./gradlew :app:compileDebugKotlin --stacktrace)",
+      "Bash(./gradlew compileDebugKotlin *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }
