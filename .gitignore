@@ -24,13 +24,6 @@ local.properties
 
 # Android Studio
 *.iml
-.idea/caches/
-.idea/libraries/
-.idea/modules/
-.idea/modules.xml
-.idea/workspace.xml
-.idea/navEditor.xml
-.idea/assetWizardSettings.xml
 
 # Keystore files (keep them safe!)
 *.jks
@@ -56,3 +49,6 @@ nul
 
 # Captures (Android Profiler)
 /captures
+
+# Android Studio project files
+/.idea/
