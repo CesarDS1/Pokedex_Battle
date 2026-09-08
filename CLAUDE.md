@@ -7,8 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Android Pokedex app built with Jetpack Compose and Material 3. Single-module project using Kotlin DSL Gradle build files. Fetches data from PokeAPI v2 with offline caching via Room.
 
 - **Package:** `com.cesar.pokedex`
-- **Min SDK:** 33, **Target/Compile SDK:** 36
-- **Kotlin:** 2.2.10, **AGP:** 9.0.0, **Java:** 11
+- **Min SDK:** 33, **Target SDK:** 36, **Compile SDK:** 37
+- **Kotlin:** 2.2.10, **AGP:** 9.3.1, **Java:** 17
 - **UI:** Jetpack Compose with Material 3 and dynamic color support
 
 ## Build Commands
