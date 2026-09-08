@@ -65,6 +65,9 @@ a PR into `develop`, and a `/code-review` pass before merging.
       AGP 9.0.0→9.3.1, Java 11→17, Compile SDK 36→37, split Target/Compile SDK — these were
       already wrong on `master` from a prior undocumented bump, unrelated to this task's version
       changes)
-- [ ] Commit, push `feature/update-dependencies`
-- [ ] Open PR into `develop` via `gh pr create`
-- [ ] Run `/code-review` on the PR, address findings
+- [x] Commit, push `feature/update-dependencies`
+- [x] Open PR into `develop` via `gh pr create` — https://github.com/CesarDS1/Pokedex_Battle/pull/1
+- [x] Run `/code-review` on the PR, address findings — 3 findings, all `CLAUDE.md` drift unrelated
+      to the dependency bumps themselves (Room DB version 3→4, ktlint claimed absent but is
+      configured, stale Compose BOM number). Fixed, plus one more found while fixing (release
+      minification claimed disabled but is enabled).
