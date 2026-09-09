@@ -7,8 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Android Pokedex app built with Jetpack Compose and Material 3. Single-module project using Kotlin DSL Gradle build files. Fetches data from PokeAPI v2 with offline caching via Room.
 
 - **Package:** `com.cesar.pokedex`
-- **Min SDK:** 33, **Target/Compile SDK:** 36
-- **Kotlin:** 2.2.10, **AGP:** 9.0.0, **Java:** 11
+- **Min SDK:** 33, **Target SDK:** 36, **Compile SDK:** 37
+- **Kotlin:** 2.2.10, **AGP:** 9.3.1, **Java:** 17
 - **UI:** Jetpack Compose with Material 3 and dynamic color support
 
 ## Build Commands
@@ -120,10 +120,10 @@ Clean Architecture with 3 layers (UI, Domain, Data). Single-activity architectur
 
 - `kotlin.code.style=official` (in `gradle.properties`)
 - Non-transitive R classes enabled (`android.nonTransitiveRClass=true`)
-- Compose BOM `2024.09.00` — avoid `FlowRow` (API signature mismatch at runtime), use custom `WrappingRow` Layout composable instead (defined in `PokemonDetailScreen.kt`)
-- Room database version: 3 (includes `favorites` table)
-- No linter or formatter configured (no ktlint/detekt)
-- ProGuard rules exist but minification is disabled
+- Compose BOM `2026.06.01` — avoid `FlowRow` (API signature mismatch at runtime), use custom `WrappingRow` Layout composable instead (defined in `PokemonDetailScreen.kt`)
+- Room database version: 4 (includes `favorites` and team builder tables)
+- ktlint configured (`org.jlleitschuh.gradle.ktlint` plugin) with the `compose-rules-ktlint` ruleset; no detekt
+- Release builds enable minification and resource shrinking (`isMinifyEnabled`/`isShrinkResources = true`); ProGuard rules in `proguard-rules.pro`
 
 ## Features
 
