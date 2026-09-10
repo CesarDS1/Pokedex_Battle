@@ -39,6 +39,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,7 +54,9 @@ import com.cesar.pokedex.R
 import com.cesar.pokedex.domain.model.Pokemon
 import com.cesar.pokedex.domain.model.PokemonDetail
 import com.cesar.pokedex.domain.util.TypeEffectivenessChart
+import com.cesar.pokedex.domain.util.toTypeKeys
 import com.cesar.pokedex.ui.component.TypeBadge
+import java.util.Locale
 
 @Composable
 fun PokemonCompareScreen(
@@ -247,7 +250,7 @@ private fun ComparatorStatsCard(
                 style = MaterialTheme.typography.titleMedium,
             )
             Spacer(Modifier.height(12.dp))
-            val statNames = pokemonA.stats.map { it.name }
+            val statNames = (pokemonA.stats.map { it.name } + pokemonB.stats.map { it.name }).distinct()
             statNames.forEach { statName ->
                 val valueA = pokemonA.stats.firstOrNull { it.name == statName }?.baseStat ?: 0
                 val valueB = pokemonB.stats.firstOrNull { it.name == statName }?.baseStat ?: 0
@@ -318,9 +321,10 @@ private fun HeadToHeadMatchupCard(
     pokemonB: PokemonDetail,
     modifier: Modifier = Modifier,
 ) {
-    val typesA = pokemonA.types.map { it.apiName.ifBlank { it.name.lowercase() } }
-    val typesB = pokemonB.types.map { it.apiName.ifBlank { it.name.lowercase() } }
-    val matchup = TypeEffectivenessChart.headToHead(typesA, typesB)
+    val matchup =
+        remember(pokemonA.types, pokemonB.types) {
+            TypeEffectivenessChart.headToHead(pokemonA.types.toTypeKeys(), pokemonB.types.toTypeKeys())
+        }
 
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -350,7 +354,6 @@ private fun MatchupVerdictRow(
 ) {
     val color =
         when {
-            multiplier == 0f -> MaterialTheme.colorScheme.onSurfaceVariant
             multiplier > 1f -> Color(0xFFE53935)
             multiplier < 1f -> Color(0xFF4CAF50)
             else -> MaterialTheme.colorScheme.onSurface
@@ -366,12 +369,21 @@ private fun MatchupVerdictRow(
             modifier = Modifier.weight(1f),
         )
         Text(
-            text = "$multiplier×",
+            text = formatMultiplier(multiplier),
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
             color = color,
         )
     }
+}
+
+private fun formatMultiplier(multiplier: Float): String {
+    val trimmed =
+        String
+            .format(Locale.US, "%.2f", multiplier)
+            .trimEnd('0')
+            .trimEnd('.')
+    return "$trimmed×"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

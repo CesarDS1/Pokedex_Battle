@@ -214,13 +214,14 @@ object TypeEffectivenessChart {
     /**
      * Best-case head-to-head: for each side, takes the single attacking type
      * (via STAB) that hits hardest against the opponent's full defending typing.
+     * Falls back to a neutral 1f multiplier if a side has no types (e.g. incomplete data).
      */
     fun headToHead(
         aTypes: List<String>,
         bTypes: List<String>,
     ): HeadToHeadMatchup {
-        val aAttackingB = aTypes.maxOf { atk -> combinedMultiplier(atk, bTypes) }
-        val bAttackingA = bTypes.maxOf { atk -> combinedMultiplier(atk, aTypes) }
+        val aAttackingB = aTypes.maxOfOrNull { atk -> combinedMultiplier(atk, bTypes) } ?: 1f
+        val bAttackingA = bTypes.maxOfOrNull { atk -> combinedMultiplier(atk, aTypes) } ?: 1f
         return HeadToHeadMatchup(aAttackingB, bAttackingA)
     }
 }

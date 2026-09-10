@@ -111,6 +111,38 @@ class PokemonCompareContentTest {
     }
 
     @Test
+    fun filledSlots_formatsWholeNumberMultiplierWithoutTrailingDecimal() {
+        composeRule.setContent {
+            PokedexTheme {
+                PokemonCompareContent(
+                    uiState = PokemonCompareUiState(slotA = charmander, slotB = squirtle),
+                    onEvent = {},
+                    onBackClick = {},
+                )
+            }
+        }
+        // Water (squirtle) attacking Fire (charmander) is a clean 2x multiplier.
+        composeRule.onNodeWithText("2×").assertIsDisplayed()
+    }
+
+    @Test
+    fun statUniqueToOneSlot_isStillShown() {
+        val onlyHasDefense =
+            squirtle.copy(stats = listOf(PokemonStat(name = "defense", baseStat = 65)))
+        composeRule.setContent {
+            PokedexTheme {
+                PokemonCompareContent(
+                    uiState = PokemonCompareUiState(slotA = charmander, slotB = onlyHasDefense),
+                    onEvent = {},
+                    onBackClick = {},
+                )
+            }
+        }
+        // "defense" only exists on slotB's stats, not slotA's - it must still render.
+        composeRule.onNodeWithText("defense").assertIsDisplayed()
+    }
+
+    @Test
     fun sheetOpen_showsSearchFieldAndPickerResults() {
         composeRule.setContent {
             PokedexTheme {

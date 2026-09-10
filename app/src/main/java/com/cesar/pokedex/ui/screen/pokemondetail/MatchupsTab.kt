@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.cesar.pokedex.R
 import com.cesar.pokedex.domain.model.PokemonType
 import com.cesar.pokedex.domain.util.TypeEffectivenessChart
+import com.cesar.pokedex.domain.util.toTypeKeys
 import com.cesar.pokedex.ui.component.TypeBadge
 import com.cesar.pokedex.ui.component.WrappingRow
 
@@ -28,7 +29,7 @@ internal fun MatchupsTab(
 ) {
     val pokemonTypeKeys =
         remember(types) {
-            types.map { it.apiName.ifBlank { it.name.lowercase() } }
+            types.toTypeKeys()
         }
     val matchups =
         remember(types) {

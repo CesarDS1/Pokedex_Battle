@@ -145,4 +145,13 @@ class TypeEffectivenessChartTest {
         assertEquals(1f, result.aAttackingB, 0.001f)
         assertEquals(1f, result.bAttackingA, 0.001f)
     }
+
+    @Test
+    fun `headToHead with an empty type list falls back to neutral 1x instead of throwing`() {
+        // With no types on side A, side A has no attacking move to pick (neutral 1x),
+        // and side B's attacks have nothing to multiply against (also neutral 1x).
+        val result = TypeEffectivenessChart.headToHead(emptyList(), listOf("fire"))
+        assertEquals(1f, result.aAttackingB, 0.001f)
+        assertEquals(1f, result.bAttackingA, 0.001f)
+    }
 }
