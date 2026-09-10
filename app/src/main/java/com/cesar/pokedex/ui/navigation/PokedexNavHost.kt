@@ -46,6 +46,7 @@ fun PokedexNavHost(
     val currentRoute = navBackStackEntry?.destination?.route
 
     Scaffold(
+        // Applies to the whole screen (nav bar included), not just the NavHost content area.
         modifier = modifier,
         // Don't consume system insets — inner Scaffolds handle them individually
         contentWindowInsets = WindowInsets(0),

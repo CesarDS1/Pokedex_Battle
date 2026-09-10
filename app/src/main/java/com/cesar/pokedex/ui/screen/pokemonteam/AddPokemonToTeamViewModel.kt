@@ -65,11 +65,9 @@ class AddPokemonToTeamViewModel
                             if (selectedTypes.isEmpty()) {
                                 list
                             } else {
+                                val selectedTypesLower = selectedTypes.map { it.lowercase() }
                                 list.filter { pokemon ->
-                                    pokemon.types.any {
-                                        it.lowercase() in
-                                            selectedTypes.map { s -> s.lowercase() }
-                                    }
+                                    pokemon.types.any { it.lowercase() in selectedTypesLower }
                                 }
                             }
                         }
