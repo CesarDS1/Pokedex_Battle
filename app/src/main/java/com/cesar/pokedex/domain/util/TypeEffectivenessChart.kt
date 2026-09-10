@@ -1,5 +1,7 @@
 package com.cesar.pokedex.domain.util
 
+import com.cesar.pokedex.domain.model.HeadToHeadMatchup
+
 /**
  * Gen IX type effectiveness chart.
  * chart[attacking][defending] = multiplier.
@@ -208,4 +210,18 @@ object TypeEffectivenessChart {
             .filter { (_, v) -> v != 1f }
 
     fun allTypes(): List<String> = ALL_TYPES
+
+    /**
+     * Best-case head-to-head: for each side, takes the single attacking type
+     * (via STAB) that hits hardest against the opponent's full defending typing.
+     * Falls back to a neutral 1f multiplier if a side has no types (e.g. incomplete data).
+     */
+    fun headToHead(
+        aTypes: List<String>,
+        bTypes: List<String>,
+    ): HeadToHeadMatchup {
+        val aAttackingB = aTypes.maxOfOrNull { atk -> combinedMultiplier(atk, bTypes) } ?: 1f
+        val bAttackingA = bTypes.maxOfOrNull { atk -> combinedMultiplier(atk, aTypes) } ?: 1f
+        return HeadToHeadMatchup(aAttackingB, bAttackingA)
+    }
 }

@@ -63,7 +63,8 @@ Clean Architecture with 3 layers (UI, Domain, Data). Single-activity architectur
 │   ├── model/
 │   │   ├── Pokemon.kt                 — Pokemon list domain model
 │   │   ├── PokemonDetail.kt           — Pokemon detail domain model
-│   │   └── PokemonEvolutionInfo.kt    — Evolution chain domain model
+│   │   ├── PokemonEvolutionInfo.kt    — Evolution chain domain model
+│   │   └── HeadToHeadMatchup.kt       — 1v1 comparator head-to-head result
 │   └── repository/
 │       └── PokemonRepository.kt       — Repository interface
 │
@@ -80,9 +81,12 @@ Clean Architecture with 3 layers (UI, Domain, Data). Single-activity architectur
     │   ├── pokemonmoves/
     │   │   ├── PokemonMovesScreen.kt   — Moves screen composables
     │   │   └── PokemonMovesViewModel.kt
-    │   └── pokemonevolution/
-    │       ├── PokemonEvolutionScreen.kt — Evolution screen composables
-    │       └── PokemonEvolutionViewModel.kt
+    │   ├── pokemonevolution/
+    │   │   ├── PokemonEvolutionScreen.kt — Evolution screen composables
+    │   │   └── PokemonEvolutionViewModel.kt
+    │   └── pokemoncompare/
+    │       ├── PokemonCompareScreen.kt — 1v1 comparator screen composables
+    │       └── PokemonCompareViewModel.kt
     └── theme/
         ├── Color.kt                    — Material 3 color definitions
         ├── Theme.kt                    — Material 3 theme setup
@@ -112,6 +116,7 @@ Clean Architecture with 3 layers (UI, Domain, Data). Single-activity architectur
   - `ui/screen/pokemondetail/PokemonDetailViewModelTest.kt`
   - `ui/screen/pokemonevolution/PokemonEvolutionViewModelTest.kt`
   - `ui/screen/pokemonmoves/PokemonMovesViewModelTest.kt`
+  - `ui/screen/pokemoncompare/PokemonCompareViewModelTest.kt`
   - `util/MainDispatcherRule.kt` — Custom test dispatcher rule
 - **Instrumented tests:** `app/src/androidTest/java/com/cesar/pokedex/` — Espresso + Compose testing, requires device/emulator
 - **Test runner:** `androidx.test.runner.AndroidJUnitRunner`
@@ -133,3 +138,4 @@ Clean Architecture with 3 layers (UI, Domain, Data). Single-activity architectur
 - **Pokemon info card:** Detail About tab shows height, weight, abilities (with hidden label), and gender ratio.
 - **Clickable evolutions:** Evolution screen Pokemon cards navigate to their detail screen via `onPokemonClick` callback.
 - **WrappingRow:** Custom `Layout` composable in `PokemonDetailScreen.kt` for wrapping type badges (replaces broken `FlowRow`).
+- **1v1 Comparator:** Accessible via a top-bar icon on the Pokémon list screen, next to the About icon. Lets the user pick two Pokémon into side-by-side slots via an inline `ModalBottomSheet` search per slot (no navigation to a separate screen), then compares their base stats side by side and shows a true head-to-head type matchup via `TypeEffectivenessChart.headToHead()` — not just two independent single-Pokémon defensive breakdowns like the detail screen's `StatsTab`/`MatchupsTab`.
