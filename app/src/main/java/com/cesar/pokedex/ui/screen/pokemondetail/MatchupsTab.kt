@@ -24,57 +24,72 @@ import com.cesar.pokedex.ui.component.WrappingRow
 @Composable
 internal fun MatchupsTab(
     types: List<PokemonType>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    val pokemonTypeKeys = remember(types) {
-        types.map { it.apiName.ifBlank { it.name.lowercase() } }
-    }
-    val matchups = remember(types) {
-        TypeEffectivenessChart.allMatchupsFor(pokemonTypeKeys)
-    }
-    val weak = remember(types) {
-        matchups.filter { it.value > 1f }.keys.sorted()
-            .map { it.replaceFirstChar { c -> c.uppercase() } }
-    }
-    val resistant = remember(types) {
-        matchups.filter { it.value < 1f && it.value > 0f }.keys.sorted()
-            .map { it.replaceFirstChar { c -> c.uppercase() } }
-    }
-    val immune = remember(types) {
-        matchups.filter { it.value == 0f }.keys.sorted()
-            .map { it.replaceFirstChar { c -> c.uppercase() } }
-    }
+    val pokemonTypeKeys =
+        remember(types) {
+            types.map { it.apiName.ifBlank { it.name.lowercase() } }
+        }
+    val matchups =
+        remember(types) {
+            TypeEffectivenessChart.allMatchupsFor(pokemonTypeKeys)
+        }
+    val weak =
+        remember(types) {
+            matchups
+                .filter { it.value > 1f }
+                .keys
+                .sorted()
+                .map { it.replaceFirstChar { c -> c.uppercase() } }
+        }
+    val resistant =
+        remember(types) {
+            matchups
+                .filter { it.value < 1f && it.value > 0f }
+                .keys
+                .sorted()
+                .map { it.replaceFirstChar { c -> c.uppercase() } }
+        }
+    val immune =
+        remember(types) {
+            matchups
+                .filter { it.value == 0f }
+                .keys
+                .sorted()
+                .map { it.replaceFirstChar { c -> c.uppercase() } }
+        }
 
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         // Combined defensive matchups
         ElevatedCard(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = stringResource(R.string.defensive_matchups),
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 if (weak.isNotEmpty()) {
                     MatchupSection(
                         label = stringResource(R.string.weak_to),
-                        types = weak
+                        types = weak,
                     )
                 }
                 if (resistant.isNotEmpty()) {
                     MatchupSection(
                         label = stringResource(R.string.resistant_to),
-                        types = resistant
+                        types = resistant,
                     )
                 }
                 if (immune.isNotEmpty()) {
                     MatchupSection(
                         label = stringResource(R.string.immune_to),
-                        types = immune
+                        types = immune,
                     )
                 }
             }
@@ -88,19 +103,19 @@ internal fun MatchupsTab(
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
                             text = stringResource(R.string.offensive_matchups_format, type.name),
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleMedium,
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         if (type.strengths.isNotEmpty()) {
                             MatchupSection(
                                 label = stringResource(R.string.strong_against),
-                                types = type.strengths
+                                types = type.strengths,
                             )
                         }
                         if (type.ineffective.isNotEmpty()) {
                             MatchupSection(
                                 label = stringResource(R.string.not_effective_against),
-                                types = type.ineffective
+                                types = type.ineffective,
                             )
                         }
                     }
@@ -113,17 +128,22 @@ internal fun MatchupsTab(
 }
 
 @Composable
-private fun MatchupSection(label: String, types: List<String>) {
-    Text(
-        text = label,
-        style = MaterialTheme.typography.labelMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
-    )
-    WrappingRow(
-        horizontalSpacing = 4.dp,
-        verticalSpacing = 4.dp,
-        modifier = Modifier.padding(vertical = 4.dp)
-    ) {
-        types.forEach { TypeBadge(typeName = it) }
+private fun MatchupSection(
+    label: String,
+    types: List<String>,
+) {
+    Column {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        WrappingRow(
+            horizontalSpacing = 4.dp,
+            verticalSpacing = 4.dp,
+            modifier = Modifier.padding(vertical = 4.dp),
+        ) {
+            types.forEach { TypeBadge(typeName = it) }
+        }
     }
 }

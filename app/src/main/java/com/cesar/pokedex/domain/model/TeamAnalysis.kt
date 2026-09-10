@@ -7,5 +7,5 @@ data class TeamAnalysis(
     val offensiveCoverage: Set<String>,
     val averageStats: Map<String, Float>,
     val totalStats: Map<String, Int>,
-    val coverageGaps: List<String>
+    val coverageGaps: List<String>,
 )

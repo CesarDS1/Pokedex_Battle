@@ -18,112 +18,138 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class PokemonDetailViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
-    private val repository: PokemonRepository
-) : ViewModel() {
+class PokemonDetailViewModel
+    @Inject
+    constructor(
+        savedStateHandle: SavedStateHandle,
+        private val repository: PokemonRepository,
+    ) : ViewModel() {
+        private val pokemonId: Int = checkNotNull(savedStateHandle["pokemonId"])
 
-    private val pokemonId: Int = checkNotNull(savedStateHandle["pokemonId"])
+        private val _loadState = MutableStateFlow<LoadState>(LoadState.Loading)
+        private val _isPlayingCry = MutableStateFlow(false)
 
-    private val _loadState = MutableStateFlow<LoadState>(LoadState.Loading)
-    private val _isPlayingCry = MutableStateFlow(false)
+        private val _isFavorite: StateFlow<Boolean> =
+            repository
+                .getFavoriteIds()
+                .map { pokemonId in it }
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
-    private val _isFavorite: StateFlow<Boolean> = repository.getFavoriteIds()
-        .map { pokemonId in it }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+        val uiState: StateFlow<PokemonDetailUiState> =
+            combine(
+                _loadState,
+                _isFavorite,
+                _isPlayingCry,
+            ) { loadState, isFavorite, isPlayingCry ->
+                when (loadState) {
+                    is LoadState.Loading -> PokemonDetailUiState.Loading
+                    is LoadState.Error -> PokemonDetailUiState.Error(loadState.message)
+                    is LoadState.Success ->
+                        PokemonDetailUiState.Success(
+                            pokemon = loadState.pokemon,
+                            isFavorite = isFavorite,
+                            isPlayingCry = isPlayingCry,
+                        )
+                }
+            }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PokemonDetailUiState.Loading)
 
-    val uiState: StateFlow<PokemonDetailUiState> = combine(
-        _loadState,
-        _isFavorite,
-        _isPlayingCry
-    ) { loadState, isFavorite, isPlayingCry ->
-        when (loadState) {
-            is LoadState.Loading -> PokemonDetailUiState.Loading
-            is LoadState.Error -> PokemonDetailUiState.Error(loadState.message)
-            is LoadState.Success -> PokemonDetailUiState.Success(
-                pokemon = loadState.pokemon,
-                isFavorite = isFavorite,
-                isPlayingCry = isPlayingCry
-            )
+        private var mediaPlayer: MediaPlayer? = null
+
+        init {
+            loadPokemonDetail()
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PokemonDetailUiState.Loading)
 
-    private var mediaPlayer: MediaPlayer? = null
-
-    init {
-        loadPokemonDetail()
-    }
-
-    fun onEvent(event: PokemonDetailEvent) {
-        when (event) {
-            PokemonDetailEvent.LoadDetail -> loadPokemonDetail()
-            PokemonDetailEvent.ToggleFavorite -> {
-                viewModelScope.launch { repository.toggleFavorite(pokemonId) }
+        fun onEvent(event: PokemonDetailEvent) {
+            when (event) {
+                PokemonDetailEvent.LoadDetail -> loadPokemonDetail()
+                PokemonDetailEvent.ToggleFavorite -> {
+                    viewModelScope.launch { repository.toggleFavorite(pokemonId) }
+                }
+                is PokemonDetailEvent.PlayCry -> playCry(event.url)
             }
-            is PokemonDetailEvent.PlayCry -> playCry(event.url)
         }
-    }
 
-    private fun loadPokemonDetail() {
-        viewModelScope.launch {
-            _loadState.value = LoadState.Loading
+        private fun loadPokemonDetail() {
+            viewModelScope.launch {
+                _loadState.value = LoadState.Loading
+                try {
+                    val detail = repository.getPokemonDetail(pokemonId)
+                    _loadState.value = LoadState.Success(detail)
+                } catch (e: Exception) {
+                    _loadState.value = LoadState.Error(e.message ?: "Unknown error")
+                }
+            }
+        }
+
+        private fun playCry(url: String) {
+            mediaPlayer?.reset()
+            mediaPlayer?.release()
+            mediaPlayer = null
+            val player = MediaPlayer()
             try {
-                val detail = repository.getPokemonDetail(pokemonId)
-                _loadState.value = LoadState.Success(detail)
+                player.setAudioAttributes(
+                    AudioAttributes
+                        .Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .build(),
+                )
+                player.setDataSource(url)
+                player.setOnPreparedListener {
+                    _isPlayingCry.value = true
+                    player.start()
+                }
+                player.setOnCompletionListener { _isPlayingCry.value = false }
+                player.setOnErrorListener { _, _, _ ->
+                    _isPlayingCry.value = false
+                    true
+                }
+                player.prepareAsync()
+                mediaPlayer = player
             } catch (e: Exception) {
-                _loadState.value = LoadState.Error(e.message ?: "Unknown error")
+                player.release()
             }
         }
-    }
 
-    private fun playCry(url: String) {
-        mediaPlayer?.reset()
-        mediaPlayer?.release()
-        mediaPlayer = null
-        val player = MediaPlayer()
-        try {
-            player.setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .build()
-            )
-            player.setDataSource(url)
-            player.setOnPreparedListener { _isPlayingCry.value = true; player.start() }
-            player.setOnCompletionListener { _isPlayingCry.value = false }
-            player.setOnErrorListener { _, _, _ -> _isPlayingCry.value = false; true }
-            player.prepareAsync()
-            mediaPlayer = player
-        } catch (e: Exception) {
-            player.release()
+        override fun onCleared() {
+            mediaPlayer?.reset()
+            mediaPlayer?.release()
+            mediaPlayer = null
+        }
+
+        private sealed interface LoadState {
+            data object Loading : LoadState
+
+            data class Success(
+                val pokemon: PokemonDetail,
+            ) : LoadState
+
+            data class Error(
+                val message: String,
+            ) : LoadState
         }
     }
-
-    override fun onCleared() {
-        mediaPlayer?.reset()
-        mediaPlayer?.release()
-        mediaPlayer = null
-    }
-
-    private sealed interface LoadState {
-        data object Loading : LoadState
-        data class Success(val pokemon: PokemonDetail) : LoadState
-        data class Error(val message: String) : LoadState
-    }
-}
 
 sealed interface PokemonDetailEvent {
     data object LoadDetail : PokemonDetailEvent
+
     data object ToggleFavorite : PokemonDetailEvent
-    data class PlayCry(val url: String) : PokemonDetailEvent
+
+    data class PlayCry(
+        val url: String,
+    ) : PokemonDetailEvent
 }
 
 sealed interface PokemonDetailUiState {
     data object Loading : PokemonDetailUiState
+
     data class Success(
         val pokemon: PokemonDetail,
         val isFavorite: Boolean = false,
-        val isPlayingCry: Boolean = false
+        val isPlayingCry: Boolean = false,
     ) : PokemonDetailUiState
-    data class Error(val message: String) : PokemonDetailUiState
+
+    data class Error(
+        val message: String,
+    ) : PokemonDetailUiState
 }

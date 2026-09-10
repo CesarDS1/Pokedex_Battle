@@ -3,10 +3,10 @@ package com.cesar.pokedex.data.di
 import android.content.Context
 import androidx.room.Room
 import com.cesar.pokedex.BuildConfig
-import com.cesar.pokedex.data.locale.DeviceLocaleProvider
 import com.cesar.pokedex.data.local.PokedexDatabase
 import com.cesar.pokedex.data.local.dao.PokemonDao
 import com.cesar.pokedex.data.local.dao.TeamDao
+import com.cesar.pokedex.data.locale.DeviceLocaleProvider
 import com.cesar.pokedex.data.remote.PokeApiService
 import com.cesar.pokedex.data.repository.PokemonRepositoryImpl
 import com.cesar.pokedex.data.repository.TeamRepositoryImpl
@@ -28,7 +28,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DataModule {
-
     @Provides
     @Singleton
     fun provideJson(): Json = Json { ignoreUnknownKeys = true }
@@ -38,17 +37,23 @@ object DataModule {
     fun provideOkHttpClient(): OkHttpClient {
         val builder = OkHttpClient.Builder()
         if (BuildConfig.DEBUG) {
-            builder.addInterceptor(HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BASIC
-            })
+            builder.addInterceptor(
+                HttpLoggingInterceptor().apply {
+                    level = HttpLoggingInterceptor.Level.BASIC
+                },
+            )
         }
         return builder.build()
     }
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient, json: Json): Retrofit =
-        Retrofit.Builder()
+    fun provideRetrofit(
+        okHttpClient: OkHttpClient,
+        json: Json,
+    ): Retrofit =
+        Retrofit
+            .Builder()
             .baseUrl(PokeApiService.BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
@@ -56,13 +61,15 @@ object DataModule {
 
     @Provides
     @Singleton
-    fun providePokeApiService(retrofit: Retrofit): PokeApiService =
-        retrofit.create(PokeApiService::class.java)
+    fun providePokeApiService(retrofit: Retrofit): PokeApiService = retrofit.create(PokeApiService::class.java)
 
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): PokedexDatabase =
-        Room.databaseBuilder(context, PokedexDatabase::class.java, "pokedex.db")
+    fun provideDatabase(
+        @ApplicationContext context: Context,
+    ): PokedexDatabase =
+        Room
+            .databaseBuilder(context, PokedexDatabase::class.java, "pokedex.db")
             .fallbackToDestructiveMigration(dropAllTables = false)
             .build()
 
@@ -79,15 +86,13 @@ object DataModule {
     fun providePokemonRepository(
         api: PokeApiService,
         dao: PokemonDao,
-        localeProvider: DeviceLocaleProvider
-    ): PokemonRepository =
-        PokemonRepositoryImpl(api, dao, localeProvider)
+        localeProvider: DeviceLocaleProvider,
+    ): PokemonRepository = PokemonRepositoryImpl(api, dao, localeProvider)
 
     @Provides
     @Singleton
     fun provideTeamRepository(
         teamDao: TeamDao,
-        pokemonDao: PokemonDao
-    ): TeamRepository =
-        TeamRepositoryImpl(teamDao, pokemonDao)
+        pokemonDao: PokemonDao,
+    ): TeamRepository = TeamRepositoryImpl(teamDao, pokemonDao)
 }

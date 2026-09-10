@@ -12,12 +12,19 @@ import com.cesar.pokedex.data.local.entity.PokemonEvolutionEntity
 import com.cesar.pokedex.data.local.entity.PokemonTeamEntity
 
 @Database(
-    entities = [PokemonEntity::class, PokemonDetailEntity::class, PokemonEvolutionEntity::class, FavoritePokemonEntity::class, PokemonTeamEntity::class],
+    entities = [
+        PokemonEntity::class,
+        PokemonDetailEntity::class,
+        PokemonEvolutionEntity::class,
+        FavoritePokemonEntity::class,
+        PokemonTeamEntity::class,
+    ],
     version = 4,
-    exportSchema = true
+    exportSchema = true,
 )
 @TypeConverters(Converters::class)
 abstract class PokedexDatabase : RoomDatabase() {
     abstract fun pokemonDao(): PokemonDao
+
     abstract fun teamDao(): TeamDao
 }

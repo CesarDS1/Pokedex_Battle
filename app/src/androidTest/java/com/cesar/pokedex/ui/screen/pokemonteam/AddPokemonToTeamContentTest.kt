@@ -9,7 +9,6 @@ import org.junit.Rule
 import org.junit.Test
 
 class AddPokemonToTeamContentTest {
-
     @get:Rule
     val composeRule = createComposeRule()
 
@@ -24,7 +23,7 @@ class AddPokemonToTeamContentTest {
             PokedexTheme {
                 AddPokemonToTeamContent(
                     uiState = AddPokemonUiState(isLoading = true, allTypes = allTypes),
-                    onEvent = {}
+                    onEvent = {},
                 )
             }
         }
@@ -37,7 +36,7 @@ class AddPokemonToTeamContentTest {
             PokedexTheme {
                 AddPokemonToTeamContent(
                     uiState = AddPokemonUiState(isLoading = false, pokemon = emptyList(), allTypes = allTypes),
-                    onEvent = {}
+                    onEvent = {},
                 )
             }
         }
@@ -49,12 +48,13 @@ class AddPokemonToTeamContentTest {
         composeRule.setContent {
             PokedexTheme {
                 AddPokemonToTeamContent(
-                    uiState = AddPokemonUiState(
-                        isLoading = false,
-                        pokemon = listOf(bulbasaur, charmander),
-                        allTypes = allTypes
-                    ),
-                    onEvent = {}
+                    uiState =
+                        AddPokemonUiState(
+                            isLoading = false,
+                            pokemon = listOf(bulbasaur, charmander),
+                            allTypes = allTypes,
+                        ),
+                    onEvent = {},
                 )
             }
         }
@@ -68,7 +68,7 @@ class AddPokemonToTeamContentTest {
             PokedexTheme {
                 AddPokemonToTeamContent(
                     uiState = AddPokemonUiState(isLoading = false, allTypes = allTypes),
-                    onEvent = {}
+                    onEvent = {},
                 )
             }
         }
@@ -81,7 +81,7 @@ class AddPokemonToTeamContentTest {
             PokedexTheme {
                 AddPokemonToTeamContent(
                     uiState = AddPokemonUiState(isLoading = false, allTypes = allTypes),
-                    onEvent = {}
+                    onEvent = {},
                 )
             }
         }

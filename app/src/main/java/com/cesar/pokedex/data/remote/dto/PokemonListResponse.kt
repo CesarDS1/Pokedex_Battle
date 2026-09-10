@@ -5,11 +5,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PokemonListResponse(
     val count: Int,
-    val results: List<PokemonDto>
+    val results: List<PokemonDto>,
 )
 
 @Serializable
 data class PokemonDto(
     val name: String,
-    val url: String
+    val url: String,
 )

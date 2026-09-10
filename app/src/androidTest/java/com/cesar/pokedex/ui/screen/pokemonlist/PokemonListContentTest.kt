@@ -9,18 +9,19 @@ import org.junit.Rule
 import org.junit.Test
 
 class PokemonListContentTest {
-
     @get:Rule
     val composeRule = createComposeRule()
 
     private val bulbasaur = Pokemon(id = 1, name = "Bulbasaur", types = listOf("grass", "poison"), imageUrl = "")
     private val charmander = Pokemon(id = 4, name = "Charmander", types = listOf("fire"), imageUrl = "")
 
-    private val loadedState = PokemonListUiState(
-        pokemonByGeneration = mapOf(
-            "Generation I — Kanto" to listOf(listOf(bulbasaur, charmander))
+    private val loadedState =
+        PokemonListUiState(
+            pokemonByGeneration =
+                mapOf(
+                    "Generation I — Kanto" to listOf(listOf(bulbasaur, charmander)),
+                ),
         )
-    )
 
     @Test
     fun loadingState_showsProgressIndicator() {
@@ -29,7 +30,7 @@ class PokemonListContentTest {
                 PokemonListContent(
                     uiState = PokemonListUiState(isLoading = true),
                     onEvent = {},
-                    onPokemonClick = {}
+                    onPokemonClick = {},
                 )
             }
         }
@@ -43,7 +44,7 @@ class PokemonListContentTest {
                 PokemonListContent(
                     uiState = loadedState,
                     onEvent = {},
-                    onPokemonClick = {}
+                    onPokemonClick = {},
                 )
             }
         }
@@ -53,18 +54,20 @@ class PokemonListContentTest {
 
     @Test
     fun searchQuery_filtersResults() {
-        val filteredState = PokemonListUiState(
-            pokemonByGeneration = mapOf(
-                "Generation I — Kanto" to listOf(listOf(charmander))
-            ),
-            searchQuery = "char"
-        )
+        val filteredState =
+            PokemonListUiState(
+                pokemonByGeneration =
+                    mapOf(
+                        "Generation I — Kanto" to listOf(listOf(charmander)),
+                    ),
+                searchQuery = "char",
+            )
         composeRule.setContent {
             PokedexTheme {
                 PokemonListContent(
                     uiState = filteredState,
                     onEvent = {},
-                    onPokemonClick = {}
+                    onPokemonClick = {},
                 )
             }
         }
@@ -79,7 +82,7 @@ class PokemonListContentTest {
                 PokemonListContent(
                     uiState = loadedState,
                     onEvent = {},
-                    onPokemonClick = {}
+                    onPokemonClick = {},
                 )
             }
         }
@@ -90,19 +93,21 @@ class PokemonListContentTest {
 
     @Test
     fun favoritesOnly_filtersNonFavorites() {
-        val favoritesState = PokemonListUiState(
-            pokemonByGeneration = mapOf(
-                "Generation I — Kanto" to listOf(listOf(bulbasaur))
-            ),
-            showFavoritesOnly = true,
-            favoriteIds = setOf(1)
-        )
+        val favoritesState =
+            PokemonListUiState(
+                pokemonByGeneration =
+                    mapOf(
+                        "Generation I — Kanto" to listOf(listOf(bulbasaur)),
+                    ),
+                showFavoritesOnly = true,
+                favoriteIds = setOf(1),
+            )
         composeRule.setContent {
             PokedexTheme {
                 PokemonListContent(
                     uiState = favoritesState,
                     onEvent = {},
-                    onPokemonClick = {}
+                    onPokemonClick = {},
                 )
             }
         }
@@ -117,7 +122,7 @@ class PokemonListContentTest {
                 PokemonListContent(
                     uiState = PokemonListUiState(errorMessage = "Network error"),
                     onEvent = {},
-                    onPokemonClick = {}
+                    onPokemonClick = {},
                 )
             }
         }
@@ -132,7 +137,7 @@ class PokemonListContentTest {
                 PokemonListContent(
                     uiState = loadedState.copy(searchQuery = ""),
                     onEvent = {},
-                    onPokemonClick = {}
+                    onPokemonClick = {},
                 )
             }
         }

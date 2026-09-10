@@ -70,7 +70,7 @@ fun PokemonDetailScreen(
     onEvolutionClick: (Int) -> Unit,
     onMovesClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: PokemonDetailViewModel = hiltViewModel()
+    viewModel: PokemonDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     PokemonDetailScreenContent(
@@ -79,7 +79,7 @@ fun PokemonDetailScreen(
         onBackClick = onBackClick,
         onEvolutionClick = onEvolutionClick,
         onMovesClick = onMovesClick,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -91,7 +91,7 @@ internal fun PokemonDetailScreenContent(
     onBackClick: () -> Unit,
     onEvolutionClick: (Int) -> Unit,
     onMovesClick: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val isFavorite = (uiState as? PokemonDetailUiState.Success)?.isFavorite ?: false
 
@@ -103,7 +103,7 @@ internal fun PokemonDetailScreenContent(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back)
+                            contentDescription = stringResource(R.string.back),
                         )
                     }
                 },
@@ -112,21 +112,27 @@ internal fun PokemonDetailScreenContent(
                         Icon(
                             imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = stringResource(R.string.favorites),
-                            tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                            tint =
+                                if (isFavorite) {
+                                    MaterialTheme.colorScheme.error
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface
+                                },
                         )
                     }
-                }
+                },
             )
         },
-        modifier = modifier
+        modifier = modifier,
     ) { innerPadding ->
         when (val state = uiState) {
             is PokemonDetailUiState.Loading -> {
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
+                    contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator()
                 }
@@ -134,20 +140,21 @@ internal fun PokemonDetailScreenContent(
 
             is PokemonDetailUiState.Error -> {
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = state.message,
                             style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.error
+                            color = MaterialTheme.colorScheme.error,
                         )
                         Button(
                             onClick = { onEvent(PokemonDetailEvent.LoadDetail) },
-                            modifier = Modifier.padding(top = 16.dp)
+                            modifier = Modifier.padding(top = 16.dp),
                         ) {
                             Text(stringResource(R.string.retry))
                         }
@@ -162,7 +169,7 @@ internal fun PokemonDetailScreenContent(
                     onMovesClick = onMovesClick,
                     isPlayingCry = state.isPlayingCry,
                     onPlayCry = { url -> onEvent(PokemonDetailEvent.PlayCry(url)) },
-                    modifier = Modifier.padding(innerPadding)
+                    modifier = Modifier.padding(innerPadding),
                 )
             }
         }
@@ -176,34 +183,37 @@ private fun PokemonDetailContent(
     onMovesClick: (Int) -> Unit,
     isPlayingCry: Boolean,
     onPlayCry: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    val tabs = listOf(
-        stringResource(R.string.tab_about),
-        stringResource(R.string.tab_stats),
-        stringResource(R.string.tab_matchups),
-        stringResource(R.string.tab_games)
-    )
+    val tabs =
+        listOf(
+            stringResource(R.string.tab_about),
+            stringResource(R.string.tab_stats),
+            stringResource(R.string.tab_matchups),
+            stringResource(R.string.tab_games),
+        )
     val pagerState = rememberPagerState { tabs.size }
     val coroutineScope = rememberCoroutineScope()
 
     val heroColor = typeColor(pokemon.types.firstOrNull()?.name ?: "Normal").copy(alpha = 0.25f)
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(heroColor, Color.Transparent),
-                    startY = 0f,
-                    endY = 600f
-                )
-            ),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(
+                    brush =
+                        Brush.verticalGradient(
+                            colors = listOf(heroColor, Color.Transparent),
+                            startY = 0f,
+                            endY = 600f,
+                        ),
+                ),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             SubcomposeAsyncImage(
                 model = pokemon.imageUrl,
@@ -213,25 +223,25 @@ private fun PokemonDetailContent(
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(modifier = Modifier.size(40.dp))
                     }
-                }
+                },
             )
 
             Text(
                 text = "#${pokemon.id.toString().padStart(3, '0')}",
                 style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             Text(
                 text = pokemon.name,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 pokemon.types.forEach { type -> TypeBadge(typeName = type.name) }
             }
@@ -240,12 +250,12 @@ private fun PokemonDetailContent(
                 IconButton(
                     onClick = { onPlayCry(pokemon.cryUrl) },
                     enabled = !isPlayingCry,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(32.dp),
                 ) {
                     AnimatedContent(
                         targetState = isPlayingCry,
                         transitionSpec = { fadeIn() togetherWith fadeOut() },
-                        label = "cryButton"
+                        label = "cryButton",
                     ) { playing ->
                         if (playing) {
                             CircularProgressIndicator(modifier = Modifier.size(20.dp))
@@ -253,7 +263,7 @@ private fun PokemonDetailContent(
                             Icon(
                                 imageVector = Icons.Filled.PlayArrow,
                                 contentDescription = stringResource(R.string.play_cry),
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(20.dp),
                             )
                         }
                     }
@@ -264,10 +274,9 @@ private fun PokemonDetailContent(
                 Text(
                     text = stringResource(R.string.region_format, pokemon.region),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -277,21 +286,22 @@ private fun PokemonDetailContent(
                 Tab(
                     selected = pagerState.currentPage == index,
                     onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
-                    text = { Text(title) }
+                    text = { Text(title) },
                 )
             }
         }
 
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
         ) { page ->
             when (page) {
-                0 -> AboutTab(
-                    pokemon = pokemon,
-                    onEvolutionClick = onEvolutionClick,
-                    onMovesClick = onMovesClick
-                )
+                0 ->
+                    AboutTab(
+                        pokemon = pokemon,
+                        onEvolutionClick = onEvolutionClick,
+                        onMovesClick = onMovesClick,
+                    )
                 1 -> StatsTab(stats = pokemon.stats)
                 2 -> MatchupsTab(types = pokemon.types)
                 3 -> GamesTab(gameEntries = pokemon.gameEntries)
@@ -305,14 +315,15 @@ private fun AboutTab(
     pokemon: PokemonDetail,
     onEvolutionClick: (Int) -> Unit,
     onMovesClick: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         PokemonInfoCard(pokemon = pokemon)
 
@@ -320,17 +331,17 @@ private fun AboutTab(
 
         if (pokemon.description.isNotBlank()) {
             ElevatedCard(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = stringResource(R.string.description),
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = pokemon.description,
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
                     )
                 }
             }
@@ -338,28 +349,28 @@ private fun AboutTab(
         Spacer(modifier = Modifier.height(12.dp))
         Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             OutlinedButton(
                 onClick = { onEvolutionClick(pokemon.id) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Icon(
                     imageVector = Icons.Filled.AccountTree,
                     contentDescription = null,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(18.dp),
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(R.string.evolutions_and_forms))
             }
             OutlinedButton(
                 onClick = { onMovesClick(pokemon.id) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Icon(
                     imageVector = Icons.Filled.FlashOn,
                     contentDescription = null,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(18.dp),
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(R.string.moves_by_level))
@@ -371,7 +382,10 @@ private fun AboutTab(
 }
 
 @Composable
-private fun PokemonInfoCard(pokemon: PokemonDetail, modifier: Modifier = Modifier) {
+private fun PokemonInfoCard(
+    pokemon: PokemonDetail,
+    modifier: Modifier = Modifier,
+) {
     val heightM = pokemon.heightDecimeters / 10f
     val weightKg = pokemon.weightHectograms / 10f
 
@@ -382,22 +396,22 @@ private fun PokemonInfoCard(pokemon: PokemonDetail, modifier: Modifier = Modifie
                     Text(
                         text = stringResource(R.string.height),
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
                         text = stringResource(R.string.height_format, heightM),
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge,
                     )
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(R.string.weight),
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
                         text = stringResource(R.string.weight_format, weightKg),
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge,
                     )
                 }
             }
@@ -405,11 +419,18 @@ private fun PokemonInfoCard(pokemon: PokemonDetail, modifier: Modifier = Modifie
             Text(
                 text = stringResource(R.string.abilities),
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 pokemon.abilities.forEach { ability ->
-                    val label = if (ability.isHidden) "${ability.name} (${stringResource(R.string.hidden)})" else ability.name
+                    val label =
+                        if (ability.isHidden) {
+                            "${ability.name} (${stringResource(
+                                R.string.hidden,
+                            )})"
+                        } else {
+                            ability.name
+                        }
                     Text(text = label, style = MaterialTheme.typography.bodyMedium)
                 }
             }
@@ -417,45 +438,49 @@ private fun PokemonInfoCard(pokemon: PokemonDetail, modifier: Modifier = Modifie
             Text(
                 text = stringResource(R.string.gender),
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             GenderBar(
                 genderRate = pokemon.genderRate,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
         }
     }
 }
 
 @Composable
-private fun GenderBar(genderRate: Int, modifier: Modifier = Modifier) {
-    val maleColor   = Color(0xFF1E88E5)
+private fun GenderBar(
+    genderRate: Int,
+    modifier: Modifier = Modifier,
+) {
+    val maleColor = Color(0xFF1E88E5)
     val femaleColor = Color(0xFFE91E63)
     when (genderRate) {
         -1 -> Text("Genderless", style = MaterialTheme.typography.bodyMedium)
-        0  -> Text("100% Male", style = MaterialTheme.typography.bodyMedium, color = maleColor)
-        8  -> Text("100% Female", style = MaterialTheme.typography.bodyMedium, color = femaleColor)
+        0 -> Text("100% Male", style = MaterialTheme.typography.bodyMedium, color = maleColor)
+        8 -> Text("100% Female", style = MaterialTheme.typography.bodyMedium, color = femaleColor)
         else -> {
             val femaleRatio = genderRate / 8f
-            val maleRatio   = 1f - femaleRatio
+            val maleRatio = 1f - femaleRatio
             Column(modifier = modifier) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(8.dp)
-                        .clip(RoundedCornerShape(4.dp))
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(8.dp)
+                            .clip(RoundedCornerShape(4.dp)),
                 ) {
                     Box(
                         Modifier
                             .weight(maleRatio)
                             .fillMaxHeight()
-                            .background(maleColor)
+                            .background(maleColor),
                     )
                     Box(
                         Modifier
                             .weight(femaleRatio)
                             .fillMaxHeight()
-                            .background(femaleColor)
+                            .background(femaleColor),
                     )
                 }
                 Spacer(Modifier.height(4.dp))
@@ -464,18 +489,17 @@ private fun GenderBar(genderRate: Int, modifier: Modifier = Modifier) {
                         text = "%.1f%% M".format(maleRatio * 100),
                         style = MaterialTheme.typography.labelSmall,
                         color = maleColor,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     )
                     Text(
                         text = "%.1f%% F".format(femaleRatio * 100),
                         style = MaterialTheme.typography.labelSmall,
                         color = femaleColor,
                         textAlign = TextAlign.End,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     )
                 }
             }
         }
     }
 }
-

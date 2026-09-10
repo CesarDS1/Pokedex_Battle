@@ -27,7 +27,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.ReportProblem
 import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
@@ -83,7 +82,7 @@ fun TeamDetailScreen(
     onAddPokemonClick: () -> Unit,
     onPokemonClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: TeamDetailViewModel = hiltViewModel()
+    viewModel: TeamDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     TeamDetailScreenContent(
@@ -92,7 +91,7 @@ fun TeamDetailScreen(
         onBackClick = onBackClick,
         onAddPokemonClick = onAddPokemonClick,
         onPokemonClick = onPokemonClick,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -104,7 +103,7 @@ internal fun TeamDetailScreenContent(
     onBackClick: () -> Unit,
     onAddPokemonClick: () -> Unit,
     onPokemonClick: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val pagerState = rememberPagerState { TABS.size }
     val scope = rememberCoroutineScope()
@@ -117,7 +116,7 @@ internal fun TeamDetailScreenContent(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
                         )
                     }
                 },
@@ -125,45 +124,48 @@ internal fun TeamDetailScreenContent(
                     IconButton(onClick = { onEvent(TeamDetailEvent.ShowRenameDialog) }) {
                         Icon(
                             imageVector = Icons.Default.Edit,
-                            contentDescription = "Rename team"
+                            contentDescription = "Rename team",
                         )
                     }
-                }
+                },
             )
         },
-        modifier = modifier
+        modifier = modifier,
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
         ) {
             TabRow(selectedTabIndex = pagerState.currentPage) {
                 TABS.forEachIndexed { index, title ->
                     Tab(
                         selected = pagerState.currentPage == index,
                         onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
-                        text = { Text(title) }
+                        text = { Text(title) },
                     )
                 }
             }
 
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             ) { page ->
                 when (page) {
-                    0 -> RosterTab(
-                        members = uiState.team?.members ?: emptyList(),
-                        onAddClick = onAddPokemonClick,
-                        onMemberClick = onPokemonClick,
-                        onRemoveMember = { pokemonId -> onEvent(TeamDetailEvent.RemoveMember(pokemonId)) },
-                        onSwapMembers = { from, to -> onEvent(TeamDetailEvent.SwapMembers(from, to)) }
-                    )
-                    1 -> AnalysisTab(
-                        analysis = uiState.analysis,
-                        isLoading = uiState.team?.members?.isNotEmpty() == true && uiState.analysis == null
-                    )
+                    0 ->
+                        RosterTab(
+                            members = uiState.team?.members ?: emptyList(),
+                            onAddClick = onAddPokemonClick,
+                            onMemberClick = onPokemonClick,
+                            onRemoveMember = { pokemonId -> onEvent(TeamDetailEvent.RemoveMember(pokemonId)) },
+                            onSwapMembers = { from, to -> onEvent(TeamDetailEvent.SwapMembers(from, to)) },
+                        )
+                    1 ->
+                        AnalysisTab(
+                            analysis = uiState.analysis,
+                            isLoading = uiState.team?.members?.isNotEmpty() == true && uiState.analysis == null,
+                        )
                 }
             }
         }
@@ -173,7 +175,7 @@ internal fun TeamDetailScreenContent(
         RenameTeamDialog(
             currentName = uiState.team?.name ?: "",
             onDismiss = { onEvent(TeamDetailEvent.DismissRenameDialog) },
-            onConfirm = { name -> onEvent(TeamDetailEvent.ConfirmRename(name)) }
+            onConfirm = { name -> onEvent(TeamDetailEvent.ConfirmRename(name)) },
         )
     }
 }
@@ -185,37 +187,43 @@ private fun RosterTab(
     onMemberClick: (Int) -> Unit,
     onRemoveMember: (Int) -> Unit,
     onSwapMembers: (Int, Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var isReorderMode by remember { mutableStateOf(false) }
     LaunchedEffect(members.size) { isReorderMode = false }
 
-    val indexedSlots = remember(members) {
-        val filled: List<Pair<Int, Pokemon?>> = members.mapIndexed { i, p -> i to p }
-        val empty: List<Pair<Int, Pokemon?>> = List(6 - members.size) { -1 to null }
-        (filled + empty).chunked(2)
-    }
+    val indexedSlots =
+        remember(members) {
+            val filled: List<Pair<Int, Pokemon?>> = members.mapIndexed { i, p -> i to p }
+            val empty: List<Pair<Int, Pokemon?>> = List(6 - members.size) { -1 to null }
+            (filled + empty).chunked(2)
+        }
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
+            horizontalArrangement = Arrangement.End,
         ) {
             IconToggleButton(
                 checked = isReorderMode,
-                onCheckedChange = { isReorderMode = it }
+                onCheckedChange = { isReorderMode = it },
             ) {
                 Icon(
                     imageVector = Icons.Default.SwapHoriz,
                     contentDescription = "Reorder members",
-                    tint = if (isReorderMode) MaterialTheme.colorScheme.primary
-                           else MaterialTheme.colorScheme.onSurfaceVariant
+                    tint =
+                        if (isReorderMode) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
                 )
             }
         }
@@ -223,7 +231,7 @@ private fun RosterTab(
         indexedSlots.forEach { rowSlots ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 rowSlots.forEach { (memberIndex, pokemon) ->
                     if (pokemon != null) {
@@ -236,12 +244,12 @@ private fun RosterTab(
                             onRemove = { onRemoveMember(pokemon.id) },
                             onMoveLeft = { onSwapMembers(memberIndex, memberIndex - 1) },
                             onMoveRight = { onSwapMembers(memberIndex, memberIndex + 1) },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                     } else {
                         EmptySlotCard(
                             onClick = onAddClick,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                     }
                 }
@@ -260,80 +268,85 @@ private fun MemberCard(
     onRemove: () -> Unit,
     onMoveLeft: () -> Unit,
     onMoveRight: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     ElevatedCard(
         onClick = onClick,
-        modifier = modifier
+        modifier = modifier,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {
                 if (isReorderMode) {
                     IconButton(
                         onClick = onMoveLeft,
                         enabled = memberIndex > 0,
-                        modifier = Modifier
-                            .align(Alignment.CenterStart)
-                            .size(28.dp)
+                        modifier =
+                            Modifier
+                                .align(Alignment.CenterStart)
+                                .size(28.dp),
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Move left",
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(16.dp),
                         )
                     }
                     IconButton(
                         onClick = onMoveRight,
                         enabled = memberIndex < totalMembers - 1,
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .size(28.dp)
+                        modifier =
+                            Modifier
+                                .align(Alignment.CenterEnd)
+                                .size(28.dp),
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                             contentDescription = "Move right",
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(16.dp),
                         )
                     }
                 } else {
                     IconButton(
                         onClick = onRemove,
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .size(24.dp)
+                        modifier =
+                            Modifier
+                                .align(Alignment.TopEnd)
+                                .size(24.dp),
                     ) {
                         Icon(
                             imageVector = Icons.Default.Clear,
                             contentDescription = "Remove",
                             modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
                 AsyncImage(
                     model = pokemon.imageUrl,
                     contentDescription = pokemon.name,
-                    modifier = Modifier
-                        .size(80.dp)
-                        .align(Alignment.Center)
+                    modifier =
+                        Modifier
+                            .size(80.dp)
+                            .align(Alignment.Center),
                 )
             }
             Text(
                 text = pokemon.name,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
             Spacer(modifier = Modifier.height(4.dp))
             WrappingRow(
                 horizontalSpacing = 4.dp,
                 verticalSpacing = 4.dp,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 pokemon.types.forEach { TypeBadge(typeName = it) }
             }
@@ -344,40 +357,42 @@ private fun MemberCard(
 @Composable
 private fun EmptySlotCard(
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     OutlinedCard(
         onClick = onClick,
-        modifier = modifier
+        modifier = modifier,
     ) {
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(120.dp)
-                .drawBehind {
-                    val stroke = Stroke(
-                        width = 3f,
-                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 8f))
-                    )
-                    drawRoundRect(
-                        color = Color.Gray.copy(alpha = 0.35f),
-                        style = stroke,
-                        cornerRadius = CornerRadius(8.dp.toPx())
-                    )
-                }
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .drawBehind {
+                        val stroke =
+                            Stroke(
+                                width = 3f,
+                                pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 8f)),
+                            )
+                        drawRoundRect(
+                            color = Color.Gray.copy(alpha = 0.35f),
+                            style = stroke,
+                            cornerRadius = CornerRadius(8.dp.toPx()),
+                        )
+                    },
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add Pokemon",
                     modifier = Modifier.size(32.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
                     text = "Add",
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -387,8 +402,8 @@ private fun EmptySlotCard(
 @Composable
 private fun AnalysisTab(
     analysis: TeamAnalysis?,
+    modifier: Modifier = Modifier,
     isLoading: Boolean = false,
-    modifier: Modifier = Modifier
 ) {
     if (analysis == null) {
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -397,26 +412,29 @@ private fun AnalysisTab(
             } else {
                 Text(
                     text = "Add Pokemon to see team analysis.",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
         return
     }
 
-    val sortedWeaknesses = remember(analysis.weaknesses) {
-        analysis.weaknesses.entries.sortedByDescending { it.value }
-    }
-    val sortedResistances = remember(analysis.resistances) {
-        analysis.resistances.entries.sortedByDescending { it.value }
-    }
+    val sortedWeaknesses =
+        remember(analysis.weaknesses) {
+            analysis.weaknesses.entries.sortedByDescending { it.value }
+        }
+    val sortedResistances =
+        remember(analysis.resistances) {
+            analysis.resistances.entries.sortedByDescending { it.value }
+        }
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         AnalysisSectionCard(title = "Defensive Weaknesses", icon = Icons.Default.Warning) {
             if (sortedWeaknesses.isEmpty()) {
@@ -475,7 +493,7 @@ private fun AnalysisTab(
                 Text(
                     text = "2+ members weak, none resist",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -485,13 +503,13 @@ private fun AnalysisTab(
                 analysis.averageStats.entries.forEach { (stat, avg) ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         Text(text = stat, style = MaterialTheme.typography.bodyMedium)
                         Text(
                             text = "%.1f".format(avg),
                             style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
                         )
                     }
                 }
@@ -503,22 +521,22 @@ private fun AnalysisTab(
 @Composable
 private fun AnalysisSectionCard(
     title: String,
-    icon: ImageVector? = null,
     modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
+    icon: ImageVector? = null,
+    content: @Composable () -> Unit,
 ) {
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 if (icon != null) {
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp),
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.primary,
                     )
                 }
                 Text(text = title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
@@ -533,26 +551,27 @@ private fun TypeCountBadge(
     type: String,
     count: Int,
     isNegative: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val color = typeColor(type)
     Row(
-        modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(color)
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+        modifier =
+            modifier
+                .clip(RoundedCornerShape(16.dp))
+                .background(color)
+                .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(
             text = type.replaceFirstChar { it.uppercase() },
             style = MaterialTheme.typography.labelMedium,
-            color = Color.White
+            color = Color.White,
         )
         Text(
             text = "×$count",
             style = MaterialTheme.typography.labelSmall,
-            color = Color.White.copy(alpha = 0.85f)
+            color = Color.White.copy(alpha = 0.85f),
         )
     }
 }
@@ -561,7 +580,7 @@ private fun TypeCountBadge(
 private fun RenameTeamDialog(
     currentName: String,
     onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit
+    onConfirm: (String) -> Unit,
 ) {
     var teamName by remember { mutableStateOf(currentName) }
 
@@ -573,19 +592,19 @@ private fun RenameTeamDialog(
                 value = teamName,
                 onValueChange = { teamName = it },
                 label = { Text("Team name") },
-                singleLine = true
+                singleLine = true,
             )
         },
         confirmButton = {
             TextButton(
                 onClick = { if (teamName.isNotBlank()) onConfirm(teamName.trim()) },
-                enabled = teamName.isNotBlank()
+                enabled = teamName.isNotBlank(),
             ) {
                 Text("Rename")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Cancel") }
-        }
+        },
     )
 }

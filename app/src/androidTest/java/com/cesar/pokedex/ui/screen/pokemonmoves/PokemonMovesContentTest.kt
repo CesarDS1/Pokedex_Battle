@@ -9,14 +9,14 @@ import org.junit.Rule
 import org.junit.Test
 
 class PokemonMovesContentTest {
-
     @get:Rule
     val composeRule = createComposeRule()
 
-    private val sampleMoves = listOf(
-        Move(name = "Tackle", level = 1, type = "Normal", description = "A physical attack."),
-        Move(name = "Ember", level = 7, type = "Fire", description = "A weak fire attack.")
-    )
+    private val sampleMoves =
+        listOf(
+            Move(name = "Tackle", level = 1, type = "Normal", description = "A physical attack."),
+            Move(name = "Ember", level = 7, type = "Fire", description = "A weak fire attack."),
+        )
 
     @Test
     fun loadingState_showsProgressIndicator() {
@@ -24,7 +24,7 @@ class PokemonMovesContentTest {
             PokedexTheme {
                 MovesScreenContent(
                     uiState = PokemonMovesUiState.Loading,
-                    onRetry = {}
+                    onRetry = {},
                 )
             }
         }
@@ -37,7 +37,7 @@ class PokemonMovesContentTest {
             PokedexTheme {
                 MovesScreenContent(
                     uiState = PokemonMovesUiState.Error("Network error"),
-                    onRetry = {}
+                    onRetry = {},
                 )
             }
         }
@@ -51,7 +51,7 @@ class PokemonMovesContentTest {
             PokedexTheme {
                 MovesScreenContent(
                     uiState = PokemonMovesUiState.Success(sampleMoves),
-                    onRetry = {}
+                    onRetry = {},
                 )
             }
         }
@@ -65,7 +65,7 @@ class PokemonMovesContentTest {
             PokedexTheme {
                 MovesScreenContent(
                     uiState = PokemonMovesUiState.Success(sampleMoves),
-                    onRetry = {}
+                    onRetry = {},
                 )
             }
         }
