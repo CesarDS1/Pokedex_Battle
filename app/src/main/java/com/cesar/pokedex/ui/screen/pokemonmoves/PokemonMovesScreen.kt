@@ -153,17 +153,16 @@ private fun LevelGroup(
     moves: List<Move>,
     modifier: Modifier = Modifier,
 ) {
+    val levelLabel =
+        if (level > 0) {
+            stringResource(R.string.level_format, level)
+        } else {
+            stringResource(R.string.learned_by_default)
+        }
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text =
-                    if (level >
-                        0
-                    ) {
-                        stringResource(R.string.level_format, level)
-                    } else {
-                        stringResource(R.string.learned_by_default)
-                    },
+                text = levelLabel,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,

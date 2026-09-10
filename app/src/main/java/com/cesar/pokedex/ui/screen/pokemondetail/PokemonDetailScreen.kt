@@ -423,11 +423,10 @@ private fun PokemonInfoCard(
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 pokemon.abilities.forEach { ability ->
+                    val hiddenLabel = stringResource(R.string.hidden)
                     val label =
                         if (ability.isHidden) {
-                            "${ability.name} (${stringResource(
-                                R.string.hidden,
-                            )})"
+                            "${ability.name} ($hiddenLabel)"
                         } else {
                             ability.name
                         }
