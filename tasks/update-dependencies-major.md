@@ -148,4 +148,23 @@ exploratory time here.
 
 ## Status
 
-All 7 dependencies: **not started**. This document is definition/research only.
+All 7 dependencies: **done**.
+
+| # | Dependency | Branch | PR |
+|---|---|---|---|
+| 1 | AGP | `feature/update-agp` | #2 |
+| 2 | firebase-bom | `feature/update-firebase-bom` | #3 |
+| 3 | Compose BOM | `feature/update-compose-bom` | #4 |
+| 4 | OkHttp | `feature/update-okhttp` | #5 |
+| 5 | Retrofit | `feature/update-retrofit` | #6 |
+| 6 | Kotlin (+ KSP 2.3.12) | `feature/update-kotlin` | #7 |
+| 7 | ktlint-gradle | `feature/update-ktlint-gradle` | #8 |
+
+Notable deviation from the plan: the ktlint-gradle bump also fixed the pre-existing
+`runKtlintCheckOverKotlinScripts` build failure referenced throughout this document (root
+cause: ktlint-gradle 12.1.2 defaulted to ktlint engine 1.0.1, missing a class this project's
+`compose-rules-ktlint` ruleset requires; 14.2.0 defaults to 1.5.0, which has it). Fixing the
+crash let ktlint evaluate real source for the first time, surfacing — and requiring a fix for
+— a real style/design backlog across ~80 files (see the PR #8 commit history for the full
+breakdown of what was auto-formatted, what was fixed by hand, and what was disabled in
+`.editorconfig` as a false positive against this project's established conventions).
