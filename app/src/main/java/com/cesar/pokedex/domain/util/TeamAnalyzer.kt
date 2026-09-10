@@ -5,8 +5,10 @@ import com.cesar.pokedex.domain.model.PokemonDetail
 import com.cesar.pokedex.domain.model.TeamAnalysis
 
 object TeamAnalyzer {
-
-    fun analyze(members: List<Pokemon>, memberDetails: List<PokemonDetail>): TeamAnalysis {
+    fun analyze(
+        members: List<Pokemon>,
+        memberDetails: List<PokemonDetail>,
+    ): TeamAnalysis {
         val allTypes = TypeEffectivenessChart.allTypes()
 
         val weaknesses = mutableMapOf<String, Int>()
@@ -39,12 +41,13 @@ object TeamAnalyzer {
         }
 
         // Coverage gaps: types where >=2 members are weak AND 0 members resist/immune
-        val coverageGaps = allTypes.filter { attackingType ->
-            val weakCount = weaknesses[attackingType] ?: 0
-            val resistCount = resistances[attackingType] ?: 0
-            val immuneCount = immunities[attackingType] ?: 0
-            weakCount >= 2 && resistCount == 0 && immuneCount == 0
-        }
+        val coverageGaps =
+            allTypes.filter { attackingType ->
+                val weakCount = weaknesses[attackingType] ?: 0
+                val resistCount = resistances[attackingType] ?: 0
+                val immuneCount = immunities[attackingType] ?: 0
+                weakCount >= 2 && resistCount == 0 && immuneCount == 0
+            }
 
         // Stats (from loaded member details only)
         val statTotals = mutableMapOf<String, Int>()
@@ -56,9 +59,10 @@ object TeamAnalyzer {
             }
         }
         val totalStats = statTotals.toMap()
-        val averageStats = statTotals.mapValues { (name, total) ->
-            total.toFloat() / (statCounts[name] ?: 1)
-        }
+        val averageStats =
+            statTotals.mapValues { (name, total) ->
+                total.toFloat() / (statCounts[name] ?: 1)
+            }
 
         return TeamAnalysis(
             weaknesses = weaknesses,
@@ -67,7 +71,7 @@ object TeamAnalyzer {
             offensiveCoverage = offensiveCoverage,
             averageStats = averageStats,
             totalStats = totalStats,
-            coverageGaps = coverageGaps
+            coverageGaps = coverageGaps,
         )
     }
 }

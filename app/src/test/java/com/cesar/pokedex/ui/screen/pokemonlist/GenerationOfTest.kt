@@ -4,7 +4,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class GenerationOfTest {
-
     @Test
     fun `id 1 is Generation I Kanto`() {
         assertEquals("Generation I — Kanto", generationOf(1))

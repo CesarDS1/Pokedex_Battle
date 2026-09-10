@@ -10,56 +10,70 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class TeamRepositoryImpl @Inject constructor(
-    private val teamDao: TeamDao,
-    private val pokemonDao: PokemonDao
-) : TeamRepository {
-
-    override fun getAllTeams(): Flow<List<PokemonTeam>> =
-        teamDao.getAllTeams().map { entities ->
-            entities.map { entity ->
-                val members = entity.pokemonIds.mapNotNull { pokemonId ->
-                    pokemonDao.getPokemonById(pokemonId)?.let { pokemonEntity ->
-                        Pokemon(
-                            id = pokemonEntity.id,
-                            name = pokemonEntity.name,
-                            imageUrl = pokemonEntity.imageUrl,
-                            types = pokemonEntity.types
-                        )
-                    }
+class TeamRepositoryImpl
+    @Inject
+    constructor(
+        private val teamDao: TeamDao,
+        private val pokemonDao: PokemonDao,
+    ) : TeamRepository {
+        override fun getAllTeams(): Flow<List<PokemonTeam>> =
+            teamDao.getAllTeams().map { entities ->
+                entities.map { entity ->
+                    val members =
+                        entity.pokemonIds.mapNotNull { pokemonId ->
+                            pokemonDao.getPokemonById(pokemonId)?.let { pokemonEntity ->
+                                Pokemon(
+                                    id = pokemonEntity.id,
+                                    name = pokemonEntity.name,
+                                    imageUrl = pokemonEntity.imageUrl,
+                                    types = pokemonEntity.types,
+                                )
+                            }
+                        }
+                    PokemonTeam(id = entity.id, name = entity.name, members = members)
                 }
-                PokemonTeam(id = entity.id, name = entity.name, members = members)
             }
+
+        override suspend fun createTeam(name: String): Long {
+            val entity = PokemonTeamEntity(name = name, pokemonIds = emptyList())
+            return teamDao.insertTeam(entity)
         }
 
-    override suspend fun createTeam(name: String): Long {
-        val entity = PokemonTeamEntity(name = name, pokemonIds = emptyList())
-        return teamDao.insertTeam(entity)
-    }
+        override suspend fun renameTeam(
+            id: Long,
+            name: String,
+        ) {
+            val entity = teamDao.getTeamById(id) ?: return
+            teamDao.updateTeam(entity.copy(name = name))
+        }
 
-    override suspend fun renameTeam(id: Long, name: String) {
-        val entity = teamDao.getTeamById(id) ?: return
-        teamDao.updateTeam(entity.copy(name = name))
-    }
+        override suspend fun addMember(
+            teamId: Long,
+            pokemonId: Int,
+        ) {
+            val entity = teamDao.getTeamById(teamId) ?: return
+            if (entity.pokemonIds.size >= 6) return
+            if (pokemonId in entity.pokemonIds) return
+            teamDao.updateTeam(entity.copy(pokemonIds = entity.pokemonIds + pokemonId))
+        }
 
-    override suspend fun addMember(teamId: Long, pokemonId: Int) {
-        val entity = teamDao.getTeamById(teamId) ?: return
-        if (entity.pokemonIds.size >= 6) return
-        if (pokemonId in entity.pokemonIds) return
-        teamDao.updateTeam(entity.copy(pokemonIds = entity.pokemonIds + pokemonId))
-    }
+        override suspend fun removeMember(
+            teamId: Long,
+            pokemonId: Int,
+        ) {
+            val entity = teamDao.getTeamById(teamId) ?: return
+            teamDao.updateTeam(entity.copy(pokemonIds = entity.pokemonIds - pokemonId))
+        }
 
-    override suspend fun removeMember(teamId: Long, pokemonId: Int) {
-        val entity = teamDao.getTeamById(teamId) ?: return
-        teamDao.updateTeam(entity.copy(pokemonIds = entity.pokemonIds - pokemonId))
-    }
+        override suspend fun deleteTeam(id: Long) {
+            teamDao.deleteTeam(id)
+        }
 
-    override suspend fun deleteTeam(id: Long) {
-        teamDao.deleteTeam(id)
+        override suspend fun reorderMembers(
+            teamId: Long,
+            newOrder: List<Int>,
+        ) {
+            val entity = teamDao.getTeamById(teamId) ?: return
+            teamDao.updateTeam(entity.copy(pokemonIds = newOrder))
+        }
     }
-
-    override suspend fun reorderMembers(teamId: Long, newOrder: List<Int>) {
-        val entity = teamDao.getTeamById(teamId) ?: return
-        teamDao.updateTeam(entity.copy(pokemonIds = newOrder))
-    }
-}

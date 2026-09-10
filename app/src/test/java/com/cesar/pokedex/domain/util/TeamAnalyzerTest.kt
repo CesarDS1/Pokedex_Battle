@@ -1,24 +1,35 @@
 package com.cesar.pokedex.domain.util
 
-import com.cesar.pokedex.domain.model.Ability
 import com.cesar.pokedex.domain.model.Pokemon
 import com.cesar.pokedex.domain.model.PokemonDetail
 import com.cesar.pokedex.domain.model.PokemonStat
-import com.cesar.pokedex.domain.model.PokemonType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TeamAnalyzerTest {
-
-    private fun makePokemon(id: Int, vararg types: String) = Pokemon(
-        id = id, name = "Pokemon$id", imageUrl = "", types = types.toList()
+    private fun makePokemon(
+        id: Int,
+        vararg types: String,
+    ) = Pokemon(
+        id = id,
+        name = "Pokemon$id",
+        imageUrl = "",
+        types = types.toList(),
     )
 
-    private fun makeDetail(id: Int, vararg stats: Pair<String, Int>) = PokemonDetail(
-        id = id, name = "Pokemon$id", imageUrl = "", description = "", region = "",
-        types = emptyList(), abilities = emptyList(),
-        stats = stats.map { (name, value) -> PokemonStat(name, value) }
+    private fun makeDetail(
+        id: Int,
+        vararg stats: Pair<String, Int>,
+    ) = PokemonDetail(
+        id = id,
+        name = "Pokemon$id",
+        imageUrl = "",
+        description = "",
+        region = "",
+        types = emptyList(),
+        abilities = emptyList(),
+        stats = stats.map { (name, value) -> PokemonStat(name, value) },
     )
 
     @Test
@@ -90,22 +101,24 @@ class TeamAnalyzerTest {
     @Test
     fun `average stats computed correctly`() {
         val members = listOf(makePokemon(1, "Fire"), makePokemon(2, "Water"))
-        val details = listOf(
-            makeDetail(1, "hp" to 100, "attack" to 80),
-            makeDetail(2, "hp" to 60, "attack" to 120)
-        )
+        val details =
+            listOf(
+                makeDetail(1, "hp" to 100, "attack" to 80),
+                makeDetail(2, "hp" to 60, "attack" to 120),
+            )
         val result = TeamAnalyzer.analyze(members, details)
-        assertEquals(80f, result.averageStats["hp"] ?: 0f, 0.001f)  // (100+60)/2
-        assertEquals(100f, result.averageStats["attack"] ?: 0f, 0.001f)  // (80+120)/2
+        assertEquals(80f, result.averageStats["hp"] ?: 0f, 0.001f) // (100+60)/2
+        assertEquals(100f, result.averageStats["attack"] ?: 0f, 0.001f) // (80+120)/2
     }
 
     @Test
     fun `total stats computed correctly`() {
         val members = listOf(makePokemon(1, "Fire"), makePokemon(2, "Water"))
-        val details = listOf(
-            makeDetail(1, "hp" to 100),
-            makeDetail(2, "hp" to 60)
-        )
+        val details =
+            listOf(
+                makeDetail(1, "hp" to 100),
+                makeDetail(2, "hp" to 60),
+            )
         val result = TeamAnalyzer.analyze(members, details)
         assertEquals(160, result.totalStats["hp"] ?: 0)
     }

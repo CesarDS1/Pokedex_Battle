@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TeamDao {
-
     @Query("SELECT * FROM teams ORDER BY id ASC")
     fun getAllTeams(): Flow<List<PokemonTeamEntity>>
 

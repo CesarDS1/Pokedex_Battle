@@ -5,7 +5,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TypeEffectivenessChartTest {
-
     @Test
     fun `water is super effective against fire`() {
         assertEquals(2f, TypeEffectivenessChart.multiplier("water", "fire"), 0.001f)

@@ -19,172 +19,190 @@ import org.junit.Rule
 import org.junit.Test
 
 class TeamListViewModelTest {
-
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val teamRepository: TeamRepository = mockk {
-        every { getAllTeams() } returns flowOf(emptyList())
-    }
+    private val teamRepository: TeamRepository =
+        mockk {
+            every { getAllTeams() } returns flowOf(emptyList())
+        }
 
     private fun createViewModel() = TeamListViewModel(teamRepository)
 
     @Test
-    fun `initial state has empty teams and no dialog`() = runTest {
-        val viewModel = createViewModel()
-        viewModel.uiState.test {
-            val state = awaitItem()
-            assertTrue(state.teams.isEmpty())
-            assertFalse(state.showCreateDialog)
-        }
-    }
-
-    @Test
-    fun `teams from repository are mapped to ui state`() = runTest {
-        val teams = listOf(
-            PokemonTeam(id = 1L, name = "My Team", members = emptyList()),
-            PokemonTeam(id = 2L, name = "Second Team", members = emptyList())
-        )
-        every { teamRepository.getAllTeams() } returns flowOf(teams)
-
-        val viewModel = createViewModel()
-
-        viewModel.uiState.test {
-            val state = awaitItem()
-            assertEquals(2, state.teams.size)
-            assertEquals("My Team", state.teams[0].name)
-        }
-    }
-
-    @Test
-    fun `ShowCreateDialog event sets showCreateDialog to true`() = runTest {
-        val viewModel = createViewModel()
-
-        viewModel.uiState.test {
-            assertFalse(awaitItem().showCreateDialog)
-            viewModel.onEvent(TeamListEvent.ShowCreateDialog)
-            assertTrue(awaitItem().showCreateDialog)
-        }
-    }
-
-    @Test
-    fun `DismissCreateDialog event sets showCreateDialog to false`() = runTest {
-        val viewModel = createViewModel()
-
-        viewModel.uiState.test {
-            awaitItem()
-            viewModel.onEvent(TeamListEvent.ShowCreateDialog)
-            assertTrue(awaitItem().showCreateDialog)
-            viewModel.onEvent(TeamListEvent.DismissCreateDialog)
-            assertFalse(awaitItem().showCreateDialog)
-        }
-    }
-
-    @Test
-    fun `CreateTeam event calls repository and emits navigation event`() = runTest {
-        coEvery { teamRepository.createTeam("Test Team") } returns 42L
-
-        val viewModel = createViewModel()
-
-        viewModel.events.test {
-            viewModel.onEvent(TeamListEvent.CreateTeam("Test Team"))
-            val event = awaitItem()
-            assertTrue(event is TeamNavigationEvent.NavigateToTeamDetail)
-            assertEquals(42L, (event as TeamNavigationEvent.NavigateToTeamDetail).teamId)
+    fun `initial state has empty teams and no dialog`() =
+        runTest {
+            val viewModel = createViewModel()
+            viewModel.uiState.test {
+                val state = awaitItem()
+                assertTrue(state.teams.isEmpty())
+                assertFalse(state.showCreateDialog)
+            }
         }
 
-        coVerify { teamRepository.createTeam("Test Team") }
-    }
-
     @Test
-    fun `CreateTeam event dismisses dialog`() = runTest {
-        coEvery { teamRepository.createTeam(any()) } returns 1L
+    fun `teams from repository are mapped to ui state`() =
+        runTest {
+            val teams =
+                listOf(
+                    PokemonTeam(id = 1L, name = "My Team", members = emptyList()),
+                    PokemonTeam(id = 2L, name = "Second Team", members = emptyList()),
+                )
+            every { teamRepository.getAllTeams() } returns flowOf(teams)
 
-        val viewModel = createViewModel()
+            val viewModel = createViewModel()
 
-        viewModel.uiState.test {
-            awaitItem()
-            viewModel.onEvent(TeamListEvent.ShowCreateDialog)
-            assertTrue(awaitItem().showCreateDialog)
-            viewModel.onEvent(TeamListEvent.CreateTeam("Team"))
-            assertFalse(awaitItem().showCreateDialog)
-            cancelAndIgnoreRemainingEvents()
+            viewModel.uiState.test {
+                val state = awaitItem()
+                assertEquals(2, state.teams.size)
+                assertEquals("My Team", state.teams[0].name)
+            }
         }
-    }
 
     @Test
-    fun `RequestDelete sets pendingDeleteTeam in state`() = runTest {
-        val team = PokemonTeam(id = 1L, name = "My Team", members = emptyList())
-        every { teamRepository.getAllTeams() } returns flowOf(listOf(team))
+    fun `ShowCreateDialog event sets showCreateDialog to true`() =
+        runTest {
+            val viewModel = createViewModel()
 
-        val viewModel = createViewModel()
+            viewModel.uiState.test {
+                assertFalse(awaitItem().showCreateDialog)
+                viewModel.onEvent(TeamListEvent.ShowCreateDialog)
+                assertTrue(awaitItem().showCreateDialog)
+            }
+        }
 
-        viewModel.uiState.test {
-            awaitItem()
+    @Test
+    fun `DismissCreateDialog event sets showCreateDialog to false`() =
+        runTest {
+            val viewModel = createViewModel()
+
+            viewModel.uiState.test {
+                awaitItem()
+                viewModel.onEvent(TeamListEvent.ShowCreateDialog)
+                assertTrue(awaitItem().showCreateDialog)
+                viewModel.onEvent(TeamListEvent.DismissCreateDialog)
+                assertFalse(awaitItem().showCreateDialog)
+            }
+        }
+
+    @Test
+    fun `CreateTeam event calls repository and emits navigation event`() =
+        runTest {
+            coEvery { teamRepository.createTeam("Test Team") } returns 42L
+
+            val viewModel = createViewModel()
+
+            viewModel.events.test {
+                viewModel.onEvent(TeamListEvent.CreateTeam("Test Team"))
+                val event = awaitItem()
+                assertTrue(event is TeamNavigationEvent.NavigateToTeamDetail)
+                assertEquals(42L, (event as TeamNavigationEvent.NavigateToTeamDetail).teamId)
+            }
+
+            coVerify { teamRepository.createTeam("Test Team") }
+        }
+
+    @Test
+    fun `CreateTeam event dismisses dialog`() =
+        runTest {
+            coEvery { teamRepository.createTeam(any()) } returns 1L
+
+            val viewModel = createViewModel()
+
+            viewModel.uiState.test {
+                awaitItem()
+                viewModel.onEvent(TeamListEvent.ShowCreateDialog)
+                assertTrue(awaitItem().showCreateDialog)
+                viewModel.onEvent(TeamListEvent.CreateTeam("Team"))
+                assertFalse(awaitItem().showCreateDialog)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun `RequestDelete sets pendingDeleteTeam in state`() =
+        runTest {
+            val team = PokemonTeam(id = 1L, name = "My Team", members = emptyList())
+            every { teamRepository.getAllTeams() } returns flowOf(listOf(team))
+
+            val viewModel = createViewModel()
+
+            viewModel.uiState.test {
+                awaitItem()
+                viewModel.onEvent(TeamListEvent.RequestDelete(team))
+                val state = awaitItem()
+                assertEquals(team, state.pendingDeleteTeam)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun `ConfirmDelete calls repository and clears pendingDeleteTeam`() =
+        runTest {
+            val team = PokemonTeam(id = 1L, name = "My Team", members = emptyList())
+            every { teamRepository.getAllTeams() } returns flowOf(listOf(team))
+            coEvery { teamRepository.deleteTeam(1L) } returns Unit
+
+            val viewModel = createViewModel()
             viewModel.onEvent(TeamListEvent.RequestDelete(team))
-            val state = awaitItem()
-            assertEquals(team, state.pendingDeleteTeam)
-            cancelAndIgnoreRemainingEvents()
+            viewModel.onEvent(TeamListEvent.ConfirmDelete)
+
+            coVerify { teamRepository.deleteTeam(1L) }
         }
-    }
 
     @Test
-    fun `ConfirmDelete calls repository and clears pendingDeleteTeam`() = runTest {
-        val team = PokemonTeam(id = 1L, name = "My Team", members = emptyList())
-        every { teamRepository.getAllTeams() } returns flowOf(listOf(team))
-        coEvery { teamRepository.deleteTeam(1L) } returns Unit
+    fun `CancelDelete clears pendingDeleteTeam without calling repository`() =
+        runTest {
+            val team = PokemonTeam(id = 1L, name = "My Team", members = emptyList())
+            every { teamRepository.getAllTeams() } returns flowOf(listOf(team))
 
-        val viewModel = createViewModel()
-        viewModel.onEvent(TeamListEvent.RequestDelete(team))
-        viewModel.onEvent(TeamListEvent.ConfirmDelete)
+            val viewModel = createViewModel()
 
-        coVerify { teamRepository.deleteTeam(1L) }
-    }
+            viewModel.uiState.test {
+                awaitItem()
+                viewModel.onEvent(TeamListEvent.RequestDelete(team))
+                awaitItem()
+                viewModel.onEvent(TeamListEvent.CancelDelete)
+                val state = awaitItem()
+                assertNull(state.pendingDeleteTeam)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
 
     @Test
-    fun `CancelDelete clears pendingDeleteTeam without calling repository`() = runTest {
-        val team = PokemonTeam(id = 1L, name = "My Team", members = emptyList())
-        every { teamRepository.getAllTeams() } returns flowOf(listOf(team))
+    fun `NavigateToTeam emits navigation event`() =
+        runTest {
+            val viewModel = createViewModel()
 
-        val viewModel = createViewModel()
-
-        viewModel.uiState.test {
-            awaitItem()
-            viewModel.onEvent(TeamListEvent.RequestDelete(team))
-            awaitItem()
-            viewModel.onEvent(TeamListEvent.CancelDelete)
-            val state = awaitItem()
-            assertNull(state.pendingDeleteTeam)
-            cancelAndIgnoreRemainingEvents()
+            viewModel.events.test {
+                viewModel.onEvent(TeamListEvent.NavigateToTeam(99L))
+                val event = awaitItem()
+                assertTrue(event is TeamNavigationEvent.NavigateToTeamDetail)
+                assertEquals(99L, (event as TeamNavigationEvent.NavigateToTeamDetail).teamId)
+            }
         }
-    }
 
     @Test
-    fun `NavigateToTeam emits navigation event`() = runTest {
-        val viewModel = createViewModel()
+    fun `teams with members show member count in state`() =
+        runTest {
+            val members =
+                listOf(
+                    Pokemon(id = 1, name = "Bulbasaur", imageUrl = "", types = listOf("Grass")),
+                    Pokemon(id = 4, name = "Charmander", imageUrl = "", types = listOf("Fire")),
+                )
+            val teams = listOf(PokemonTeam(id = 1L, name = "Team", members = members))
+            every { teamRepository.getAllTeams() } returns flowOf(teams)
 
-        viewModel.events.test {
-            viewModel.onEvent(TeamListEvent.NavigateToTeam(99L))
-            val event = awaitItem()
-            assertTrue(event is TeamNavigationEvent.NavigateToTeamDetail)
-            assertEquals(99L, (event as TeamNavigationEvent.NavigateToTeamDetail).teamId)
+            val viewModel = createViewModel()
+
+            viewModel.uiState.test {
+                val state = awaitItem()
+                assertEquals(
+                    2,
+                    state.teams
+                        .first()
+                        .members.size,
+                )
+            }
         }
-    }
-
-    @Test
-    fun `teams with members show member count in state`() = runTest {
-        val members = listOf(
-            Pokemon(id = 1, name = "Bulbasaur", imageUrl = "", types = listOf("Grass")),
-            Pokemon(id = 4, name = "Charmander", imageUrl = "", types = listOf("Fire"))
-        )
-        val teams = listOf(PokemonTeam(id = 1L, name = "Team", members = members))
-        every { teamRepository.getAllTeams() } returns flowOf(teams)
-
-        val viewModel = createViewModel()
-
-        viewModel.uiState.test {
-            val state = awaitItem()
-            assertEquals(2, state.teams.first().members.size)
-        }
-    }
 }

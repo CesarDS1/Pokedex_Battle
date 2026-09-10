@@ -7,9 +7,14 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TeamSuggestionEngineTest {
-
-    private fun makePokemon(id: Int, vararg types: String) = Pokemon(
-        id = id, name = "Pokemon$id", imageUrl = "", types = types.toList()
+    private fun makePokemon(
+        id: Int,
+        vararg types: String,
+    ) = Pokemon(
+        id = id,
+        name = "Pokemon$id",
+        imageUrl = "",
+        types = types.toList(),
     )
 
     @Test
@@ -21,10 +26,11 @@ class TeamSuggestionEngineTest {
 
     @Test
     fun `already on team pokemon are excluded`() {
-        val allPokemon = listOf(
-            makePokemon(1, "Grass"),
-            makePokemon(2, "Fire")
-        )
+        val allPokemon =
+            listOf(
+                makePokemon(1, "Grass"),
+                makePokemon(2, "Fire"),
+            )
         val result = TeamSuggestionEngine.suggest(allPokemon, listOf("water"), listOf(1))
         assertFalse(result.any { it.pokemon.id == 1 })
     }
@@ -60,11 +66,12 @@ class TeamSuggestionEngineTest {
 
     @Test
     fun `results are sorted by score descending`() {
-        val pokemonList = listOf(
-            makePokemon(1, "Grass"),     // Good vs Water (+3 STAB, +1 resists)
-            makePokemon(2, "Electric"),  // Good vs Water (+3 STAB, +1 resists)
-            makePokemon(3, "Dragon")     // Dragon resists Water (+1) but weak to nothing
-        )
+        val pokemonList =
+            listOf(
+                makePokemon(1, "Grass"), // Good vs Water (+3 STAB, +1 resists)
+                makePokemon(2, "Electric"), // Good vs Water (+3 STAB, +1 resists)
+                makePokemon(3, "Dragon"), // Dragon resists Water (+1) but weak to nothing
+            )
         val result = TeamSuggestionEngine.suggest(pokemonList, listOf("water"), emptyList())
         val scores = result.map { it.score }
         assertEquals(scores, scores.sortedDescending())
@@ -79,7 +86,7 @@ class TeamSuggestionEngineTest {
 
     @Test
     fun `pokemon with zero types are excluded`() {
-        val noTypePokemon = makePokemon(1)  // No types
+        val noTypePokemon = makePokemon(1) // No types
         val result = TeamSuggestionEngine.suggest(listOf(noTypePokemon), listOf("water"), emptyList())
         assertTrue("Pokemon with no types should be excluded", result.isEmpty())
     }
@@ -100,7 +107,10 @@ class TeamSuggestionEngineTest {
         val grassPokemon = makePokemon(1, "Grass")
         val result = TeamSuggestionEngine.suggest(listOf(grassPokemon), listOf("water"), emptyList())
         val suggestion = result.firstOrNull { it.pokemon.id == 1 }
-        assertTrue("Coverage details should be populated", suggestion != null && suggestion.coverageDetails.isNotEmpty())
+        assertTrue(
+            "Coverage details should be populated",
+            suggestion != null && suggestion.coverageDetails.isNotEmpty(),
+        )
     }
 
     // ── scoreAll tests ─────────────────────────────────────────────────────────
@@ -115,7 +125,7 @@ class TeamSuggestionEngineTest {
     fun `scoreAll includes all pokemon regardless of score`() {
         // Fire/Flying is weak to Water (score negative), but should still appear
         val charizard = makePokemon(6, "Fire", "Flying")
-        val bulbasaur = makePokemon(1, "Grass")  // good vs water
+        val bulbasaur = makePokemon(1, "Grass") // good vs water
         val result = TeamSuggestionEngine.scoreAll(listOf(charizard, bulbasaur), listOf("water"), emptyList())
         assertTrue("All non-excluded pokemon should be scored", result.containsKey(charizard.id))
         assertTrue(result.containsKey(bulbasaur.id))
@@ -135,11 +145,12 @@ class TeamSuggestionEngineTest {
 
     @Test
     fun `scoreAll excludes team members`() {
-        val result = TeamSuggestionEngine.scoreAll(
-            listOf(makePokemon(1, "Grass"), makePokemon(2, "Water")),
-            listOf("fire"),
-            teamMemberIds = listOf(1)
-        )
+        val result =
+            TeamSuggestionEngine.scoreAll(
+                listOf(makePokemon(1, "Grass"), makePokemon(2, "Water")),
+                listOf("fire"),
+                teamMemberIds = listOf(1),
+            )
         assertFalse(result.containsKey(1))
         assertTrue(result.containsKey(2))
     }

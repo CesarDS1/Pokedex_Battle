@@ -11,30 +11,31 @@ import org.junit.Rule
 import org.junit.Test
 
 class TeamDetailContentTest {
-
     @get:Rule
     val composeRule = createComposeRule()
 
     private val charizard = Pokemon(id = 6, name = "Charizard", types = listOf("Fire", "Flying"), imageUrl = "")
     private val bulbasaur = Pokemon(id = 1, name = "Bulbasaur", types = listOf("Grass", "Poison"), imageUrl = "")
 
-    private val teamWithMembers = PokemonTeam(
-        id = 1L,
-        name = "My Team",
-        members = listOf(charizard)
-    )
+    private val teamWithMembers =
+        PokemonTeam(
+            id = 1L,
+            name = "My Team",
+            members = listOf(charizard),
+        )
 
     private val emptyTeam = PokemonTeam(id = 2L, name = "Empty Team", members = emptyList())
 
-    private val sampleAnalysis = TeamAnalysis(
-        weaknesses = mapOf("water" to 1, "rock" to 1),
-        resistances = mapOf("fire" to 1, "grass" to 1),
-        immunities = mapOf("ground" to 1),
-        offensiveCoverage = setOf("grass", "ice", "bug", "steel"),
-        averageStats = mapOf("hp" to 78f, "attack" to 84f),
-        totalStats = mapOf("hp" to 78, "attack" to 84),
-        coverageGaps = emptyList()
-    )
+    private val sampleAnalysis =
+        TeamAnalysis(
+            weaknesses = mapOf("water" to 1, "rock" to 1),
+            resistances = mapOf("fire" to 1, "grass" to 1),
+            immunities = mapOf("ground" to 1),
+            offensiveCoverage = setOf("grass", "ice", "bug", "steel"),
+            averageStats = mapOf("hp" to 78f, "attack" to 84f),
+            totalStats = mapOf("hp" to 78, "attack" to 84),
+            coverageGaps = emptyList(),
+        )
 
     @Test
     fun tabsAreDisplayed() {
@@ -45,7 +46,7 @@ class TeamDetailContentTest {
                     onEvent = {},
                     onBackClick = {},
                     onAddPokemonClick = {},
-                    onPokemonClick = {}
+                    onPokemonClick = {},
                 )
             }
         }
@@ -62,7 +63,7 @@ class TeamDetailContentTest {
                     onEvent = {},
                     onBackClick = {},
                     onAddPokemonClick = {},
-                    onPokemonClick = {}
+                    onPokemonClick = {},
                 )
             }
         }
@@ -78,7 +79,7 @@ class TeamDetailContentTest {
                     onEvent = {},
                     onBackClick = {},
                     onAddPokemonClick = {},
-                    onPokemonClick = {}
+                    onPokemonClick = {},
                 )
             }
         }
@@ -96,7 +97,7 @@ class TeamDetailContentTest {
                     onEvent = {},
                     onBackClick = {},
                     onAddPokemonClick = {},
-                    onPokemonClick = {}
+                    onPokemonClick = {},
                 )
             }
         }
@@ -114,7 +115,7 @@ class TeamDetailContentTest {
                     onEvent = {},
                     onBackClick = {},
                     onAddPokemonClick = {},
-                    onPokemonClick = {}
+                    onPokemonClick = {},
                 )
             }
         }
@@ -132,7 +133,7 @@ class TeamDetailContentTest {
                     onEvent = {},
                     onBackClick = {},
                     onAddPokemonClick = {},
-                    onPokemonClick = {}
+                    onPokemonClick = {},
                 )
             }
         }
@@ -151,7 +152,7 @@ class TeamDetailContentTest {
                     onEvent = {},
                     onBackClick = {},
                     onAddPokemonClick = {},
-                    onPokemonClick = {}
+                    onPokemonClick = {},
                 )
             }
         }
@@ -168,7 +169,7 @@ class TeamDetailContentTest {
                     onEvent = { capturedEvents.add(it) },
                     onBackClick = {},
                     onAddPokemonClick = {},
-                    onPokemonClick = {}
+                    onPokemonClick = {},
                 )
             }
         }
@@ -181,11 +182,16 @@ class TeamDetailContentTest {
         composeRule.setContent {
             PokedexTheme {
                 TeamDetailScreenContent(
-                    uiState = TeamDetailUiState(team = teamWithMembers, analysis = sampleAnalysis, showRenameDialog = true),
+                    uiState =
+                        TeamDetailUiState(
+                            team = teamWithMembers,
+                            analysis = sampleAnalysis,
+                            showRenameDialog = true,
+                        ),
                     onEvent = {},
                     onBackClick = {},
                     onAddPokemonClick = {},
-                    onPokemonClick = {}
+                    onPokemonClick = {},
                 )
             }
         }
@@ -201,7 +207,7 @@ class TeamDetailContentTest {
                     onEvent = {},
                     onBackClick = {},
                     onAddPokemonClick = {},
-                    onPokemonClick = {}
+                    onPokemonClick = {},
                 )
             }
         }
@@ -217,7 +223,7 @@ class TeamDetailContentTest {
                     onEvent = {},
                     onBackClick = {},
                     onAddPokemonClick = {},
-                    onPokemonClick = {}
+                    onPokemonClick = {},
                 )
             }
         }

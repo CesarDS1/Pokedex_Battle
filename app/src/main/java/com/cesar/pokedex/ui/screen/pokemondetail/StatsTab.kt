@@ -36,19 +36,20 @@ import com.cesar.pokedex.domain.model.PokemonStat
 @Composable
 internal fun StatsTab(
     stats: List<PokemonStat>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         ElevatedCard(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = stringResource(R.string.base_stats),
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -61,16 +62,16 @@ internal fun StatsTab(
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
                             text = stringResource(R.string.total),
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                         Text(
                             text = stats.sumOf { it.baseStat }.toString(),
-                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                         )
                     }
                 }
@@ -81,50 +82,56 @@ internal fun StatsTab(
 }
 
 @Composable
-private fun StatRow(stat: PokemonStat, modifier: Modifier = Modifier) {
+private fun StatRow(
+    stat: PokemonStat,
+    modifier: Modifier = Modifier,
+) {
     var targetProgress by remember { mutableFloatStateOf(0f) }
     val animatedProgress by animateFloatAsState(
         targetValue = targetProgress,
         animationSpec = tween(durationMillis = 600),
-        label = "statBar"
+        label = "statBar",
     )
     LaunchedEffect(stat.baseStat) {
         targetProgress = (stat.baseStat / 255f).coerceIn(0f, 1f)
     }
 
-    val statColor = when {
-        stat.baseStat < 50  -> Color(0xFFE57373)
-        stat.baseStat < 90  -> Color(0xFFFFB74D)
-        else                -> Color(0xFF81C784)
-    }
+    val statColor =
+        when {
+            stat.baseStat < 50 -> Color(0xFFE57373)
+            stat.baseStat < 90 -> Color(0xFFFFB74D)
+            else -> Color(0xFF81C784)
+        }
 
     Row(
         modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = stat.name,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
         Text(
             text = stat.baseStat.toString().padStart(3, ' '),
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.End,
-            modifier = Modifier
-                .width(36.dp)
-                .padding(end = 8.dp)
+            modifier =
+                Modifier
+                    .width(36.dp)
+                    .padding(end = 8.dp),
         )
         LinearProgressIndicator(
             progress = { animatedProgress },
-            modifier = Modifier
-                .weight(2f)
-                .height(8.dp)
-                .clip(RoundedCornerShape(4.dp)),
+            modifier =
+                Modifier
+                    .weight(2f)
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp)),
             color = statColor,
-            trackColor = MaterialTheme.colorScheme.surfaceVariant
+            trackColor = MaterialTheme.colorScheme.surfaceVariant,
         )
     }
 }

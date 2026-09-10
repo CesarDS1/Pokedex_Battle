@@ -10,7 +10,6 @@ import org.junit.Rule
 import org.junit.Test
 
 class PokemonEvolutionContentTest {
-
     @get:Rule
     val composeRule = createComposeRule()
 
@@ -18,10 +17,11 @@ class PokemonEvolutionContentTest {
     private val ivysaur = EvolutionStage(id = 2, name = "Ivysaur", imageUrl = "", trigger = "Level 16")
     private val venusaur = EvolutionStage(id = 3, name = "Venusaur", imageUrl = "", trigger = "Level 32")
 
-    private val evolutionInfo = PokemonEvolutionInfo(
-        evolutions = listOf(bulbasaur, ivysaur, venusaur),
-        varieties = emptyList()
-    )
+    private val evolutionInfo =
+        PokemonEvolutionInfo(
+            evolutions = listOf(bulbasaur, ivysaur, venusaur),
+            varieties = emptyList(),
+        )
 
     @Test
     fun loadingState_showsProgressIndicator() {
@@ -30,7 +30,7 @@ class PokemonEvolutionContentTest {
                 EvolutionScreenContent(
                     uiState = PokemonEvolutionUiState.Loading,
                     onRetry = {},
-                    onPokemonClick = {}
+                    onPokemonClick = {},
                 )
             }
         }
@@ -44,7 +44,7 @@ class PokemonEvolutionContentTest {
                 EvolutionScreenContent(
                     uiState = PokemonEvolutionUiState.Error("Failed to load"),
                     onRetry = {},
-                    onPokemonClick = {}
+                    onPokemonClick = {},
                 )
             }
         }
@@ -59,7 +59,7 @@ class PokemonEvolutionContentTest {
                 EvolutionScreenContent(
                     uiState = PokemonEvolutionUiState.Success(evolutionInfo, currentPokemonId = 1),
                     onRetry = {},
-                    onPokemonClick = {}
+                    onPokemonClick = {},
                 )
             }
         }
@@ -76,7 +76,7 @@ class PokemonEvolutionContentTest {
                 EvolutionScreenContent(
                     uiState = PokemonEvolutionUiState.Success(evolutionInfo, currentPokemonId = 1),
                     onRetry = {},
-                    onPokemonClick = { clickedId = it }
+                    onPokemonClick = { clickedId = it },
                 )
             }
         }

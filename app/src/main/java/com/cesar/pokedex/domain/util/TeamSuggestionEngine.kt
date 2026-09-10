@@ -4,10 +4,9 @@ import com.cesar.pokedex.domain.model.Pokemon
 import com.cesar.pokedex.domain.model.TeamSuggestion
 
 object TeamSuggestionEngine {
-
     private fun scoreOnePokemon(
         candidateTypes: List<String>,
-        enemyTypesLower: List<String>
+        enemyTypesLower: List<String>,
     ): Pair<Int, List<String>> {
         var score = 0
         val details = mutableListOf<String>()
@@ -16,7 +15,9 @@ object TeamSuggestionEngine {
             for (candidateType in candidateTypes) {
                 if (TypeEffectivenessChart.multiplier(candidateType, enemyType) >= 2f) {
                     score += 3
-                    details.add("${candidateType.replaceFirstChar { it.uppercase() }} hits $enemyType super effectively")
+                    details.add(
+                        "${candidateType.replaceFirstChar { it.uppercase() }} hits $enemyType super effectively",
+                    )
                 }
             }
             val defMult = TypeEffectivenessChart.combinedMultiplier(enemyType, candidateTypes)
@@ -44,7 +45,7 @@ object TeamSuggestionEngine {
     fun suggest(
         allPokemon: List<Pokemon>,
         enemyTypes: List<String>,
-        teamMemberIds: List<Int>
+        teamMemberIds: List<Int>,
     ): List<TeamSuggestion> {
         if (enemyTypes.isEmpty()) return emptyList()
 
@@ -59,8 +60,7 @@ object TeamSuggestionEngine {
                 val (score, details) = scoreOnePokemon(candidateTypes, enemyTypesLower)
                 if (score <= 0) return@mapNotNull null
                 TeamSuggestion(pokemon = pokemon, score = score, coverageDetails = details)
-            }
-            .sortedByDescending { it.score }
+            }.sortedByDescending { it.score }
             .take(20)
     }
 
@@ -72,7 +72,7 @@ object TeamSuggestionEngine {
     fun scoreAll(
         allPokemon: List<Pokemon>,
         enemyTypes: List<String>,
-        teamMemberIds: List<Int>
+        teamMemberIds: List<Int>,
     ): Map<Int, Int> {
         if (enemyTypes.isEmpty()) return emptyMap()
 

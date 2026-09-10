@@ -11,33 +11,34 @@ import org.junit.Rule
 import org.junit.Test
 
 class PokemonDetailContentTest {
-
     @get:Rule
     val composeRule = createComposeRule()
 
-    private val fakePokemon = PokemonDetail(
-        id = 6,
-        name = "Charizard",
-        imageUrl = "",
-        description = "A flame pokemon.",
-        region = "Kanto",
-        heightDecimeters = 17,
-        weightHectograms = 905,
-        genderRate = 1,
-        types = listOf(
-            PokemonType(
-                name = "fire",
-                apiName = "fire",
-                weaknesses = listOf("water", "rock", "electric"),
-                resistances = listOf("fire", "grass", "bug", "steel", "fairy"),
-                strengths = listOf("grass", "ice", "bug", "steel"),
-                ineffective = listOf()
-            )
-        ),
-        abilities = listOf(Ability(name = "Blaze", isHidden = false)),
-        stats = emptyList(),
-        gameEntries = emptyList()
-    )
+    private val fakePokemon =
+        PokemonDetail(
+            id = 6,
+            name = "Charizard",
+            imageUrl = "",
+            description = "A flame pokemon.",
+            region = "Kanto",
+            heightDecimeters = 17,
+            weightHectograms = 905,
+            genderRate = 1,
+            types =
+                listOf(
+                    PokemonType(
+                        name = "fire",
+                        apiName = "fire",
+                        weaknesses = listOf("water", "rock", "electric"),
+                        resistances = listOf("fire", "grass", "bug", "steel", "fairy"),
+                        strengths = listOf("grass", "ice", "bug", "steel"),
+                        ineffective = listOf(),
+                    ),
+                ),
+            abilities = listOf(Ability(name = "Blaze", isHidden = false)),
+            stats = emptyList(),
+            gameEntries = emptyList(),
+        )
 
     @Test
     fun loadingState_showsProgressIndicator() {
@@ -48,7 +49,7 @@ class PokemonDetailContentTest {
                     onEvent = {},
                     onBackClick = {},
                     onEvolutionClick = {},
-                    onMovesClick = {}
+                    onMovesClick = {},
                 )
             }
         }
@@ -64,7 +65,7 @@ class PokemonDetailContentTest {
                     onEvent = {},
                     onBackClick = {},
                     onEvolutionClick = {},
-                    onMovesClick = {}
+                    onMovesClick = {},
                 )
             }
         }
@@ -81,7 +82,7 @@ class PokemonDetailContentTest {
                     onEvent = {},
                     onBackClick = {},
                     onEvolutionClick = {},
-                    onMovesClick = {}
+                    onMovesClick = {},
                 )
             }
         }
@@ -97,7 +98,7 @@ class PokemonDetailContentTest {
                     onEvent = {},
                     onBackClick = {},
                     onEvolutionClick = {},
-                    onMovesClick = {}
+                    onMovesClick = {},
                 )
             }
         }
@@ -116,7 +117,7 @@ class PokemonDetailContentTest {
                     onEvent = {},
                     onBackClick = {},
                     onEvolutionClick = {},
-                    onMovesClick = {}
+                    onMovesClick = {},
                 )
             }
         }
