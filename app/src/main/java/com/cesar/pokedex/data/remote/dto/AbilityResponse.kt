@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class AbilityResponse(
     val name: String,
-    val names: List<LocalizedName> = emptyList()
+    val names: List<LocalizedName> = emptyList(),
 )

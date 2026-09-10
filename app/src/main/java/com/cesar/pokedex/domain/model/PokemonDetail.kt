@@ -17,32 +17,34 @@ data class PokemonDetail(
     val moves: List<Move> = emptyList(),
     val cryUrl: String? = null,
     val stats: List<PokemonStat> = emptyList(),
-    val gameEntries: List<GameEntry> = emptyList()
+    val gameEntries: List<GameEntry> = emptyList(),
 )
 
 @Serializable
-data class GameEntry(val gameName: String)
+data class GameEntry(
+    val gameName: String,
+)
 
 @Serializable
 data class PokemonType(
     val name: String,
-    val apiName: String = "",  // English lowercase slug from PokeAPI (e.g. "fire", "flying")
+    val apiName: String = "", // English lowercase slug from PokeAPI (e.g. "fire", "flying")
     val weaknesses: List<String>,
     val resistances: List<String>,
     val strengths: List<String>,
-    val ineffective: List<String>
+    val ineffective: List<String>,
 )
 
 @Serializable
 data class Ability(
     val name: String,
-    val isHidden: Boolean
+    val isHidden: Boolean,
 )
 
 @Serializable
 data class PokemonStat(
     val name: String,
-    val baseStat: Int
+    val baseStat: Int,
 )
 
 @Serializable
@@ -50,5 +52,5 @@ data class Move(
     val name: String,
     val level: Int,
     val type: String,
-    val description: String = ""
+    val description: String = "",
 )

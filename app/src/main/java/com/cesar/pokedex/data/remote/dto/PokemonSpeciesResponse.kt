@@ -10,23 +10,23 @@ data class PokemonSpeciesResponse(
     @SerialName("evolution_chain") val evolutionChain: ApiResource?,
     val varieties: List<PokemonVarietyEntry>,
     @SerialName("gender_rate") val genderRate: Int = -1,
-    val names: List<LocalizedName> = emptyList()
+    val names: List<LocalizedName> = emptyList(),
 )
 
 @Serializable
 data class FlavorTextEntry(
     @SerialName("flavor_text") val flavorText: String,
     val language: NamedApiResource,
-    val version: NamedApiResource
+    val version: NamedApiResource,
 )
 
 @Serializable
 data class ApiResource(
-    val url: String
+    val url: String,
 )
 
 @Serializable
 data class PokemonVarietyEntry(
     @SerialName("is_default") val isDefault: Boolean,
-    val pokemon: NamedApiResource
+    val pokemon: NamedApiResource,
 )

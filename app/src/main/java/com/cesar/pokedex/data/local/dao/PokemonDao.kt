@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PokemonDao {
-
     @Query("SELECT * FROM pokemon ORDER BY id ASC")
     suspend fun getAllPokemon(): List<PokemonEntity>
 

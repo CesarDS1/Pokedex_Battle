@@ -18,7 +18,6 @@ import org.junit.Before
 import org.junit.Test
 
 class TeamRepositoryImplTest {
-
     private val teamDao: TeamDao = mockk()
     private val pokemonDao: PokemonDao = mockk()
     private lateinit var repository: TeamRepositoryImpl
@@ -34,168 +33,194 @@ class TeamRepositoryImplTest {
     // region addMember
 
     @Test
-    fun `addMember addsIdWhenTeamHasCapacity`() = runTest {
-        val entity = PokemonTeamEntity(id = 1L, name = "Team", pokemonIds = listOf(1, 2, 3))
-        coEvery { teamDao.getTeamById(1L) } returns entity
+    fun `addMember addsIdWhenTeamHasCapacity`() =
+        runTest {
+            val entity = PokemonTeamEntity(id = 1L, name = "Team", pokemonIds = listOf(1, 2, 3))
+            coEvery { teamDao.getTeamById(1L) } returns entity
 
-        repository.addMember(1L, 4)
+            repository.addMember(1L, 4)
 
-        coVerify { teamDao.updateTeam(entity.copy(pokemonIds = listOf(1, 2, 3, 4))) }
-    }
-
-    @Test
-    fun `addMember silentlyIgnoresWhenTeamHasSixMembers`() = runTest {
-        val entity = PokemonTeamEntity(id = 1L, name = "Team", pokemonIds = listOf(1, 2, 3, 4, 5, 6))
-        coEvery { teamDao.getTeamById(1L) } returns entity
-
-        repository.addMember(1L, 7)
-
-        coVerify(exactly = 0) { teamDao.updateTeam(any()) }
-    }
+            coVerify { teamDao.updateTeam(entity.copy(pokemonIds = listOf(1, 2, 3, 4))) }
+        }
 
     @Test
-    fun `addMember allowsUpToSixMembersExactly`() = runTest {
-        val entity = PokemonTeamEntity(id = 1L, name = "Team", pokemonIds = listOf(1, 2, 3, 4, 5))
-        coEvery { teamDao.getTeamById(1L) } returns entity
+    fun `addMember silentlyIgnoresWhenTeamHasSixMembers`() =
+        runTest {
+            val entity = PokemonTeamEntity(id = 1L, name = "Team", pokemonIds = listOf(1, 2, 3, 4, 5, 6))
+            coEvery { teamDao.getTeamById(1L) } returns entity
 
-        repository.addMember(1L, 6)
+            repository.addMember(1L, 7)
 
-        coVerify { teamDao.updateTeam(entity.copy(pokemonIds = listOf(1, 2, 3, 4, 5, 6))) }
-    }
-
-    @Test
-    fun `addMember silentlyIgnoresDuplicatePokemon`() = runTest {
-        val entity = PokemonTeamEntity(id = 1L, name = "Team", pokemonIds = listOf(1, 4, 7))
-        coEvery { teamDao.getTeamById(1L) } returns entity
-
-        repository.addMember(1L, 4)
-
-        coVerify(exactly = 0) { teamDao.updateTeam(any()) }
-    }
+            coVerify(exactly = 0) { teamDao.updateTeam(any()) }
+        }
 
     @Test
-    fun `addMember doesNothingWhenTeamNotFound`() = runTest {
-        coEvery { teamDao.getTeamById(99L) } returns null
+    fun `addMember allowsUpToSixMembersExactly`() =
+        runTest {
+            val entity = PokemonTeamEntity(id = 1L, name = "Team", pokemonIds = listOf(1, 2, 3, 4, 5))
+            coEvery { teamDao.getTeamById(1L) } returns entity
 
-        repository.addMember(99L, 1)
+            repository.addMember(1L, 6)
 
-        coVerify(exactly = 0) { teamDao.updateTeam(any()) }
-    }
+            coVerify { teamDao.updateTeam(entity.copy(pokemonIds = listOf(1, 2, 3, 4, 5, 6))) }
+        }
+
+    @Test
+    fun `addMember silentlyIgnoresDuplicatePokemon`() =
+        runTest {
+            val entity = PokemonTeamEntity(id = 1L, name = "Team", pokemonIds = listOf(1, 4, 7))
+            coEvery { teamDao.getTeamById(1L) } returns entity
+
+            repository.addMember(1L, 4)
+
+            coVerify(exactly = 0) { teamDao.updateTeam(any()) }
+        }
+
+    @Test
+    fun `addMember doesNothingWhenTeamNotFound`() =
+        runTest {
+            coEvery { teamDao.getTeamById(99L) } returns null
+
+            repository.addMember(99L, 1)
+
+            coVerify(exactly = 0) { teamDao.updateTeam(any()) }
+        }
 
     // endregion
 
     // region removeMember
 
     @Test
-    fun `removeMember removesIdFromList`() = runTest {
-        val entity = PokemonTeamEntity(id = 1L, name = "Team", pokemonIds = listOf(1, 4, 25))
-        coEvery { teamDao.getTeamById(1L) } returns entity
+    fun `removeMember removesIdFromList`() =
+        runTest {
+            val entity = PokemonTeamEntity(id = 1L, name = "Team", pokemonIds = listOf(1, 4, 25))
+            coEvery { teamDao.getTeamById(1L) } returns entity
 
-        repository.removeMember(1L, 4)
+            repository.removeMember(1L, 4)
 
-        coVerify { teamDao.updateTeam(entity.copy(pokemonIds = listOf(1, 25))) }
-    }
-
-    @Test
-    fun `removeMember doesNothingWhenTeamNotFound`() = runTest {
-        coEvery { teamDao.getTeamById(99L) } returns null
-
-        repository.removeMember(99L, 1)
-
-        coVerify(exactly = 0) { teamDao.updateTeam(any()) }
-    }
+            coVerify { teamDao.updateTeam(entity.copy(pokemonIds = listOf(1, 25))) }
+        }
 
     @Test
-    fun `removeMember isNoOpWhenIdNotInList`() = runTest {
-        val entity = PokemonTeamEntity(id = 1L, name = "Team", pokemonIds = listOf(1, 4))
-        coEvery { teamDao.getTeamById(1L) } returns entity
+    fun `removeMember doesNothingWhenTeamNotFound`() =
+        runTest {
+            coEvery { teamDao.getTeamById(99L) } returns null
 
-        repository.removeMember(1L, 999)
+            repository.removeMember(99L, 1)
 
-        coVerify { teamDao.updateTeam(entity.copy(pokemonIds = listOf(1, 4))) }
-    }
+            coVerify(exactly = 0) { teamDao.updateTeam(any()) }
+        }
+
+    @Test
+    fun `removeMember isNoOpWhenIdNotInList`() =
+        runTest {
+            val entity = PokemonTeamEntity(id = 1L, name = "Team", pokemonIds = listOf(1, 4))
+            coEvery { teamDao.getTeamById(1L) } returns entity
+
+            repository.removeMember(1L, 999)
+
+            coVerify { teamDao.updateTeam(entity.copy(pokemonIds = listOf(1, 4))) }
+        }
 
     // endregion
 
     // region createTeam
 
     @Test
-    fun `createTeam returnsAutoGeneratedId`() = runTest {
-        coEvery { teamDao.insertTeam(any()) } returns 42L
+    fun `createTeam returnsAutoGeneratedId`() =
+        runTest {
+            coEvery { teamDao.insertTeam(any()) } returns 42L
 
-        val result = repository.createTeam("My Team")
+            val result = repository.createTeam("My Team")
 
-        assertEquals(42L, result)
-    }
+            assertEquals(42L, result)
+        }
 
     // endregion
 
     // region deleteTeam
 
     @Test
-    fun `deleteTeam delegatesToDao`() = runTest {
-        repository.deleteTeam(5L)
+    fun `deleteTeam delegatesToDao`() =
+        runTest {
+            repository.deleteTeam(5L)
 
-        coVerify { teamDao.deleteTeam(5L) }
-    }
+            coVerify { teamDao.deleteTeam(5L) }
+        }
 
     // endregion
 
     // region getAllTeams
 
     @Test
-    fun `getAllTeams mapsDaoEntitiesToDomainModels`() = runTest {
-        val pokemonEntity = PokemonEntity(id = 1, name = "Bulbasaur", imageUrl = "https://example.com/1.png", types = listOf("Grass"))
-        val teamEntity = PokemonTeamEntity(id = 1L, name = "My Team", pokemonIds = listOf(1))
-        every { teamDao.getAllTeams() } returns flowOf(listOf(teamEntity))
-        coEvery { pokemonDao.getPokemonById(1) } returns pokemonEntity
-        repository = TeamRepositoryImpl(teamDao, pokemonDao)
+    fun `getAllTeams mapsDaoEntitiesToDomainModels`() =
+        runTest {
+            val pokemonEntity =
+                PokemonEntity(
+                    id = 1,
+                    name = "Bulbasaur",
+                    imageUrl = "https://example.com/1.png",
+                    types = listOf("Grass"),
+                )
+            val teamEntity = PokemonTeamEntity(id = 1L, name = "My Team", pokemonIds = listOf(1))
+            every { teamDao.getAllTeams() } returns flowOf(listOf(teamEntity))
+            coEvery { pokemonDao.getPokemonById(1) } returns pokemonEntity
+            repository = TeamRepositoryImpl(teamDao, pokemonDao)
 
-        val result: List<PokemonTeam> = repository.getAllTeams().first()
+            val result: List<PokemonTeam> = repository.getAllTeams().first()
 
-        assertEquals(1, result.size)
-        assertEquals("My Team", result[0].name)
-        assertEquals(1, result[0].members.size)
-        assertEquals("Bulbasaur", result[0].members[0].name)
-    }
+            assertEquals(1, result.size)
+            assertEquals("My Team", result[0].name)
+            assertEquals(1, result[0].members.size)
+            assertEquals("Bulbasaur", result[0].members[0].name)
+        }
 
     @Test
-    fun `getAllTeams excludesMembersNotFoundInPokemonDao`() = runTest {
-        val pokemonEntity = PokemonEntity(id = 1, name = "Bulbasaur", imageUrl = "https://example.com/1.png", types = listOf("Grass"))
-        val teamEntity = PokemonTeamEntity(id = 1L, name = "My Team", pokemonIds = listOf(1, 999))
-        every { teamDao.getAllTeams() } returns flowOf(listOf(teamEntity))
-        coEvery { pokemonDao.getPokemonById(1) } returns pokemonEntity
-        coEvery { pokemonDao.getPokemonById(999) } returns null
-        repository = TeamRepositoryImpl(teamDao, pokemonDao)
+    fun `getAllTeams excludesMembersNotFoundInPokemonDao`() =
+        runTest {
+            val pokemonEntity =
+                PokemonEntity(
+                    id = 1,
+                    name = "Bulbasaur",
+                    imageUrl = "https://example.com/1.png",
+                    types = listOf("Grass"),
+                )
+            val teamEntity = PokemonTeamEntity(id = 1L, name = "My Team", pokemonIds = listOf(1, 999))
+            every { teamDao.getAllTeams() } returns flowOf(listOf(teamEntity))
+            coEvery { pokemonDao.getPokemonById(1) } returns pokemonEntity
+            coEvery { pokemonDao.getPokemonById(999) } returns null
+            repository = TeamRepositoryImpl(teamDao, pokemonDao)
 
-        val result: List<PokemonTeam> = repository.getAllTeams().first()
+            val result: List<PokemonTeam> = repository.getAllTeams().first()
 
-        assertEquals(1, result[0].members.size)
-        assertEquals("Bulbasaur", result[0].members[0].name)
-    }
+            assertEquals(1, result[0].members.size)
+            assertEquals("Bulbasaur", result[0].members[0].name)
+        }
 
     // endregion
 
     // region renameTeam
 
     @Test
-    fun `renameTeam updatesNameWhenTeamExists`() = runTest {
-        val entity = PokemonTeamEntity(id = 1L, name = "Old Name", pokemonIds = listOf(1, 2))
-        coEvery { teamDao.getTeamById(1L) } returns entity
+    fun `renameTeam updatesNameWhenTeamExists`() =
+        runTest {
+            val entity = PokemonTeamEntity(id = 1L, name = "Old Name", pokemonIds = listOf(1, 2))
+            coEvery { teamDao.getTeamById(1L) } returns entity
 
-        repository.renameTeam(1L, "New Name")
+            repository.renameTeam(1L, "New Name")
 
-        coVerify { teamDao.updateTeam(entity.copy(name = "New Name")) }
-    }
+            coVerify { teamDao.updateTeam(entity.copy(name = "New Name")) }
+        }
 
     @Test
-    fun `renameTeam doesNothingWhenTeamNotFound`() = runTest {
-        coEvery { teamDao.getTeamById(99L) } returns null
+    fun `renameTeam doesNothingWhenTeamNotFound`() =
+        runTest {
+            coEvery { teamDao.getTeamById(99L) } returns null
 
-        repository.renameTeam(99L, "New Name")
+            repository.renameTeam(99L, "New Name")
 
-        coVerify(exactly = 0) { teamDao.updateTeam(any()) }
-    }
+            coVerify(exactly = 0) { teamDao.updateTeam(any()) }
+        }
 
     // endregion
 }

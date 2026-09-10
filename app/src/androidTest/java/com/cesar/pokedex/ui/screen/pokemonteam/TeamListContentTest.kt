@@ -9,18 +9,18 @@ import org.junit.Rule
 import org.junit.Test
 
 class TeamListContentTest {
-
     @get:Rule
     val composeRule = createComposeRule()
 
     private val bulbasaur = Pokemon(id = 1, name = "Bulbasaur", types = listOf("Grass"), imageUrl = "")
     private val charmander = Pokemon(id = 4, name = "Charmander", types = listOf("Fire"), imageUrl = "")
 
-    private val sampleTeam = PokemonTeam(
-        id = 1L,
-        name = "Kanto Starters",
-        members = listOf(bulbasaur, charmander)
-    )
+    private val sampleTeam =
+        PokemonTeam(
+            id = 1L,
+            name = "Kanto Starters",
+            members = listOf(bulbasaur, charmander),
+        )
 
     @Test
     fun emptyState_showsNoTeamsMessage() {
@@ -28,7 +28,7 @@ class TeamListContentTest {
             PokedexTheme {
                 TeamListContent(
                     uiState = TeamListUiState(teams = emptyList()),
-                    onEvent = {}
+                    onEvent = {},
                 )
             }
         }
@@ -41,7 +41,7 @@ class TeamListContentTest {
             PokedexTheme {
                 TeamListContent(
                     uiState = TeamListUiState(teams = listOf(sampleTeam)),
-                    onEvent = {}
+                    onEvent = {},
                 )
             }
         }
@@ -54,7 +54,7 @@ class TeamListContentTest {
             PokedexTheme {
                 TeamListContent(
                     uiState = TeamListUiState(teams = listOf(sampleTeam)),
-                    onEvent = {}
+                    onEvent = {},
                 )
             }
         }
@@ -67,7 +67,7 @@ class TeamListContentTest {
             PokedexTheme {
                 TeamListContent(
                     uiState = TeamListUiState(teams = emptyList(), showCreateDialog = true),
-                    onEvent = {}
+                    onEvent = {},
                 )
             }
         }
@@ -82,7 +82,7 @@ class TeamListContentTest {
             PokedexTheme {
                 TeamListContent(
                     uiState = TeamListUiState(teams = emptyList(), showCreateDialog = false),
-                    onEvent = {}
+                    onEvent = {},
                 )
             }
         }
@@ -96,7 +96,7 @@ class TeamListContentTest {
             PokedexTheme {
                 TeamListContent(
                     uiState = TeamListUiState(teams = listOf(sampleTeam, secondTeam)),
-                    onEvent = {}
+                    onEvent = {},
                 )
             }
         }
@@ -111,7 +111,7 @@ class TeamListContentTest {
             PokedexTheme {
                 TeamListContent(
                     uiState = TeamListUiState(teams = listOf(emptyTeam)),
-                    onEvent = {}
+                    onEvent = {},
                 )
             }
         }
@@ -124,7 +124,7 @@ class TeamListContentTest {
             PokedexTheme {
                 TeamListContent(
                     uiState = TeamListUiState(teams = listOf(sampleTeam), pendingDeleteTeam = sampleTeam),
-                    onEvent = {}
+                    onEvent = {},
                 )
             }
         }
@@ -137,7 +137,7 @@ class TeamListContentTest {
             PokedexTheme {
                 TeamListContent(
                     uiState = TeamListUiState(teams = listOf(sampleTeam)),
-                    onEvent = {}
+                    onEvent = {},
                 )
             }
         }

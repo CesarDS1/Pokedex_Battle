@@ -42,7 +42,7 @@ import com.cesar.pokedex.ui.component.TypeBadge
 fun PokemonMovesScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: PokemonMovesViewModel = hiltViewModel()
+    viewModel: PokemonMovesViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -54,18 +54,18 @@ fun PokemonMovesScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back)
+                            contentDescription = stringResource(R.string.back),
                         )
                     }
-                }
+                },
             )
         },
-        modifier = modifier
+        modifier = modifier,
     ) { innerPadding ->
         MovesScreenContent(
             uiState = uiState,
             onRetry = { viewModel.onEvent(PokemonMovesEvent.LoadMoves) },
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
         )
     }
 }
@@ -74,13 +74,13 @@ fun PokemonMovesScreen(
 internal fun MovesScreenContent(
     uiState: PokemonMovesUiState,
     onRetry: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     when (val state = uiState) {
         is PokemonMovesUiState.Loading -> {
             Box(
                 modifier = modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator()
             }
@@ -89,17 +89,17 @@ internal fun MovesScreenContent(
         is PokemonMovesUiState.Error -> {
             Box(
                 modifier = modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = state.message,
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.error
+                        color = MaterialTheme.colorScheme.error,
                     )
                     Button(
                         onClick = onRetry,
-                        modifier = Modifier.padding(top = 16.dp)
+                        modifier = Modifier.padding(top = 16.dp),
                     ) {
                         Text(stringResource(R.string.retry))
                     }
@@ -110,7 +110,7 @@ internal fun MovesScreenContent(
         is PokemonMovesUiState.Success -> {
             MovesContent(
                 moves = state.moves,
-                modifier = modifier
+                modifier = modifier,
             )
         }
     }
@@ -119,20 +119,21 @@ internal fun MovesScreenContent(
 @Composable
 private fun MovesContent(
     moves: List<Move>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp),
     ) {
         if (moves.isEmpty()) {
             Text(
                 text = stringResource(R.string.no_level_up_moves),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(vertical = 12.dp)
+                modifier = Modifier.padding(vertical = 12.dp),
             )
         } else {
             val grouped = remember(moves) { moves.groupBy { it.level } }
@@ -147,31 +148,42 @@ private fun MovesContent(
 }
 
 @Composable
-private fun LevelGroup(level: Int, moves: List<Move>, modifier: Modifier = Modifier) {
+private fun LevelGroup(
+    level: Int,
+    moves: List<Move>,
+    modifier: Modifier = Modifier,
+) {
+    val levelLabel =
+        if (level > 0) {
+            stringResource(R.string.level_format, level)
+        } else {
+            stringResource(R.string.learned_by_default)
+        }
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = if (level > 0) stringResource(R.string.level_format, level) else stringResource(R.string.learned_by_default),
+                text = levelLabel,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
             )
             Spacer(modifier = Modifier.height(8.dp))
             moves.forEach { move ->
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text(
                             text = move.name,
                             style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                         TypeBadge(typeName = move.type)
                     }
@@ -180,7 +192,7 @@ private fun LevelGroup(level: Int, moves: List<Move>, modifier: Modifier = Modif
                             text = move.description,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 2.dp, end = 8.dp)
+                            modifier = Modifier.padding(top = 2.dp, end = 8.dp),
                         )
                     }
                 }

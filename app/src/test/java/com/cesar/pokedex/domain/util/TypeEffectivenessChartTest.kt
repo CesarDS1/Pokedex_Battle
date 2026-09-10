@@ -5,7 +5,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TypeEffectivenessChartTest {
-
     @Test
     fun `water is super effective against fire`() {
         assertEquals(2f, TypeEffectivenessChart.multiplier("water", "fire"), 0.001f)
@@ -116,5 +115,43 @@ class TypeEffectivenessChartTest {
         assertEquals(0f, result, 0.001f)
         val vsRock = TypeEffectivenessChart.multiplier("normal", "rock")
         assertEquals(0.5f, vsRock, 0.001f)
+    }
+
+    @Test
+    fun `headToHead water vs fire - water dominates`() {
+        val result = TypeEffectivenessChart.headToHead(listOf("water"), listOf("fire"))
+        assertEquals(2f, result.aAttackingB, 0.001f)
+        assertEquals(0.5f, result.bAttackingA, 0.001f)
+    }
+
+    @Test
+    fun `headToHead dual types picks the best attacking type via max`() {
+        // fire/flying vs grass/poison: fire->(grass,poison)=2*1=2, flying->(grass,poison)=2*0.5=1 -> max=2
+        val result = TypeEffectivenessChart.headToHead(listOf("fire", "flying"), listOf("grass", "poison"))
+        assertEquals(2f, result.aAttackingB, 0.001f)
+    }
+
+    @Test
+    fun `headToHead swapping sides swaps the result fields`() {
+        val ab = TypeEffectivenessChart.headToHead(listOf("water"), listOf("grass"))
+        val ba = TypeEffectivenessChart.headToHead(listOf("grass"), listOf("water"))
+        assertEquals(ab.aAttackingB, ba.bAttackingA, 0.001f)
+        assertEquals(ab.bAttackingA, ba.aAttackingB, 0.001f)
+    }
+
+    @Test
+    fun `headToHead same types both ways yields neutral 1x`() {
+        val result = TypeEffectivenessChart.headToHead(listOf("normal"), listOf("normal"))
+        assertEquals(1f, result.aAttackingB, 0.001f)
+        assertEquals(1f, result.bAttackingA, 0.001f)
+    }
+
+    @Test
+    fun `headToHead with an empty type list falls back to neutral 1x instead of throwing`() {
+        // With no types on side A, side A has no attacking move to pick (neutral 1x),
+        // and side B's attacks have nothing to multiply against (also neutral 1x).
+        val result = TypeEffectivenessChart.headToHead(emptyList(), listOf("fire"))
+        assertEquals(1f, result.aAttackingB, 0.001f)
+        assertEquals(1f, result.bAttackingA, 0.001f)
     }
 }

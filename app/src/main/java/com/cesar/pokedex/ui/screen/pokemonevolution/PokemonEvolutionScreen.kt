@@ -50,7 +50,7 @@ fun PokemonEvolutionScreen(
     onBackClick: () -> Unit,
     onPokemonClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: PokemonEvolutionViewModel = hiltViewModel()
+    viewModel: PokemonEvolutionViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -62,19 +62,19 @@ fun PokemonEvolutionScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back)
+                            contentDescription = stringResource(R.string.back),
                         )
                     }
-                }
+                },
             )
         },
-        modifier = modifier
+        modifier = modifier,
     ) { innerPadding ->
         EvolutionScreenContent(
             uiState = uiState,
             onRetry = { viewModel.onEvent(PokemonEvolutionEvent.LoadEvolution) },
             onPokemonClick = onPokemonClick,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
         )
     }
 }
@@ -84,13 +84,13 @@ internal fun EvolutionScreenContent(
     uiState: PokemonEvolutionUiState,
     onRetry: () -> Unit,
     onPokemonClick: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     when (val state = uiState) {
         is PokemonEvolutionUiState.Loading -> {
             Box(
                 modifier = modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator()
             }
@@ -99,17 +99,17 @@ internal fun EvolutionScreenContent(
         is PokemonEvolutionUiState.Error -> {
             Box(
                 modifier = modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = state.message,
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.error
+                        color = MaterialTheme.colorScheme.error,
                     )
                     Button(
                         onClick = onRetry,
-                        modifier = Modifier.padding(top = 16.dp)
+                        modifier = Modifier.padding(top = 16.dp),
                     ) {
                         Text(stringResource(R.string.retry))
                     }
@@ -122,7 +122,7 @@ internal fun EvolutionScreenContent(
                 info = state.info,
                 currentPokemonId = state.currentPokemonId,
                 onPokemonClick = onPokemonClick,
-                modifier = modifier
+                modifier = modifier,
             )
         }
     }
@@ -133,31 +133,32 @@ private fun EvolutionContent(
     info: PokemonEvolutionInfo,
     currentPokemonId: Int,
     onPokemonClick: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp),
     ) {
         Text(
             text = stringResource(R.string.evolution_chain),
             style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(vertical = 12.dp)
+            modifier = Modifier.padding(vertical = 12.dp),
         )
 
         if (info.evolutions.size <= 1) {
             Text(
                 text = stringResource(R.string.does_not_evolve),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         } else {
             EvolutionChainRow(
                 evolutions = info.evolutions,
                 currentPokemonId = currentPokemonId,
-                onPokemonClick = onPokemonClick
+                onPokemonClick = onPokemonClick,
             )
         }
 
@@ -167,12 +168,12 @@ private fun EvolutionContent(
             Text(
                 text = stringResource(R.string.alternate_forms),
                 style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(vertical = 12.dp)
+                modifier = Modifier.padding(vertical = 12.dp),
             )
             altForms.forEach { variety ->
                 VarietyCard(
                     variety = variety,
-                    onClick = { onPokemonClick(variety.id) }
+                    onClick = { onPokemonClick(variety.id) },
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
@@ -187,39 +188,40 @@ private fun EvolutionChainRow(
     evolutions: List<EvolutionStage>,
     currentPokemonId: Int,
     onPokemonClick: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         evolutions.forEachIndexed { index, stage ->
             if (index > 0) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(20.dp),
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = stage.trigger,
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
             EvolutionStageCard(
                 stage = stage,
                 isCurrent = stage.id == currentPokemonId,
-                onClick = { onPokemonClick(stage.id) }
+                onClick = { onPokemonClick(stage.id) },
             )
         }
     }
@@ -230,44 +232,46 @@ private fun EvolutionStageCard(
     stage: EvolutionStage,
     isCurrent: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    val borderModifier = if (isCurrent) {
-        Modifier.border(
-            width = 2.dp,
-            color = MaterialTheme.colorScheme.primary,
-            shape = RoundedCornerShape(12.dp)
-        )
-    } else {
-        Modifier
-    }
+    val borderModifier =
+        if (isCurrent) {
+            Modifier.border(
+                width = 2.dp,
+                color = MaterialTheme.colorScheme.primary,
+                shape = RoundedCornerShape(12.dp),
+            )
+        } else {
+            Modifier
+        }
 
     ElevatedCard(
-        modifier = modifier
-            .fillMaxWidth()
-            .then(borderModifier)
-            .clickable(enabled = !isCurrent, onClick = onClick)
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .then(borderModifier)
+                .clickable(enabled = !isCurrent, onClick = onClick),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(12.dp)
+            modifier = Modifier.padding(12.dp),
         ) {
             AsyncImage(
                 model = stage.imageUrl,
                 contentDescription = stage.name,
-                modifier = Modifier.size(80.dp)
+                modifier = Modifier.size(80.dp),
             )
             Spacer(modifier = Modifier.width(12.dp))
             Column {
                 Text(
                     text = stage.name,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal
+                    fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
                 )
                 Text(
                     text = "#${stage.id.toString().padStart(3, '0')}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -278,26 +282,27 @@ private fun EvolutionStageCard(
 private fun VarietyCard(
     variety: PokemonVariety,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     ElevatedCard(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(12.dp)
+            modifier = Modifier.padding(12.dp),
         ) {
             AsyncImage(
                 model = variety.imageUrl,
                 contentDescription = variety.name,
-                modifier = Modifier.size(80.dp)
+                modifier = Modifier.size(80.dp),
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = variety.name,
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
             )
         }
     }

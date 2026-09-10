@@ -7,7 +7,6 @@ import org.junit.Rule
 import org.junit.Test
 
 class TypeBadgeTest {
-
     @get:Rule
     val composeRule = createComposeRule()
 

@@ -6,5 +6,5 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "pokemon_detail")
 data class PokemonDetailEntity(
     @PrimaryKey val id: Int,
-    val json: String
+    val json: String,
 )

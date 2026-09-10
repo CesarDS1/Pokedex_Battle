@@ -1,5 +1,7 @@
 package com.cesar.pokedex.domain.util
 
+import com.cesar.pokedex.domain.model.HeadToHeadMatchup
+
 /**
  * Gen IX type effectiveness chart.
  * chart[attacking][defending] = multiplier.
@@ -8,98 +10,194 @@ package com.cesar.pokedex.domain.util
  * All type keys are lowercase.
  */
 object TypeEffectivenessChart {
-
     private val ALL_TYPES = ALL_POKEMON_TYPES.map { it.lowercase() }
 
-    private val chart: Map<String, Map<String, Float>> = mapOf(
-        "normal" to mapOf(
-            "rock" to 0.5f, "steel" to 0.5f,
-            "ghost" to 0f
-        ),
-        "fire" to mapOf(
-            "grass" to 2f, "ice" to 2f, "bug" to 2f, "steel" to 2f,
-            "fire" to 0.5f, "water" to 0.5f, "rock" to 0.5f, "dragon" to 0.5f
-        ),
-        "water" to mapOf(
-            "fire" to 2f, "ground" to 2f, "rock" to 2f,
-            "water" to 0.5f, "grass" to 0.5f, "dragon" to 0.5f
-        ),
-        "electric" to mapOf(
-            "water" to 2f, "flying" to 2f,
-            "electric" to 0.5f, "grass" to 0.5f, "dragon" to 0.5f,
-            "ground" to 0f
-        ),
-        "grass" to mapOf(
-            "water" to 2f, "ground" to 2f, "rock" to 2f,
-            "fire" to 0.5f, "grass" to 0.5f, "poison" to 0.5f,
-            "flying" to 0.5f, "bug" to 0.5f, "dragon" to 0.5f, "steel" to 0.5f
-        ),
-        "ice" to mapOf(
-            "grass" to 2f, "ground" to 2f, "flying" to 2f, "dragon" to 2f,
-            "fire" to 0.5f, "water" to 0.5f, "ice" to 0.5f, "steel" to 0.5f
-        ),
-        "fighting" to mapOf(
-            "normal" to 2f, "ice" to 2f, "rock" to 2f, "dark" to 2f, "steel" to 2f,
-            "poison" to 0.5f, "flying" to 0.5f, "psychic" to 0.5f, "bug" to 0.5f, "fairy" to 0.5f,
-            "ghost" to 0f
-        ),
-        "poison" to mapOf(
-            "grass" to 2f, "fairy" to 2f,
-            "poison" to 0.5f, "ground" to 0.5f, "rock" to 0.5f, "ghost" to 0.5f,
-            "steel" to 0f
-        ),
-        "ground" to mapOf(
-            "fire" to 2f, "electric" to 2f, "poison" to 2f, "rock" to 2f, "steel" to 2f,
-            "grass" to 0.5f, "bug" to 0.5f,
-            "flying" to 0f
-        ),
-        "flying" to mapOf(
-            "grass" to 2f, "fighting" to 2f, "bug" to 2f,
-            "electric" to 0.5f, "rock" to 0.5f, "steel" to 0.5f
-        ),
-        "psychic" to mapOf(
-            "fighting" to 2f, "poison" to 2f,
-            "psychic" to 0.5f, "steel" to 0.5f,
-            "dark" to 0f
-        ),
-        "bug" to mapOf(
-            "grass" to 2f, "psychic" to 2f, "dark" to 2f,
-            "fire" to 0.5f, "fighting" to 0.5f, "flying" to 0.5f,
-            "ghost" to 0.5f, "steel" to 0.5f, "fairy" to 0.5f
-        ),
-        "rock" to mapOf(
-            "fire" to 2f, "ice" to 2f, "flying" to 2f, "bug" to 2f,
-            "fighting" to 0.5f, "ground" to 0.5f, "steel" to 0.5f
-        ),
-        "ghost" to mapOf(
-            "psychic" to 2f, "ghost" to 2f,
-            "dark" to 0.5f,
-            "normal" to 0f
-        ),
-        "dragon" to mapOf(
-            "dragon" to 2f,
-            "steel" to 0.5f,
-            "fairy" to 0f
-        ),
-        "dark" to mapOf(
-            "psychic" to 2f, "ghost" to 2f,
-            "fighting" to 0.5f, "dark" to 0.5f, "fairy" to 0.5f
-        ),
-        "steel" to mapOf(
-            "ice" to 2f, "rock" to 2f, "fairy" to 2f,
-            "fire" to 0.5f, "water" to 0.5f, "electric" to 0.5f, "steel" to 0.5f
-        ),
-        "fairy" to mapOf(
-            "fighting" to 2f, "dragon" to 2f, "dark" to 2f,
-            "fire" to 0.5f, "poison" to 0.5f, "steel" to 0.5f
+    private val chart: Map<String, Map<String, Float>> =
+        mapOf(
+            "normal" to
+                mapOf(
+                    "rock" to 0.5f,
+                    "steel" to 0.5f,
+                    "ghost" to 0f,
+                ),
+            "fire" to
+                mapOf(
+                    "grass" to 2f,
+                    "ice" to 2f,
+                    "bug" to 2f,
+                    "steel" to 2f,
+                    "fire" to 0.5f,
+                    "water" to 0.5f,
+                    "rock" to 0.5f,
+                    "dragon" to 0.5f,
+                ),
+            "water" to
+                mapOf(
+                    "fire" to 2f,
+                    "ground" to 2f,
+                    "rock" to 2f,
+                    "water" to 0.5f,
+                    "grass" to 0.5f,
+                    "dragon" to 0.5f,
+                ),
+            "electric" to
+                mapOf(
+                    "water" to 2f,
+                    "flying" to 2f,
+                    "electric" to 0.5f,
+                    "grass" to 0.5f,
+                    "dragon" to 0.5f,
+                    "ground" to 0f,
+                ),
+            "grass" to
+                mapOf(
+                    "water" to 2f,
+                    "ground" to 2f,
+                    "rock" to 2f,
+                    "fire" to 0.5f,
+                    "grass" to 0.5f,
+                    "poison" to 0.5f,
+                    "flying" to 0.5f,
+                    "bug" to 0.5f,
+                    "dragon" to 0.5f,
+                    "steel" to 0.5f,
+                ),
+            "ice" to
+                mapOf(
+                    "grass" to 2f,
+                    "ground" to 2f,
+                    "flying" to 2f,
+                    "dragon" to 2f,
+                    "fire" to 0.5f,
+                    "water" to 0.5f,
+                    "ice" to 0.5f,
+                    "steel" to 0.5f,
+                ),
+            "fighting" to
+                mapOf(
+                    "normal" to 2f,
+                    "ice" to 2f,
+                    "rock" to 2f,
+                    "dark" to 2f,
+                    "steel" to 2f,
+                    "poison" to 0.5f,
+                    "flying" to 0.5f,
+                    "psychic" to 0.5f,
+                    "bug" to 0.5f,
+                    "fairy" to 0.5f,
+                    "ghost" to 0f,
+                ),
+            "poison" to
+                mapOf(
+                    "grass" to 2f,
+                    "fairy" to 2f,
+                    "poison" to 0.5f,
+                    "ground" to 0.5f,
+                    "rock" to 0.5f,
+                    "ghost" to 0.5f,
+                    "steel" to 0f,
+                ),
+            "ground" to
+                mapOf(
+                    "fire" to 2f,
+                    "electric" to 2f,
+                    "poison" to 2f,
+                    "rock" to 2f,
+                    "steel" to 2f,
+                    "grass" to 0.5f,
+                    "bug" to 0.5f,
+                    "flying" to 0f,
+                ),
+            "flying" to
+                mapOf(
+                    "grass" to 2f,
+                    "fighting" to 2f,
+                    "bug" to 2f,
+                    "electric" to 0.5f,
+                    "rock" to 0.5f,
+                    "steel" to 0.5f,
+                ),
+            "psychic" to
+                mapOf(
+                    "fighting" to 2f,
+                    "poison" to 2f,
+                    "psychic" to 0.5f,
+                    "steel" to 0.5f,
+                    "dark" to 0f,
+                ),
+            "bug" to
+                mapOf(
+                    "grass" to 2f,
+                    "psychic" to 2f,
+                    "dark" to 2f,
+                    "fire" to 0.5f,
+                    "fighting" to 0.5f,
+                    "flying" to 0.5f,
+                    "ghost" to 0.5f,
+                    "steel" to 0.5f,
+                    "fairy" to 0.5f,
+                ),
+            "rock" to
+                mapOf(
+                    "fire" to 2f,
+                    "ice" to 2f,
+                    "flying" to 2f,
+                    "bug" to 2f,
+                    "fighting" to 0.5f,
+                    "ground" to 0.5f,
+                    "steel" to 0.5f,
+                ),
+            "ghost" to
+                mapOf(
+                    "psychic" to 2f,
+                    "ghost" to 2f,
+                    "dark" to 0.5f,
+                    "normal" to 0f,
+                ),
+            "dragon" to
+                mapOf(
+                    "dragon" to 2f,
+                    "steel" to 0.5f,
+                    "fairy" to 0f,
+                ),
+            "dark" to
+                mapOf(
+                    "psychic" to 2f,
+                    "ghost" to 2f,
+                    "fighting" to 0.5f,
+                    "dark" to 0.5f,
+                    "fairy" to 0.5f,
+                ),
+            "steel" to
+                mapOf(
+                    "ice" to 2f,
+                    "rock" to 2f,
+                    "fairy" to 2f,
+                    "fire" to 0.5f,
+                    "water" to 0.5f,
+                    "electric" to 0.5f,
+                    "steel" to 0.5f,
+                ),
+            "fairy" to
+                mapOf(
+                    "fighting" to 2f,
+                    "dragon" to 2f,
+                    "dark" to 2f,
+                    "fire" to 0.5f,
+                    "poison" to 0.5f,
+                    "steel" to 0.5f,
+                ),
         )
-    )
 
-    fun multiplier(attacking: String, defending: String): Float =
-        chart[attacking.lowercase()]?.get(defending.lowercase()) ?: 1f
+    fun multiplier(
+        attacking: String,
+        defending: String,
+    ): Float = chart[attacking.lowercase()]?.get(defending.lowercase()) ?: 1f
 
-    fun combinedMultiplier(attacking: String, defendingTypes: List<String>): Float =
-        defendingTypes.fold(1f) { acc, type -> acc * multiplier(attacking, type) }
+    fun combinedMultiplier(
+        attacking: String,
+        defendingTypes: List<String>,
+    ): Float = defendingTypes.fold(1f) { acc, type -> acc * multiplier(attacking, type) }
 
     /**
      * For a Pokémon with the given defending types, returns a map of
@@ -107,8 +205,23 @@ object TypeEffectivenessChart {
      * Only entries where the multiplier != 1f are included.
      */
     fun allMatchupsFor(types: List<String>): Map<String, Float> =
-        ALL_TYPES.associateWith { attacking -> combinedMultiplier(attacking, types) }
+        ALL_TYPES
+            .associateWith { attacking -> combinedMultiplier(attacking, types) }
             .filter { (_, v) -> v != 1f }
 
     fun allTypes(): List<String> = ALL_TYPES
+
+    /**
+     * Best-case head-to-head: for each side, takes the single attacking type
+     * (via STAB) that hits hardest against the opponent's full defending typing.
+     * Falls back to a neutral 1f multiplier if a side has no types (e.g. incomplete data).
+     */
+    fun headToHead(
+        aTypes: List<String>,
+        bTypes: List<String>,
+    ): HeadToHeadMatchup {
+        val aAttackingB = aTypes.maxOfOrNull { atk -> combinedMultiplier(atk, bTypes) } ?: 1f
+        val bAttackingA = bTypes.maxOfOrNull { atk -> combinedMultiplier(atk, aTypes) } ?: 1f
+        return HeadToHeadMatchup(aAttackingB, bAttackingA)
+    }
 }

@@ -7,8 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Android Pokedex app built with Jetpack Compose and Material 3. Single-module project using Kotlin DSL Gradle build files. Fetches data from PokeAPI v2 with offline caching via Room.
 
 - **Package:** `com.cesar.pokedex`
-- **Min SDK:** 33, **Target/Compile SDK:** 36
-- **Kotlin:** 2.2.10, **AGP:** 9.0.0, **Java:** 11
+- **Min SDK:** 33, **Target SDK:** 36, **Compile SDK:** 37
+- **Kotlin:** 2.4.0, **AGP:** 9.4.0, **Java:** 17
 - **UI:** Jetpack Compose with Material 3 and dynamic color support
 
 ## Build Commands
@@ -63,7 +63,8 @@ Clean Architecture with 3 layers (UI, Domain, Data). Single-activity architectur
 │   ├── model/
 │   │   ├── Pokemon.kt                 — Pokemon list domain model
 │   │   ├── PokemonDetail.kt           — Pokemon detail domain model
-│   │   └── PokemonEvolutionInfo.kt    — Evolution chain domain model
+│   │   ├── PokemonEvolutionInfo.kt    — Evolution chain domain model
+│   │   └── HeadToHeadMatchup.kt       — 1v1 comparator head-to-head result
 │   └── repository/
 │       └── PokemonRepository.kt       — Repository interface
 │
@@ -80,9 +81,12 @@ Clean Architecture with 3 layers (UI, Domain, Data). Single-activity architectur
     │   ├── pokemonmoves/
     │   │   ├── PokemonMovesScreen.kt   — Moves screen composables
     │   │   └── PokemonMovesViewModel.kt
-    │   └── pokemonevolution/
-    │       ├── PokemonEvolutionScreen.kt — Evolution screen composables
-    │       └── PokemonEvolutionViewModel.kt
+    │   ├── pokemonevolution/
+    │   │   ├── PokemonEvolutionScreen.kt — Evolution screen composables
+    │   │   └── PokemonEvolutionViewModel.kt
+    │   └── pokemoncompare/
+    │       ├── PokemonCompareScreen.kt — 1v1 comparator screen composables
+    │       └── PokemonCompareViewModel.kt
     └── theme/
         ├── Color.kt                    — Material 3 color definitions
         ├── Theme.kt                    — Material 3 theme setup
@@ -112,6 +116,7 @@ Clean Architecture with 3 layers (UI, Domain, Data). Single-activity architectur
   - `ui/screen/pokemondetail/PokemonDetailViewModelTest.kt`
   - `ui/screen/pokemonevolution/PokemonEvolutionViewModelTest.kt`
   - `ui/screen/pokemonmoves/PokemonMovesViewModelTest.kt`
+  - `ui/screen/pokemoncompare/PokemonCompareViewModelTest.kt`
   - `util/MainDispatcherRule.kt` — Custom test dispatcher rule
 - **Instrumented tests:** `app/src/androidTest/java/com/cesar/pokedex/` — Espresso + Compose testing, requires device/emulator
 - **Test runner:** `androidx.test.runner.AndroidJUnitRunner`
@@ -120,10 +125,10 @@ Clean Architecture with 3 layers (UI, Domain, Data). Single-activity architectur
 
 - `kotlin.code.style=official` (in `gradle.properties`)
 - Non-transitive R classes enabled (`android.nonTransitiveRClass=true`)
-- Compose BOM `2024.09.00` — avoid `FlowRow` (API signature mismatch at runtime), use custom `WrappingRow` Layout composable instead (defined in `PokemonDetailScreen.kt`)
-- Room database version: 3 (includes `favorites` table)
-- No linter or formatter configured (no ktlint/detekt)
-- ProGuard rules exist but minification is disabled
+- Compose BOM `2026.08.00` — avoid `FlowRow` (API signature mismatch at runtime), use custom `WrappingRow` Layout composable instead (defined in `PokemonDetailScreen.kt`)
+- Room database version: 4 (includes `favorites` and team builder tables)
+- ktlint configured (`org.jlleitschuh.gradle.ktlint` plugin) with the `compose-rules-ktlint` ruleset; no detekt
+- Release builds enable minification and resource shrinking (`isMinifyEnabled`/`isShrinkResources = true`); ProGuard rules in `proguard-rules.pro`
 
 ## Features
 
@@ -133,3 +138,4 @@ Clean Architecture with 3 layers (UI, Domain, Data). Single-activity architectur
 - **Pokemon info card:** Detail About tab shows height, weight, abilities (with hidden label), and gender ratio.
 - **Clickable evolutions:** Evolution screen Pokemon cards navigate to their detail screen via `onPokemonClick` callback.
 - **WrappingRow:** Custom `Layout` composable in `PokemonDetailScreen.kt` for wrapping type badges (replaces broken `FlowRow`).
+- **1v1 Comparator:** Accessible via a top-bar icon on the Pokémon list screen, next to the About icon. Lets the user pick two Pokémon into side-by-side slots via an inline `ModalBottomSheet` search per slot (no navigation to a separate screen), then compares their base stats side by side and shows a true head-to-head type matchup via `TypeEffectivenessChart.headToHead()` — not just two independent single-Pokémon defensive breakdowns like the detail screen's `StatsTab`/`MatchupsTab`.
