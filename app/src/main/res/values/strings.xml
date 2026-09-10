@@ -50,6 +50,14 @@
     <string name="filter_by_type">Filter by type:</string>
     <string name="suggest_vs">Suggest vs:</string>
 
+    <!-- Comparator -->
+    <string name="compare">Compare</string>
+    <string name="pick_pokemon">Pick Pokémon</string>
+    <string name="compare_empty_prompt">Pick two Pokémon to compare their stats and type matchup.</string>
+    <string name="stat_comparison">Stat Comparison</string>
+    <string name="head_to_head">Head-to-Head</string>
+    <string name="attacking_format">%1$s attacking %2$s</string>
+
     <!-- Moves screen -->
     <string name="no_level_up_moves">This Pokemon doesn\'t learn any moves by leveling up.</string>
     <string name="level_format">Level %1$d</string>

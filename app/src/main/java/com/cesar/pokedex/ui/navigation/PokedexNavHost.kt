@@ -26,6 +26,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.cesar.pokedex.R
 import com.cesar.pokedex.ui.screen.about.AboutScreen
+import com.cesar.pokedex.ui.screen.pokemoncompare.PokemonCompareScreen
 import com.cesar.pokedex.ui.screen.pokemondetail.PokemonDetailScreen
 import com.cesar.pokedex.ui.screen.pokemonevolution.PokemonEvolutionScreen
 import com.cesar.pokedex.ui.screen.pokemonlist.PokemonListScreen
@@ -132,8 +133,14 @@ fun PokedexNavHost(
                     onAboutClick = {
                         navController.navigate("about")
                     },
+                    onCompareClick = {
+                        navController.navigate("comparator")
+                    },
                     bottomPadding = innerPadding.calculateBottomPadding(),
                 )
+            }
+            composable("comparator") {
+                PokemonCompareScreen(onBackClick = { navController.popBackStack() })
             }
             composable(
                 route = "pokemon_detail/{pokemonId}",

@@ -29,6 +29,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.CompareArrows
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -81,6 +82,7 @@ fun PokemonListScreen(
     modifier: Modifier = Modifier,
     onPokemonClick: (Int) -> Unit = {},
     onAboutClick: () -> Unit = {},
+    onCompareClick: () -> Unit = {},
     bottomPadding: Dp = 0.dp,
     viewModel: PokemonListViewModel = hiltViewModel(),
 ) {
@@ -90,6 +92,7 @@ fun PokemonListScreen(
         onEvent = viewModel::onEvent,
         onPokemonClick = onPokemonClick,
         onAboutClick = onAboutClick,
+        onCompareClick = onCompareClick,
         bottomPadding = bottomPadding,
         modifier = modifier,
     )
@@ -103,6 +106,7 @@ internal fun PokemonListContent(
     onPokemonClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
     onAboutClick: () -> Unit = {},
+    onCompareClick: () -> Unit = {},
     bottomPadding: Dp = 0.dp,
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "pokeball_rotation")
@@ -136,6 +140,12 @@ internal fun PokemonListContent(
                         Icon(
                             imageVector = Icons.Default.Info,
                             contentDescription = "About",
+                        )
+                    }
+                    IconButton(onClick = onCompareClick) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.CompareArrows,
+                            contentDescription = stringResource(R.string.compare),
                         )
                     }
                     IconButton(onClick = { onEvent(PokemonListEvent.ToggleShowFavoritesOnly) }) {
