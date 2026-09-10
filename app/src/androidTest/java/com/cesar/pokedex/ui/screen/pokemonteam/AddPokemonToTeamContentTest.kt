@@ -72,7 +72,7 @@ class AddPokemonToTeamContentTest {
                 )
             }
         }
-        composeRule.onNodeWithText("Search Pokemon…").assertIsDisplayed()
+        composeRule.onNodeWithText("Search Pokémon…").assertIsDisplayed()
     }
 
     @Test

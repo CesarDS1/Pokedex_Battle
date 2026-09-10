@@ -144,4 +144,44 @@ class PokemonListContentTest {
         composeRule.onNodeWithText("Bulbasaur").assertIsDisplayed()
         composeRule.onNodeWithText("Charmander").assertIsDisplayed()
     }
+
+    @Test
+    fun compareIcon_invokesOnCompareClick() {
+        var compareClicked = false
+        composeRule.setContent {
+            PokedexTheme {
+                PokemonListContent(
+                    uiState = loadedState,
+                    onEvent = {},
+                    onPokemonClick = {},
+                    onCompareClick = { compareClicked = true },
+                )
+            }
+        }
+        composeRule.onNodeWithContentDescription("Compare").performClick()
+        assert(compareClicked)
+    }
+
+    @Test
+    fun topBarIcons_aboutAndCompareRemainIndependentlyClickable() {
+        var aboutClicked = false
+        var compareClicked = false
+        composeRule.setContent {
+            PokedexTheme {
+                PokemonListContent(
+                    uiState = loadedState,
+                    onEvent = {},
+                    onPokemonClick = {},
+                    onAboutClick = { aboutClicked = true },
+                    onCompareClick = { compareClicked = true },
+                )
+            }
+        }
+        composeRule.onNodeWithContentDescription("About").performClick()
+        assert(aboutClicked)
+        assert(!compareClicked)
+
+        composeRule.onNodeWithContentDescription("Compare").performClick()
+        assert(compareClicked)
+    }
 }
