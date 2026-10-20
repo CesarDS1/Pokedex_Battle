@@ -106,6 +106,7 @@ Clean Architecture with 3 layers (UI, Domain, Data). Single-activity architectur
 | kotlinx.serialization | JSON parsing |
 | Coil | Image loading |
 | Room | Local database / offline caching |
+| Firebase Crashlytics + Analytics | Crash reporting and usage analytics (via Firebase BOM) |
 
 ## Testing
 
@@ -128,6 +129,7 @@ Clean Architecture with 3 layers (UI, Domain, Data). Single-activity architectur
 - Compose BOM `2026.08.00` — avoid `FlowRow` (API signature mismatch at runtime), use custom `WrappingRow` Layout composable instead (defined in `PokemonDetailScreen.kt`)
 - Room database version: 4 (includes `favorites` and team builder tables)
 - ktlint configured (`org.jlleitschuh.gradle.ktlint` plugin) with the `compose-rules-ktlint` ruleset; no detekt
+- Firebase is applied via the `com.google.gms.google-services` and `com.google.firebase.crashlytics` Gradle plugins; `app/google-services.json` is required for the build. No Firebase APIs are called from app code — both SDKs auto-initialize (Crashlytics reports crashes automatically, Analytics logs automatic events)
 - Release builds enable minification and resource shrinking (`isMinifyEnabled`/`isShrinkResources = true`); ProGuard rules in `proguard-rules.pro`
 
 ## Features
